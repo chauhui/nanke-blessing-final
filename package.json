@@ -1,0 +1,20 @@
+{
+  "name": "nanke-blessing-full-v1",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.15",
+    "lucide-react": "^0.283.0",
+    "next": "^13.4.19",
+    "next-sanity": "^9.9.9",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.1"
+  }
+}

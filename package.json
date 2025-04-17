@@ -1,0 +1,26 @@
+{
+  "name": "nanke-blessing-full-v1",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@sanity/image-url": "^1.1.0",
+    "autoprefixer": "^10.4.15",
+    "lucide-react": "^0.283.0",
+    "next": "^13.4.19",
+    "next-sanity": "^9.10.2",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-is": "^19.1.0",
+    "styled-components": "^6.1.17",
+    "swiper": "^11.2.6"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.4"
+  }
+}

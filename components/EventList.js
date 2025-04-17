@@ -5,10 +5,10 @@ export default function EventList({ events }) {
 
   return (
     <section className="mt-16">
-      <h2 className="text-2xl font-bold text-center text-blue-800 mb-6">近期活動</h2>
+      <h2 className="text-2xl font-bold text-center text-brand mb-6">近期活動</h2>
       <div className="grid md:grid-cols-3 gap-6">
         {events.map(event => (
-          <div key={event._id} className="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
+          <div key={event._id} className="bg-white p-4 rounded-2xl shadow-card hover:shadow-card-hover transition">
             {event.imageUrl && (
               <Image
                 src={event.imageUrl}

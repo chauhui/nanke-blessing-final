@@ -6,7 +6,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white shadow-card sticky top-0 z-50">
       <div className="max-w-6xl mx-auto p-4">
         {/* Logo 區塊 */}
         <div className="flex justify-center md:justify-start mb-2">

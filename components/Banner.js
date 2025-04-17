@@ -11,7 +11,7 @@ export default function Banner({ banners = [] }) {
   if (!banners.length) return null;
 
   return (
-    <section className="rounded-xl overflow-hidden shadow">
+    <section className="rounded-2xl overflow-hidden shadow-card">
       <Swiper
         modules={[Autoplay, Pagination]}
         slidesPerView={1}

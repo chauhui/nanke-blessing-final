@@ -1,4 +1,3 @@
-
 import { urlFor } from '../lib/sanity';
 
 export default function LatestNews({ newsList }) {
@@ -10,7 +9,7 @@ export default function LatestNews({ newsList }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {newsList.map((item, idx) => (
           item.image?.asset && (
-            <div key={idx} className="overflow-hidden rounded-xl shadow">
+            <div key={idx} className="overflow-hidden rounded-2xl shadow-card">
               <img
                 src={urlFor(item.image).width(800).url()}
                 alt=""

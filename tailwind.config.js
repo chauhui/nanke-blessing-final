@@ -1,27 +1,33 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./pages/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}",
-    "./styles/**/*.css"
-  ],
+  content: ["./pages/**/*.{js,jsx}", "./components/**/*.{js,jsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        gray: {
-          50: '#F9FAFB',
-          100: '#F3F4F6',
-          200: '#E5E7EB',
-          300: '#D1D5DB',
-          400: '#9CA3AF',
-          500: '#6B7280',
-          600: '#4B5563',
-          700: '#374151',
-          800: '#1F2937',
-          900: '#111827',
+        brand: {
+          DEFAULT: "#22B8CF",
+          dark: "#0E7C94",
         },
+        accent: {
+          DEFAULT: "#6366F1",
+          dark: "#4F46E5",
+        },
+        highlight: "#FCD34D",
+        surface: "#F9FAFB",
+      },
+      fontFamily: {
+        sans: ['"Inter"', '"Noto Sans TC"', "sans-serif"],
+      },
+      borderRadius: {
+        xl: "1rem",
+        "2xl": "1rem",
+      },
+      boxShadow: {
+        card: "0 4px 10px rgba(0,0,0,0.05)",
+        "card-hover": "0 6px 16px rgba(0,0,0,0.08)",
       },
     },
   },
   plugins: [],
-}
+};

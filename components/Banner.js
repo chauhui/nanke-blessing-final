@@ -23,14 +23,15 @@ export default function Banner({ banners = [] }) {
         {banners.map((b) => (
           b.image?.asset && (
             <SwiperSlide key={b._id}>
-              <Image
-                src={urlFor(b.image).width(1600).height(700).url()}
-                alt=""
-                width={1600}
-                height={700}
-                className="w-full h-auto object-cover"
-                priority
-              />
+              <div className="relative w-full aspect-[16/7]">
+                <Image
+                  src={urlFor(b.image).width(1920).height(840).fit('crop').auto('format').url()}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </SwiperSlide>
           )
         ))}

@@ -1,4 +1,19 @@
-import event from './event'
-import registration from './registration'
+// studio/schemas/index.ts
 
-export const schemaTypes = [event, registration]
+import event from './event';
+import registration from './registration';
+import memberReport from './memberReport';
+import groupReport from './groupReport';
+import group from './group';
+import member from './member';
+import userRegistration from './userRegistration';
+
+export const schemaTypes = [
+  event,
+  registration,
+  memberReport,
+  groupReport,
+  group,
+  member,
+  userRegistration,
+];

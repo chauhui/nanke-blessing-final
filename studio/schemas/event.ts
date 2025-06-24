@@ -11,32 +11,12 @@ export default defineType({
       type: 'string', 
       validation: Rule => Rule.required(),
     }),
-    defineField({ 
-      name: 'category', 
-      title: '類別', 
-      type: 'string',
-      options: {
-        list: [
-          { title: '課程', value: 'course' },
-          { title: '特會', value: 'meeting' },
-          { title: '活動', value: 'event' },
-          { title: '節慶', value: 'festival' },
-          { title: '其他', value: 'other' },
-        ],
-        layout: 'radio'
-      },
-      initialValue: 'event',
-    }),
+
     defineField({ 
       name: 'content', 
       title: '備註', 
       type: 'array', 
       of: [{ type: 'block' }],
-    }),
-    defineField({ 
-      name: 'description', 
-      title: '描述', 
-      type: 'text',
     }),
     defineField({ 
       name: 'date', 
@@ -53,11 +33,6 @@ export default defineType({
       title: '圖片', 
       type: 'image', 
       options: { hotspot: true },
-    }),
-    defineField({ 
-      name: 'isFeatured', 
-      title: '首頁精選', 
-      type: 'boolean',
     }),
     defineField({ 
       name: 'location', 

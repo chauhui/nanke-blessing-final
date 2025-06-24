@@ -2,6 +2,7 @@ import NavBar from '@/components/NavBar'
 import Strategy from '@/components/Strategy'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
+import Footer from '@/components/Footer'
 
 export default function StrategyPage() {
   const fadeInUp = {
@@ -48,6 +49,7 @@ export default function StrategyPage() {
         {/* 策略內容 */}
         <Strategy />
       </main>
+      <Footer />
     </div>
   )
 }

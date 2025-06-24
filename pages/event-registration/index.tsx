@@ -22,13 +22,15 @@ export default function EventRegistration() {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<{ id: string, title: string } | null>(null);
   const [error, setError] = useState('');
-
   // 報名人數（map: eventId -> count）
   const [registrationCounts, setRegistrationCounts] = useState<{ [key: string]: number | null }>({});
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchEvents = async () => {
       try {
+        console.log('Starting to fetch events...');
         const query = `*[_type == "event"] | order(date asc) {
           _id,
           title,
@@ -41,54 +43,154 @@ export default function EventRegistration() {
           registrationUrl,
           category
         }`;
+        
+        console.log('Executing Sanity query...');
         const data = await fetchQuery(query);
+        console.log('Received events data:', data);
 
         if (!data || !Array.isArray(data)) {
           throw new Error('Invalid data format');
         }
 
+        console.log('Formatting events data...');
         const formattedEvents = data.map((event: any) => {
-          const rawDateObj = event.date ? new Date(event.date) : null;
-          const rawEndDateObj = event.endDate ? new Date(event.endDate) : null;
-          return {
-            ...event,
-            _rawDateObj: rawDateObj,
-            _rawEndDateObj: rawEndDateObj,
-            displayDate: rawDateObj
-              ? rawDateObj.toLocaleDateString('zh-TW', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'long'
-                })
-              : '無日期',
-          };
+          try {
+            const rawDateObj = event.date ? new Date(event.date) : null;
+            const rawEndDateObj = event.endDate ? new Date(event.endDate) : null;
+            return {
+              ...event,
+              _rawDateObj: rawDateObj,
+              _rawEndDateObj: rawEndDateObj,
+              displayDate: rawDateObj
+                ? rawDateObj.toLocaleDateString('zh-TW', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                  })
+                : '無日期',
+            };
+          } catch (err) {
+            console.error('Error formatting event:', event, err);
+            return { ...event, displayDate: '日期格式錯誤' };
+          }
         });
 
-        setEvents(formattedEvents);
-        setLoading(false);
+        if (isMounted) {
+          console.log('Setting events state...');
+          setEvents(formattedEvents);
+          setLoading(false);
+        }
 
         // 查詢所有活動的報名人數
-        for (const event of data) {
-          fetch(`/api/event-registration-count?eventId=${event._id}`)
-            .then(res => res.json())
-            .then(data => {
-              setRegistrationCounts(prev => ({ ...prev, [event._id]: data.count }));
-            })
-            .catch(() => {
-              setRegistrationCounts(prev => ({ ...prev, [event._id]: null }));
-            });
-        }
+        const fetchRegistrationCounts = async () => {
+          console.log('Starting to fetch registration counts...');
+          
+          // 初始化所有活動的報名人數為 null（表示加載中）
+          const initialCounts: Record<string, number | null> = {};
+          data.forEach(event => {
+            initialCounts[event._id] = null;
+          });
+          
+          if (isMounted) {
+            setRegistrationCounts(prev => ({
+              ...prev,
+              ...initialCounts
+            }));
+          }
+          
+          // 並行查詢所有活動的報名人數
+          const countPromises = data.map(async (event) => {
+            try {
+              console.log(`Fetching count for event ${event._id}...`);
+              const apiUrl = `/api/event-registration-count?eventId=${encodeURIComponent(event._id)}`;
+              console.log('API URL:', apiUrl);
+              
+              // 使用相對路徑，讓瀏覽器自動處理協議
+              const response = await fetch(apiUrl, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'Cache-Control': 'no-cache',
+                  'Pragma': 'no-cache'
+                }
+              });
+              
+              console.log(`Response status for ${event._id}:`, response.status);
+              
+              if (!response.ok) {
+                let errorText;
+                try {
+                  errorText = await response.text();
+                } catch (e) {
+                  errorText = 'Failed to parse error response';
+                }
+                console.error('Response not ok:', response.status, errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              
+              const result = await response.json();
+              console.log(`Count result for ${event._id}:`, result);
+              
+              return {
+                eventId: event._id,
+                success: result.success,
+                count: result.success ? (result.count ?? 0) : 0
+              };
+            } catch (error) {
+              console.error(`Error fetching count for event ${event._id}:`, error);
+              return {
+                eventId: event._id,
+                success: false,
+                count: 0,
+                error: error instanceof Error ? error.message : 'Unknown error'
+              };
+            }
+          });
+          
+          try {
+            const results = await Promise.all(countPromises);
+            
+            if (isMounted) {
+              const newCounts = { ...registrationCounts };
+              let hasChanges = false;
+              
+              results.forEach(({ eventId, success, count }) => {
+                if (newCounts[eventId] !== count) {
+                  newCounts[eventId] = count;
+                  hasChanges = true;
+                }
+              });
+              
+              if (hasChanges) {
+                console.log('Updating registration counts:', newCounts);
+                setRegistrationCounts(newCounts);
+              }
+            }
+          } catch (error) {
+            console.error('Error processing registration counts:', error);
+          }
+        };
+        
+        fetchRegistrationCounts();
       } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : '未知錯誤';
-        setError(`無法載入活動資訊，請稍後再試 (${errorMessage})`);
-      } finally {
-        setLoading(false);
+        console.error('Error in fetchEvents:', err);
+        if (isMounted) {
+          const errorMessage = err instanceof Error ? err.message : '未知錯誤';
+          setError(`無法載入活動資訊，請稍後再試 (${errorMessage})`);
+          setLoading(false);
+        }
       }
     };
-
+    
     fetchEvents();
-  }, []);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // 空依賴數組，只在組件掛載時執行
 
   const portableTextComponents = {
     block: {
@@ -215,15 +317,14 @@ export default function EventRegistration() {
                         <div className="hidden md:flex items-center w-full md:w-1/2 lg:w-2/5 relative pr-8">{/* ← 只加 pr-8 */}
                           <div className="relative w-full h-48 md:h-56 lg:h-64">
                             {/* object-left 讓圖片主要靠左，pr-8 增加右邊間距 */}
-                            <Image
-                              src={getOptimizedImage(event.image, 800, 450, 80)}
-                              alt={event.title}
-                              fill
-                              className="object-cover object-left transition-transform duration-700 hover:scale-105"
-                              sizes="(max-width: 768px) 100vw, 50vw"
-                              placeholder="blur"
-                              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2NzUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZjBmMCIvPjwvc3ZnPg=="
-                            />
+                            <div className="relative w-full h-48 md:h-56 lg:h-64">
+                              <img
+                                src={getOptimizedImage(event.image, 800, 450, 80)}
+                                alt={event.title}
+                                className="absolute inset-0 w-full h-full object-cover object-left hover:scale-105 transition-transform duration-700"
+                                loading="lazy"
+                              />
+                            </div>
                           </div>
                         </div>
                       )}

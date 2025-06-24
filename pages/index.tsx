@@ -7,7 +7,23 @@ import Footer from '@/components/Footer';
 import DailyDevotion from '@/components/DailyDevotion';
 import SocialFloat from '@/components/SocialFloat';
 
+import { useEffect, useState } from 'react';
+
 export default function Home() {
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem('cookie_consent');
+      setShowCookieBanner(consent !== 'true');
+    }
+  }, []);
+
+  const handleAcceptCookies = () => {
+    localStorage.setItem('cookie_consent', 'true');
+    setShowCookieBanner(false);
+  };
+
   return (
     <>
       {/* --- OG 預覽圖 & SEO meta --- */}
@@ -24,6 +40,21 @@ export default function Home() {
       </Head>
       <div className="relative">
         <NavBar />
+
+        {/* Cookie Consent Banner */}
+        {showCookieBanner && (
+          <div className="fixed bottom-0 left-0 w-full z-50 bg-gray-900 bg-opacity-95 text-white px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between shadow-lg animate-fade-in">
+            <div className="mb-2 md:mb-0 text-center md:text-left">
+              本網站使用 cookie 儲存登入狀態與個人化設定。請點選「同意」以確保功能正常運作。
+            </div>
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded transition mt-2 md:mt-0"
+              onClick={handleAcceptCookies}
+            >
+              同意
+            </button>
+          </div>
+        )}
 
         <main className="relative bg-gray-100">
           <div className="pt-16 md:pt-28">
@@ -133,6 +164,7 @@ export default function Home() {
             </div>
           </section>
         </main>
+        <Footer />
       </div>
     </>
   );

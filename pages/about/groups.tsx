@@ -3,6 +3,8 @@ import SmallGroup from '@/components/SmallGroup'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
 
+import Footer from '@/components/Footer';
+
 export default function Groups() {
   return (
     <div className="min-h-screen flex flex-col pb-16 md:pb-0">
@@ -10,9 +12,7 @@ export default function Groups() {
         <title>我們的小組 | 南科福氣教會</title>
         <meta name="description" content="了解南科福氣教會的小組服事與小組生活" />
       </Head>
-      
       <NavBar />
-      
       <main className="flex-grow">
         {/* 主標題區塊 */}
         <section className="relative pt-32 pb-12 md:pt-48 md:py-28 bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50">
@@ -35,10 +35,10 @@ export default function Groups() {
             </motion.div>
           </div>
         </section>
-
         {/* 小組內容 */}
         <SmallGroup />
       </main>
+      <Footer />
     </div>
   )
 }

@@ -1,68 +1,59 @@
+// studio/sanity.config.ts
 import { defineConfig } from 'sanity'
 import { deskTool } from 'sanity/desk'
 import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './schemas'
-import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool'
-import EventRegistrationStatsTool from './components/EventRegistrationStatsTool' // <--- 新增這行
+// @ts-ignore
+import { userSyncPlugin } from './plugins/userSyncPlugin/src/index.jsx'
+
+import { structure } from './deskStructure'
 
 export default defineConfig({
+  // 忽略未知欄位
+  form: {
+    unstable_ignoreUnknownTypes: true,
+    unstable_skipValidation: true
+  },
+  name: 'default',
+  title: 'Church Site',
   projectId: 'von9yh08',
   dataset: 'production',
-  title: 'Church Site',
-  apiVersion: '2024-01-01',
   basePath: '/studio',
-  plugins: [
-    deskTool({
-      structure: (S) =>
-        S.list()
-          .title('內容')
-          .id('root-list')
-          .items([
-            S.listItem()
-              .title('報名記錄')
-              .id('registration-list')
-              .child(
-                S.documentTypeList('registration')
-                  .title('報名記錄')
-                  .id('registration-type-list')
-              ),
-            S.listItem()
-              .title('活動')
-              .id('event-list')
-              .child(
-                S.documentTypeList('event')
-                  .title('活動')
-                  .id('event-type-list')
-              ),
-            S.listItem()
-              .title('批量刪除報名')
-              .id('registration-bulk-delete-menu')
-              .icon(() => '🗑️')
-              .child(
-                S.component()
-                  .id('registration-bulk-delete')
-                  .title('批量刪除報名記錄')
-                  .component(RegistrationBulkDeleteTool)
-              ),
-            S.listItem()
-              .title('活動報名統計')
-              .id('event-registration-stats-menu')
-              .icon(() => '📊')
-              .child(
-                S.component()
-                  .id('event-registration-stats')
-                  .title('活動報名統計')
-                  .component(EventRegistrationStatsTool)
-              ),
-          ]),
-    }),
-    visionTool()
-  ],
-  schema: { types: schemaTypes },
   useCdn: false,
   token: process.env.SANITY_API_TOKEN,
-  debug: {
-    enabled: true,
-    logLevel: 'debug'
-  }
+  apiVersion: '2024-01-01',
+
+  plugins: [
+    deskTool({
+      structure,
+    }),
+    visionTool(),
+    userSyncPlugin(),
+  ],
+
+  schema: {
+    types: schemaTypes,
+  },
+
+  // 這裡已經移除所有與 isAdmin 相關的自動 patch 動作
+  document: {
+    actions: (prev, { schemaType }) => {
+      return prev
+    },
+  },
+
+  // 服務器配置
+  server: {
+    port: 3334,
+    hostname: 'localhost',
+  },
+
+  // 日誌配置
+  logging: {
+    level: 'debug',
+    console: true,
+  },
+
+  // 靜態文件目錄
+  staticDir: './public',
 })

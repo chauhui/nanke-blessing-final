@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head'
 import { motion } from 'framer-motion'
 
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+
 export default function VisionMission() {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -31,12 +34,13 @@ export default function VisionMission() {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Head>
         <title>異象與使命 - 南科福氣教會</title>
         <meta name="description" content="了解南科福氣教會的異象與使命，認識我們的核心價值與目標" />
       </Head>
-      <>
+      <NavBar />
+      <main className="flex-grow">
         {/* 主標題區塊 */}
         <section className="relative pt-32 pb-12 md:pt-48 md:py-28 bg-gradient-to-r from-pink-100 via-yellow-50 to-blue-50">
           <div className="container mx-auto px-4">
@@ -153,8 +157,8 @@ export default function VisionMission() {
           </div>
         </section>
 
-
-      </>
-    </>
+      </main>
+      <Footer />
+    </div>
   )
 }

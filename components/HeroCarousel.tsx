@@ -10,7 +10,7 @@ const slides = [
     buttonText: '加入我們'
   },
   {
-    img: '/images/hero2.JPG',
+    img: '/images/hero2.jpg',
     title: '',
     subtitle: '',
     buttonText: ''

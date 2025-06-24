@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>刪除用戶測試</title>
+    <script>
+        async function deleteUser() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/admin/delete-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                
+                if (response.ok) {
+                    resultDiv.style.color = 'green';
+                } else {
+                    resultDiv.style.color = 'red';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `錯誤: ${error.message}`;
+                resultDiv.style.color = 'red';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>刪除用戶</h1>
+    <div>
+        <label for="email">電子郵件：</label>
+        <input type="email" id="email" value="ryan_chwang@yahoo.com.tw" style="width: 300px;">
+        <button onclick="deleteUser()">刪除用戶</button>
+    </div>
+    <div id="result" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace;"></div>
+</body>
+</html>

@@ -3,30 +3,29 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import { Calendar, MapPin, Users, Utensils } from 'lucide-react';
+import { Calendar, MapPin, Users, Utensils, Loader2 } from 'lucide-react';
 import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import AuthGuard from '@/components/AuthGuard';
+import { useSession } from 'next-auth/react';
 
-export default function MealRegistration() {
+function MealRegistrationContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     window.open('https://forms.gle/cLvanRm7Em4FeFL89', '_blank');
-    // 防止表單提交後立即關閉
     setTimeout(() => setIsSubmitting(false), 1000);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Head>
         <title>愛宴系統 - 南科福氣教會</title>
         <meta name="description" content="南科福氣教會愛宴系統，歡迎弟兄姊妹報名參與愛宴服事" />
       </Head>
-
-      <NavBar />
-
-      <main className="flex-grow bg-gradient-to-b from-pink-50 to-blue-50">
+      <main className="flex-grow w-full bg-gradient-to-b from-pink-50 to-blue-50 pb-8">
         {/* 頁首區塊 */}
         <div className="relative pt-32 md:pt-48 pb-16 md:pb-24 bg-gradient-to-r from-pink-500 to-orange-500 text-white">
           <div className="absolute inset-0 bg-black/20"></div>
@@ -35,14 +34,12 @@ export default function MealRegistration() {
             <p className="text-xl md:text-2xl opacity-90">一同分享愛與美食的時刻</p>
           </div>
         </div>
-
         {/* 主要內容 */}
         <div className="container mx-auto px-4 py-12 md:py-16">
           <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="md:flex">
               <div className="md:w-1/2 p-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">愛宴報名</h2>
-                
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4">
                     <div className="bg-pink-100 p-2 rounded-full">
@@ -53,7 +50,6 @@ export default function MealRegistration() {
                       <p className="text-gray-600">每主日 12:00-13:30</p>
                     </div>
                   </div>
-
                   <div className="flex items-start space-x-4">
                     <div className="bg-blue-100 p-2 rounded-full">
                       <MapPin className="w-6 h-6 text-blue-600" />
@@ -63,7 +59,6 @@ export default function MealRegistration() {
                       <p className="text-gray-600">南科育成中心 B1</p>
                     </div>
                   </div>
-
                   <div className="flex items-start space-x-4">
                     <div className="bg-yellow-100 p-2 rounded-full">
                       <Users className="w-6 h-6 text-yellow-600" />
@@ -73,7 +68,6 @@ export default function MealRegistration() {
                       <p className="text-gray-600">請填寫下方表單登記</p>
                     </div>
                   </div>
-
                   <div className="pt-4">
                     <button
                       onClick={handleSubmit}
@@ -86,7 +80,6 @@ export default function MealRegistration() {
                   </div>
                 </div>
               </div>
-
               <div className="hidden md:block md:w-1/2 bg-gray-100 relative">
                 <Image
                   src="/images/meal-banner.jpg"
@@ -98,7 +91,6 @@ export default function MealRegistration() {
               </div>
             </div>
           </div>
-
           {/* 注意事項 */}
           <div className="max-w-4xl mx-auto mt-12 bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">注意事項</h2>
@@ -115,6 +107,20 @@ export default function MealRegistration() {
           </div>
         </div>
       </main>
+    </>
+  );
+}
+
+export default function MealRegistration() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <NavBar />
+      <AuthGuard>
+        <main className="flex-grow">
+          <MealRegistrationContent />
+        </main>
+      </AuthGuard>
+      <Footer />
     </div>
   );
 }

@@ -22,17 +22,17 @@ export default function Footer({ className = '' }: FooterProps) {
   }
 
   return (
-    <footer className={`bg-gradient-to-br from-rose-50 via-amber-50 to-cyan-50 text-gray-700 ${className}`}>
-      {/* 手機版頁尾 */}
-      <div className="lg:hidden pt-8 pb-12 px-4 sticky bottom-0 z-10">
-        <div className="container mx-auto px-4">
-          <div className="space-y-8">
-            {/* 聯絡我們區塊 */}
-            <div className="rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 relative pb-2">
-                聯絡我們
-                <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-gradient-to-r from-cyan-400 to-rose-400"></span>
-              </h3>
+    <footer className={`bg-gradient-to-br from-rose-50 via-amber-50 to-cyan-50 text-gray-700 w-full mt-auto ${className}`}>
+      <div className="w-full">
+        <div className="lg:hidden pt-8 pb-12 px-4 w-full">
+          <div className="container mx-auto px-4">
+            <div className="space-y-8">
+              {/* 聯絡我們區塊 */}
+              <div className="rounded-xl p-6 bg-white/50 backdrop-blur-sm shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 relative pb-2">
+                  聯絡我們
+                  <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-gradient-to-r from-cyan-400 to-rose-400"></span>
+                </h3>
               
               <div className="space-y-4">
                 <div className="flex items-start">
@@ -82,10 +82,10 @@ export default function Footer({ className = '' }: FooterProps) {
               <div className="mt-6 pt-4 border-t border-gray-100">
                 <p className="text-sm font-medium text-gray-700 mb-3">關注我們</p>
                 <div className="flex space-x-4">
-                  <a href="#" className="transition-opacity hover:opacity-80">
-                    <Image src="/images/social/facebook.png" alt="Facebook" width={24} height={24} className="w-6 h-6" />
+                  <a href="https://lin.ee/nQ7s6dC" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
+                    <Image src="/images/social/line.png" alt="Line" width={24} height={24} className="w-6 h-6" />
                   </a>
-                  <a href="#" className="transition-opacity hover:opacity-80">
+                  <a href="https://www.instagram.com/info_nkbbc/" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
                     <Image src="/images/social/instagram.png" alt="Instagram" width={24} height={24} className="w-6 h-6" />
                   </a>
                   <a href="https://www.youtube.com/@南科福氣教會/featured" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
@@ -143,10 +143,10 @@ export default function Footer({ className = '' }: FooterProps) {
                 透過真理的教導和生命的見證，將福音帶給每一個人。
               </p>
               <div className="flex space-x-4 pt-2">
-                <a href="#" className="transition-opacity hover:opacity-80">
-                  <Image src="/images/social/facebook.png" alt="Facebook" width={24} height={24} className="w-6 h-6" />
+                <a href="https://lin.ee/nQ7s6dC" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
+                  <Image src="/images/social/line.png" alt="Line" width={24} height={24} className="w-6 h-6" />
                 </a>
-                <a href="#" className="transition-opacity hover:opacity-80">
+                <a href="https://www.instagram.com/info_nkbbc/" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
                   <Image src="/images/social/instagram.png" alt="Instagram" width={24} height={24} className="w-6 h-6" />
                 </a>
                 <a href="https://www.youtube.com/@南科福氣教會/featured" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-80">
@@ -171,15 +171,7 @@ export default function Footer({ className = '' }: FooterProps) {
                     首頁
                   </Link>
                 </li>
-                <li>
-                  <Link 
-                    href="/video/church-intro"
-                    className="text-gray-600 hover:text-rose-600 transition-colors text-sm flex items-center"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mr-2"></span>
-                    關於我們
-                  </Link>
-                </li>
+
                 <li>
                   <Link 
                     href="/about/gatherings"
@@ -205,6 +197,15 @@ export default function Footer({ className = '' }: FooterProps) {
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mr-2"></span>
                     愛宴系統
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/member/group-report"
+                    className="text-gray-600 hover:text-rose-600 transition-colors text-sm flex items-center"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mr-2"></span>
+                    小組長回報系統
                   </Link>
                 </li>
               </ul>
@@ -346,6 +347,7 @@ export default function Footer({ className = '' }: FooterProps) {
                 <Link href="/terms" className="text-gray-500 hover:text-rose-500 text-sm transition-colors">
                   使用條款
                 </Link>
+              </div>
               </div>
             </div>
           </div>

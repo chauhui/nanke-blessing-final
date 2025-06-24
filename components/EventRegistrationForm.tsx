@@ -38,7 +38,7 @@ export default function EventRegistrationForm({
       console.log('Submitting registration:', { eventId, formData });
       
       // 使用新的 API 端點
-      const apiUrl = `${window.location.origin}/api/submit-registration`;
+      const apiUrl = `${window.location.origin}/api/submit-registration/`;
       console.log('Attempting to fetch:', apiUrl);
       
       response = await fetch(apiUrl, {
@@ -65,11 +65,24 @@ export default function EventRegistrationForm({
           // 嘗試將文本解析為 JSON
           const errorData = JSON.parse(text);
           console.error('API Error Response:', errorData);
+          
+          // 處理重複報名的特殊情況
+          if (errorData.error === 'Duplicate registration detected' || 
+              errorData.message === 'You have already registered for this event') {
+            throw new Error('您已經報名過此活動，無需重複報名');
+          }
+          
           throw new Error(errorData.message || errorData.error || 'API 請求失敗');
         } catch (parseError) {
           // 如果解析 JSON 失敗，直接使用文本
           console.error('Failed to parse error response:', parseError);
-          throw new Error(`API 請求失敗：${text}`);
+          
+          // 檢查是否為重複報名的原始錯誤訊息
+          if (text.includes('already registered') || text.includes('Duplicate registration')) {
+            throw new Error('您已經報名過此活動，無需重複報名');
+          }
+          
+          throw new Error(`報名失敗：${text}`);
         }
       }
 
@@ -110,7 +123,12 @@ export default function EventRegistrationForm({
         url: response?.url
       });
       
-      alert(`發生錯誤：${errorMessage}`);
+      // 使用更友好的對話框顯示錯誤訊息
+      if (errorMessage.includes('already registered') || errorMessage.includes('Duplicate registration') || errorMessage.includes('已經報名過')) {
+        alert('您已經報名過此活動，無需重複報名');
+      } else {
+        alert(`發生錯誤：${errorMessage}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

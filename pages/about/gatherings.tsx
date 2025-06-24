@@ -4,6 +4,8 @@ import Gatherings from '@/components/Gatherings';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 
+import Footer from '@/components/Footer';
+
 export default function GatheringsPage() {
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -20,9 +22,7 @@ export default function GatheringsPage() {
         <title>教會的各種成全聚會 | 南科福氣教會</title>
         <meta name="description" content="了解南科福氣教會各種成全聚會的時間與內容" />
       </Head>
-      
       <NavBar />
-      
       <main className="flex-grow">
         {/* 主標題區塊 */}
         <section className="relative pt-32 pb-12 md:pt-48 md:py-28 bg-gradient-to-br from-rose-50 via-amber-50 to-cyan-50">
@@ -45,10 +45,10 @@ export default function GatheringsPage() {
             </motion.div>
           </div>
         </section>
-
         {/* 聚會內容 */}
         <Gatherings />
       </main>
+      <Footer />
     </div>
   );
 } 

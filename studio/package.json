@@ -2,7 +2,7 @@
   "name": "church-site-studio",
   "version": "0.1.0",
   "description": "Sanity Studio for Church Site",
-  "main": "index.js",
+  "main": "sanity.config.ts",
   "scripts": {
     "dev": "sanity dev",
     "start": "sanity start",
@@ -10,8 +10,18 @@
     "vercel-build": "node vercel-build.js"
   },
   "dependencies": {
+    "@sanity/cli": "^3.91.0",
+    "@sanity/client": "^7.5.0",
     "@sanity/vision": "^3.0.0",
+    "dotenv": "^16.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "sanity": "^3.0.0",
     "styled-components": "^6.1.18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
   }
 }

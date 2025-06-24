@@ -1,5 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@sanity/client';
+import rateLimit from '../../lib/rate-limit';
+
+// Initialize rate limiter
+const limiter = rateLimit({
+  interval: 15 * 60 * 1000, // 15 minutes
+  uniqueTokenPerInterval: 500,
+});
 
 // 定義報名記錄的類型
 interface Registration {
@@ -23,24 +30,73 @@ const client = createClient({
   token: process.env.SANITY_WRITE_TOKEN, // 使用專門的 write token
 });
 
+// Set CORS headers
+const setCorsHeaders = (res: NextApiResponse, req: NextApiRequest) => {
+  const allowedOrigins = [
+    'https://nanke-blessing.vercel.app',
+    'http://localhost:3000',
+  ];
+  
+  const origin = req.headers.origin || '';
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Content-Type', 'application/json');
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // 確保返回的內容類型是 JSON
-  res.setHeader('Content-Type', 'application/json');
+  // Set CORS headers
+  setCorsHeaders(res, req);
 
-  // 檢查 Sanity client 是否正確配置
-  if (!client) {
-    console.error('Sanity client not properly configured');
-    return res.status(500).json({ 
-      message: 'Internal server error',
-      error: 'Sanity client not configured'
+  // Handle preflight request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      success: false,
+      message: 'Method not allowed',
+      allowedMethods: ['POST']
     });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  // Apply rate limiting
+  try {
+    const ip = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || 'unknown';
+    await new Promise((resolve, reject) => {
+      limiter.check(res, 10, ip, (err: Error | null) => {
+        if (err) {
+          console.error(`Rate limit exceeded for IP: ${ip}`);
+          reject(new Error('Rate limit exceeded'));
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  } catch (error: any) {
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests, please try again later.'
+    });
+  }
+
+  // Check if Sanity client is properly configured
+  if (!client) {
+    console.error('Sanity client not properly configured');
+    return res.status(500).json({ 
+      success: false,
+      message: 'Internal server error',
+      error: 'Sanity client not configured'
+    });
   }
 
   try {
@@ -110,12 +166,33 @@ export default async function handler(
       registrationId: result._id
     });
   } catch (error: any) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ 
-      message: 'Registration failed', 
-      error: error.message,
-      details: error.details || 'Unknown error',
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    console.error('Error creating registration:', error);
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('Rate limit')) {
+        return res.status(429).json({
+          success: false,
+          message: 'Too many requests, please try again later.'
+        });
+      }
+      
+      if (error.message.includes('duplicate')) {
+        return res.status(409).json({
+          success: false,
+          message: 'You have already registered for this event.'
+        });
+      }
+    }
+    
+    // Generic error response
+    return res.status(500).json({
+      success: false,
+      message: 'Error processing registration',
+      ...(process.env.NODE_ENV === 'development' && {
+        error: error.message || 'Unknown error',
+        stack: error.stack
+      })
     });
   }
 }

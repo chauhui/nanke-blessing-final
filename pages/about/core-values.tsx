@@ -2,6 +2,7 @@ import NavBar from '@/components/NavBar';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import CoreValueCard from '@/components/CoreValueCard';
+import Footer from '@/components/Footer';
 
 export default function CoreValuesPage() {
   const coreValues = [
@@ -59,7 +60,7 @@ export default function CoreValuesPage() {
   ];
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Head>
         <title>教會核心價值 | 南科福氣教會</title>
         <meta name="description" content="了解南科福氣教會的核心價值" />
@@ -111,6 +112,7 @@ export default function CoreValuesPage() {
           </div>
         </section>
       </main>
-    </>
+    <Footer />
+    </div>
   );
 }

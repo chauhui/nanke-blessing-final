@@ -114,8 +114,20 @@ export default function EventRegistration() {
     },
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-pulse flex space-x-4"><div className="h-4 w-4 bg-blue-400 rounded-full"></div><div className="h-4 w-4 bg-blue-400 rounded-full delay-100"></div><div className="h-4 w-4 bg-blue-400 rounded-full delay-200"></div></div></div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center"><p className="text-red-500">{error}</p></div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-pulse flex space-x-4">
+        <div className="h-4 w-4 bg-blue-400 rounded-full"></div>
+        <div className="h-4 w-4 bg-blue-400 rounded-full delay-100"></div>
+        <div className="h-4 w-4 bg-blue-400 rounded-full delay-200"></div>
+      </div>
+    </div>
+  );
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-red-500">{error}</p>
+    </div>
+  );
 
   return (
     <>
@@ -138,13 +150,23 @@ export default function EventRegistration() {
                       <p className="text-gray-700 mt-2">{event.description}</p>
                       {event.content && <PortableText value={event.content} components={portableTextComponents} />}
                     </div>
-                    <button onClick={() => setSelectedEvent({ id: event._id, title: event.title })} className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-blue-500 text-white rounded-full hover:opacity-90 transition">報名參加</button>
+                    <button
+                      onClick={() => setSelectedEvent({ id: event._id, title: event.title })}
+                      className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-blue-500 text-white rounded-full hover:opacity-90 transition"
+                    >
+                      報名參加
+                    </button>
                   </div>
                   {event.image && (
                     <div className="hidden md:block md:w-2/5 relative pr-8">
                       <div className="relative w-full h-64">
                         <img
-                          src={getOptimizedImage((event.image.asset as { _ref: string })._ref, 800, 450, 80)}
+                          src={getOptimizedImage(
+                            (event.image.asset as { _ref: string })._ref,
+                            800,
+                            450,
+                            80
+                          )}
                           alt={event.title}
                           className="absolute inset-0 w-full h-full object-cover object-left hover:scale-105 transition-transform"
                           loading="lazy"
@@ -155,10 +177,18 @@ export default function EventRegistration() {
                 </div>
               </div>
             </div>
-          )) : <p className="text-center text-gray-600 py-12">目前沒有活動</p>}
+          )) : (
+            <p className="text-center text-gray-600 py-12">目前沒有活動</p>
+          )}
         </div>
       </main>
-      {selectedEvent && <EventRegistrationForm eventId={selectedEvent.id} eventTitle={selectedEvent.title} onClose={() => setSelectedEvent(null)} />}
+      {selectedEvent && (
+        <EventRegistrationForm
+          eventId={selectedEvent.id}
+          eventTitle={selectedEvent.title}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
     </>
   );
 }

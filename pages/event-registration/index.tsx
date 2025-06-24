@@ -157,23 +157,18 @@ export default function EventRegistration() {
                       報名參加
                     </button>
                   </div>
-                  {event.image && (
+                  {event.image && event.image.asset && typeof event.image.asset === 'object' && '_ref' in event.image.asset ? (
                     <div className="hidden md:block md:w-2/5 relative pr-8">
                       <div className="relative w-full h-64">
                         <img
-                          src={getOptimizedImage(
-                            (event.image.asset as { _ref: string })._ref,
-                            800,
-                            450,
-                            80
-                          )}
+                          src={getOptimizedImage({ _type: 'image', asset: { _ref: (event.image.asset as any)._ref, _type: 'reference' } }, 800, 450, 80)}
                           alt={event.title}
                           className="absolute inset-0 w-full h-full object-cover object-left hover:scale-105 transition-transform"
                           loading="lazy"
                         />
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>

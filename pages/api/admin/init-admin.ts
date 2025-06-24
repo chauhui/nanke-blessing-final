@@ -1,3 +1,5 @@
+// pages/api/admin/init-admin.ts
+
 import { hash } from 'bcryptjs';
 import { client } from '@/lib/sanity';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -58,9 +60,11 @@ export default async function handler(
     // 加密密碼
     const hashedPassword = await hash(password, 12);
 
-    // 創建管理員用戶
+    // 準備要寫入的管理員用戶和審核記錄
+    const userId = `user.${Date.now()}`;
     const adminUser = {
       _type: 'user',
+      _id: userId,
       name,
       email,
       password: hashedPassword,
@@ -70,13 +74,10 @@ export default async function handler(
       updatedAt: new Date().toISOString(),
     };
 
-    // 創建用戶審核記錄
     const userApproval = {
       _type: 'userApproval',
-      user: {
-        _type: 'reference',
-        _ref: `user.${Date.now()}`,
-      },
+      _id: `userApproval.${Date.now() + 1}`,
+      user: { _type: 'reference', _ref: userId },
       isApproved: true,
       isAdmin: true,
       reviewedAt: new Date().toISOString(),
@@ -84,43 +85,29 @@ export default async function handler(
       notes: '系統管理員帳戶',
     };
 
-    // 在事務中創建用戶和審核記錄
-    const transaction = client.transaction();
-    const userId = `user.${Date.now()}`;
-    const userApprovalId = `userApproval.${Date.now() + 1}`;
-
-    transaction.create({
-      ...adminUser,
-      _id: userId,
-    });
-
-    transaction.create({
-      ...userApproval,
-      _id: userApprovalId,
-      user: {
-        _type: 'reference',
-        _ref: userId,
-      },
-    });
-
-    await transaction.commit();
+    // 在事務中創建
+    await client.transaction()
+      .create(adminUser)
+      .create(userApproval)
+      .commit();
 
     res.status(201).json({
       success: true,
       message: '管理員帳戶創建成功',
-      user: {
-        email,
-        name,
-        isAdmin: true,
-        isApproved: true,
-      },
+      user: { email, name, isAdmin: true, isApproved: true },
     });
-  } catch (error) {
-    console.error('創建管理員錯誤:', error);
+
+  } catch (err: unknown) {
+    console.error('創建管理員錯誤:', err);
+
+    // 安全地取得錯誤訊息
+    const details = err instanceof Error ? err.message : String(err);
+
     res.status(500).json({
       success: false,
       error: '創建管理員帳戶時出錯',
-      details: error.message,
+      // 只有開發環境才暴露 details
+      ...(process.env.NODE_ENV === 'development' && { details }),
     });
   }
 }

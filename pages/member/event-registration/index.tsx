@@ -6,7 +6,8 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import type { Event as EventType } from '../../../types/event';
 import { Calendar, MapPin, Pencil, Clock } from 'lucide-react';
-import { client, fetchQuery, getOptimizedImage } from '../../../lib/sanity.client';
+import { client, fetchQuery } from '../../../lib/sanity.client';
+import { urlFor } from '@/lib/sanity';
 import { PortableText } from '@portabletext/react';
 
 // 動態載入表單組件，禁用 SSR
@@ -141,11 +142,13 @@ export default function EventRegistration() {
                     </div>
                     <button onClick={() => setSelectedEvent({ id: event._id, title: event.title })} className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-blue-500 text-white rounded-full hover:opacity-90 transition">報名參加</button>
                   </div>
-                  {event.image?.asset?._ref && (
+
+                  {/* 改為只判斷 event.image，並用 urlFor 產生 image URL */}
+                  {event.image && (
                     <div className="hidden md:block md:w-2/5 relative pr-8">
                       <div className="relative w-full h-48 md:h-56 lg:h-64">
                         <img
-                          src={getOptimizedImage(event.image.asset._ref, 800, 450, 80)}
+                          src={urlFor(event.image).width(800).height(450).url()}
                           alt={event.title}
                           className="absolute inset-0 w-full h-full object-cover object-left hover:scale-105 transition-transform duration-700"
                           loading="lazy"

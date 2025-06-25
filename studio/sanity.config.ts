@@ -1,4 +1,3 @@
-// studio/sanity.config.ts
 import { defineConfig } from 'sanity'
 import { deskTool } from 'sanity/desk'
 import { visionTool } from '@sanity/vision'
@@ -9,11 +8,7 @@ import { userSyncPlugin } from './plugins/userSyncPlugin/src/index.jsx'
 import { structure } from './deskStructure'
 
 export default defineConfig({
-  // 忽略未知欄位
-  form: {
-    unstable_ignoreUnknownTypes: true,
-    unstable_skipValidation: true
-  },
+  // --- form 設定已移除 ---
   name: 'default',
   title: 'Church Site',
   projectId: 'von9yh08',

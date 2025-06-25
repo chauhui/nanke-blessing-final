@@ -119,7 +119,7 @@ export default function GroupReportStats() {
           recentReports: [],
           oikosStats: {
             total: 0,
-            byType: { p: 0, l: 0 }
+            byType: { p: 0, l: 0, v: 0, m: 0, f: 0, t: 0 }
           }
         };
 

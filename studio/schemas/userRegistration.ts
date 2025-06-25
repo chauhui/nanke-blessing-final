@@ -5,10 +5,7 @@ export default defineType({
   name: 'userRegistration',
   title: '用戶註冊',
   type: 'document',
-  options: {
-    // 忽略未在 schema 中定義的欄位
-    unknownField: 'ignore'
-  },
+  // ---- options 已移除 ----
   fields: [
     defineField({
       name: 'name',
@@ -43,8 +40,6 @@ export default defineType({
       initialValue: false,
       validation: (Rule) => Rule.required(),
     }),
-    
-
     defineField({
       name: 'createdAt',
       title: '註冊時間',
@@ -64,7 +59,6 @@ export default defineType({
       const { title, email, approved, reviewedBy } = selection;
       const status = approved ? '✓ 已審核' : '✗ 待審核';
       const reviewer = reviewedBy ? `(由 ${reviewedBy} 審核)` : '';
-      
       return {
         title: title || '未命名用戶',
         subtitle: `${email} ${status} ${reviewer}`.trim(),

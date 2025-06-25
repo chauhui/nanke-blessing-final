@@ -1,6 +1,5 @@
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
-import type { SanityImageSource } from '@sanity/image-url';
 
 export const client = createClient({
   projectId: 'von9yh08',
@@ -14,10 +13,10 @@ export const client = createClient({
 const builder = imageUrlBuilder(client);
 
 /**
- * 將 SanityImageSource 轉為可用的圖片 URL，
+ * 將圖片 source 轉為可用的圖片 URL，
  * 使用方式： urlFor(source).width(600).height(400).url()
  */
-export const urlFor = (source: SanityImageSource) => builder.image(source);
+export const urlFor = (source: any) => builder.image(source);
 
 export const fetchQuery = async (query: string) => {
   try {

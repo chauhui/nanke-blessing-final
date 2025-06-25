@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { verifySignature } from '@sanity/webhook';
+import crypto from 'crypto';
 
 // 禁用默認的 bodyParser
-
 export const config = {
   api: {
     bodyParser: false,
@@ -11,6 +10,7 @@ export const config = {
 
 const prisma = new PrismaClient();
 
+// 原生 buffer 解析
 async function buffer(readable) {
   const chunks = [];
   for await (const chunk of readable) {
@@ -19,33 +19,38 @@ async function buffer(readable) {
   return Buffer.concat(chunks);
 }
 
+// 驗證 Sanity Webhook HMAC 簽名
+function verifySanitySignature({ payloadBuffer, signature, secret }) {
+  if (!signature || !secret) return false;
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(payloadBuffer);
+  const expected = hmac.digest('base64');
+  // sanity webhook signature 使用 base64
+  return signature === expected;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-    // 驗證 webhook 簽名
-    const signature = req.headers['sanity-webhook-signature'];
+    // 取得原始 payload
     const body = await buffer(req);
-    
-    // 驗證簽名（確保在 Sanity 管理面板中設置了 WEBHOOK_SECRET 環境變量）
-    const isValid = await verifySignature(
-      body.toString('utf8'),
-      signature,
-      process.env.SANITY_WEBHOOK_SECRET
-    );
 
-    if (!isValid) {
+    // Sanity webhook 簽名在這個 header
+    const signature = req.headers['sanity-webhook-signature'];
+    const secret = process.env.SANITY_WEBHOOK_SECRET;
+    if (!verifySanitySignature({ payloadBuffer: body, signature, secret })) {
       return res.status(401).json({ message: 'Invalid signature' });
     }
 
     const payload = JSON.parse(body.toString('utf8'));
-    
+
     // 只處理 userApproval 文檔類型的更新
     if (payload.type === 'userApproval') {
       const { user, isApproved, isAdmin } = payload;
-      
+
       // 更新 Prisma 中的用戶狀態
       await prisma.user.update({
         where: { id: user._ref },

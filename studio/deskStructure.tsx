@@ -1,10 +1,13 @@
-// studio/deskStructure.tsx
 import React from 'react';
 import GroupReportStatsTool from './components/GroupReportStatsTool';
 import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool';
 import GroupedRegistrations from './components/GroupedRegistrations';
 
-export const structure = (S) => {
+// Sanity Structure Builder 型別引入
+import S, { StructureBuilder } from '@sanity/desk-tool/structure-builder';
+
+// 明確標註 S 型別
+export const structure = (S: StructureBuilder) => {
   const userRegistrationListItem = S.listItem()
     .title('用戶註冊')
     .id('user-registration')
@@ -15,7 +18,7 @@ export const structure = (S) => {
         .schemaType('userRegistration')
         .filter('_type == "userRegistration"')
         .defaultOrdering([{ field: '_createdAt', direction: 'desc' }])
-        .child((docId) =>
+        .child((docId: string) =>
           S.document()
             .schemaType('userRegistration')
             .documentId(docId)

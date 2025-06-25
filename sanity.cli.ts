@@ -6,10 +6,11 @@ export default defineCliConfig({
     dataset: 'production',
   },
   server: {
-    port: 3333
+    port: 3333,
   },
-  vite: (config) => ({
+  // 為 vite 回呼函式明確指定 config 型別，避免 implicit any
+  vite: (config: any) => ({
     ...config,
-    base: '/studio'
-  })
+    base: '/studio',
+  }),
 });

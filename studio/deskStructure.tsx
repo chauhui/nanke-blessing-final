@@ -3,11 +3,10 @@ import GroupReportStatsTool from './components/GroupReportStatsTool';
 import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool';
 import GroupedRegistrations from './components/GroupedRegistrations';
 
-// Sanity Structure Builder 型別引入
-import S, { StructureBuilder } from '@sanity/desk-tool/structure-builder';
+// 不需要 import S，不需要 StructureBuilder 型別！
 
-// 明確標註 S 型別
-export const structure = (S: StructureBuilder) => {
+// 最保險做法，直接給 S 註明 any 型別（因 Sanity v3+ 沒公開型別也查不到）
+export const structure = (S: any) => {
   const userRegistrationListItem = S.listItem()
     .title('用戶註冊')
     .id('user-registration')

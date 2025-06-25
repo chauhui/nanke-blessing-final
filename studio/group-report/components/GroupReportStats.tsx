@@ -108,8 +108,6 @@ export default function GroupReportStats() {
           } | order(date desc)
         `);
         
-        console.log('Fetched reports:', JSON.stringify(reports, null, 2));
-
         // 初始化統計數據
         const statsData: Stats = {
           totalReports: reports.length,
@@ -156,24 +154,12 @@ export default function GroupReportStats() {
                 statsData.oikosStats.total++;
                 // 支援所有 OIKOS 類型的統計
                 switch (r.oikos) {
-                  case 'p': // 代禱
-                    statsData.oikosStats.byType.p++;
-                    break;
-                  case 'l': // LINE
-                    statsData.oikosStats.byType.l++;
-                    break;
-                  case 'v': // 探訪
-                    statsData.oikosStats.byType.v = (statsData.oikosStats.byType.v || 0) + 1;
-                    break;
-                  case 'm': // 幸福講座
-                    statsData.oikosStats.byType.m = (statsData.oikosStats.byType.m || 0) + 1;
-                    break;
-                  case 'f': // 聚餐
-                    statsData.oikosStats.byType.f = (statsData.oikosStats.byType.f || 0) + 1;
-                    break;
-                  case 't': // 旅遊
-                    statsData.oikosStats.byType.t = (statsData.oikosStats.byType.t || 0) + 1;
-                    break;
+                  case 'p': statsData.oikosStats.byType.p++; break;
+                  case 'l': statsData.oikosStats.byType.l++; break;
+                  case 'v': statsData.oikosStats.byType.v++; break;
+                  case 'm': statsData.oikosStats.byType.m++; break;
+                  case 'f': statsData.oikosStats.byType.f++; break;
+                  case 't': statsData.oikosStats.byType.t++; break;
                 }
               }
             });
@@ -197,8 +183,7 @@ export default function GroupReportStats() {
           date: report.date,
           count: report.reports?.length || 0
         }));
-        
-        console.log('Processed stats:', JSON.stringify(statsData, null, 2));
+
         setStats(statsData);
       } catch (error) {
         console.error('Failed to fetch group report stats:', error);
@@ -225,8 +210,6 @@ export default function GroupReportStats() {
               全部
             </Badge>
           </Flex>
-  );
-}
         </Card>
 
         <Card padding={3} radius={2} shadow={1}>
@@ -274,13 +257,12 @@ export default function GroupReportStats() {
                   {group.name}
                 </Text>
                 <Badge tone="primary" paddingX={2} radius={2} fontSize={1}>
-                  {group.count || group.value}
+                  {group.count}
                 </Badge>
               </Flex>
             ))}
           </Stack>
         </Card>
-
 
         <Card padding={3} radius={2} shadow={1}>
           <Text size={1} weight="semibold" marginBottom={3}>

@@ -247,7 +247,7 @@ export default function GroupReportStats() {
 
       <Grid columns={[1, 1, 2]} gap={4}>
         <Card padding={3} radius={2} shadow={1}>
-          <Text size={1} weight="semibold" marginBottom={3}>
+          <Text size={1} weight="semibold" style={{ marginBottom: 12 }}>
             各小組回報統計
           </Text>
           <Stack space={2}>
@@ -265,7 +265,7 @@ export default function GroupReportStats() {
         </Card>
 
         <Card padding={3} radius={2} shadow={1}>
-          <Text size={1} weight="semibold" marginBottom={3}>
+          <Text size={1} weight="semibold" style={{ marginBottom: 12 }}>
             最近回報
           </Text>
           <Stack space={2}>

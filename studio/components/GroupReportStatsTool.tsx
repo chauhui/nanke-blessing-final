@@ -343,21 +343,21 @@ export default function GroupReportStatsTool() {
         </Flex>
 
         {/** 搜尋框 + 小組下拉選單 **/}
-        <Flex gap={3} wrap="wrap">
-          <Box flex={1} minWidth={250}>
-            <input
-              type="text"
-              placeholder="搜尋小組或標題..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                padding: "8px",
-                borderRadius: 6,
-                border: "1px solid #ccc",
-                width: "100%",
-              }}
-            />
-          </Box>
+<Flex gap={3} wrap="wrap">
+  <Box flex={1} style={{ minWidth: 250 }}>
+    <input
+      type="text"
+      placeholder="搜尋小組或標題..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      style={{
+        padding: "8px",
+        borderRadius: 6,
+        border: "1px solid #ccc",
+        width: "100%",
+      }}
+    />
+  </Box>
 
           <select
             value={selectedGroup}

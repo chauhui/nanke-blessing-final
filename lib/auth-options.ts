@@ -4,10 +4,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { createClient } from "next-sanity";
 
-// —— Sanity 客戶端初始化 —— 
+// —— Sanity 客戶端初始化 ——
 const sanityClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,   // ← 一定要設
-  dataset:   process.env.NEXT_PUBLIC_SANITY_DATASET! || "production",
+  projectId: process.env.SANITY_PROJECT_ID!,           // ← 強烈建議不要用 NEXT_PUBLIC_SANITY_PROJECT_ID，統一寫 SANITY_PROJECT_ID
+  dataset:   process.env.SANITY_DATASET! || "production",
   apiVersion: "2023-05-03",
   useCdn:    false,
   token:     process.env.SANITY_API_TOKEN,
@@ -38,7 +38,7 @@ async function authorize(credentials: any): Promise<User | null> {
     email: user.email,
     name: user.name,
     isApproved: user.isApproved,
-    isAdmin: user.isAdmin || false, // 確保包含 isAdmin 屬性
+    isAdmin: user.isAdmin || false,
   };
 }
 
@@ -73,17 +73,13 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      // 如果已經有回調網址，則使用它
       if (url.startsWith(baseUrl)) {
         return url;
       }
-      // 處理相對路徑
       if (url.startsWith("/")) {
-        // 確保不會重複添加 baseUrl
         const fullUrl = new URL(baseUrl + url);
         return fullUrl.pathname + fullUrl.search;
       }
-      // 預設返回首頁
       return baseUrl;
     },
     async jwt({ token, user }) {

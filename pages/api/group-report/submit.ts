@@ -9,8 +9,8 @@ import { authOptions } from '@/lib/auth-options'; // 確認這個路徑對應到
  * Sanity 客戶端初始化
  */
 const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  projectId: process.env.SANITY_PROJECT_ID!,
+  dataset: process.env.SANITY_DATASET || 'production',
   token: process.env.SANITY_API_TOKEN,
   useCdn: false,
 });

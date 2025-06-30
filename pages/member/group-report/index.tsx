@@ -184,7 +184,7 @@ function GroupReport() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="min-h-screen bg-gray-50 pt-40 pb-8 px-4">
         <div className="max-w-6xl mx-auto">
           {/* 標題與訊息 */}
           <div className="text-center mb-12">

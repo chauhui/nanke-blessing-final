@@ -46,9 +46,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 如果未登入且不在登入頁面，返回 null（已經處理了重定向）
+  // **修正重點：如果未登入且不在登入頁面，顯示登入提示，不要 return null**
   if (status === 'unauthenticated' && pathname !== '/member') {
-    return null;
+    return (
+      <div className="min-h-[300px] flex flex-col items-center justify-center text-gray-500">
+        <span className="text-xl font-semibold mb-2">請先登入才能使用本功能</span>
+        <span className="text-sm">若未自動跳轉，請手動前往登入頁面</span>
+      </div>
+    );
   }
 
   // 已經登入或在登入頁面，顯示內容

@@ -1,3 +1,4 @@
+// components/Layout.tsx
 'use client';
 
 import NavBar from './NavBar';
@@ -13,7 +14,8 @@ export default function Layout({ children, title }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
-      <main className="flex-grow mt-32 container mx-auto px-4 py-8">
+      {/* 移除預設的 mt-32 和 py-8，讓各頁面自行控制上方留白 */}
+      <main className="flex-grow container mx-auto px-4">
         {title && <h1 className="text-3xl font-bold mb-8">{title}</h1>}
         {children}
       </main>

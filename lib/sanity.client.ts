@@ -1,19 +1,20 @@
 import { createClient } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
 
-// 前端 fetch 公開 Sanity 資料，千萬不要加 token
+// 前端 fetch 公開 Sanity 資料，千萬不要加 token！
+// 只能查公開內容，不能查會員資料、草稿、私有內容
 export const client = createClient({
-  projectId: 'von9yh08',        // 使用舊的專案 ID
-  dataset: 'production',        // 資料集
-  apiVersion: '2024-01-01',
-  useCdn: true                  // 公開資料建議設 true，抓 CDN
-  // 不要加 token
+  projectId: 'von9yh08',       // 你的 Sanity Project ID
+  dataset: 'production',       // 資料集
+  apiVersion: '2023-05-03',    // 建議全專案統一版本
+  useCdn: true,                // 公開內容用 CDN
+  // 請勿加 token
 })
 
 // 初始化圖片 URL 構建器
 const builder = imageUrlBuilder(client)
 
-// 圖片源類型
+// 圖片源型別
 type ImageSource = {
   _type: string;
   asset: {
@@ -22,12 +23,12 @@ type ImageSource = {
   };
 }
 
-// 為圖片生成 URL
+// 建立圖片 URL
 export function urlFor(source: ImageSource) {
   return builder.image(source)
 }
 
-// 獲取優化後的圖片 URL
+// 取得優化過的圖片 URL
 export function getOptimizedImage(
   source: ImageSource,
   width: number = 1200,
@@ -44,8 +45,11 @@ export function getOptimizedImage(
     .url() || ''
 }
 
-// 執行查詢
-export async function fetchQuery<T = any>(query: string, params: Record<string, any> = {}): Promise<T> {
+// 前端僅能查公開內容（不可查會員等私有資料）
+export async function fetchQuery<T = any>(
+  query: string,
+  params: Record<string, any> = {}
+): Promise<T> {
   try {
     const result = await client.fetch<T>(query, params)
     return result

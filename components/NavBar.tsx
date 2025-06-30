@@ -18,6 +18,12 @@ export default function NavBar() {
 
   const pathname = usePathname();
 
+  // 路由切換時自動關閉手機選單
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // 按 Escape 時關閉手機選單
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && mobileMenuOpen) {
@@ -28,16 +34,18 @@ export default function NavBar() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [mobileMenuOpen]);
 
+  // 手機選單開啟時禁止背景滾動
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : 'auto';
+    return () => { document.body.style.overflow = 'auto'; };
   }, [mobileMenuOpen]);
+
+  // 滾動時加陰影
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const aboutLinks = [
     { name: '異象與使命', href: '/about/vision-mission' },
@@ -47,12 +55,19 @@ export default function NavBar() {
     { name: '各種成全聚會', href: '/about/gatherings' },
   ];
 
+  const coursesLinks = [
+    { name: '如何教養青少年', href: '/courses/teen-parenting' },
+    { name: '如何教養兒童', href: '/courses/child-parenting' },
+    { name: '親密之旅', href: '/courses/intimacy-journey' },
+    { name: '理財有道', href: '/courses/financial-wisdom' },
+    { name: '兒童品格班', href: '/courses/children-character' },
+  ];
+
   const videoLinks = [
     { name: '教會簡介', href: '/video/church-intro' },
     { name: '幸福小組花絮', href: '/video/happy-group' },
   ];
 
-  // 會友專區下拉選單的連結
   const memberLinks = [
     {
       name: '愛宴系統',
@@ -89,148 +104,118 @@ export default function NavBar() {
     { name: '會友專區', href: '/member', isMember: true },
   ];
 
-  const coursesLinks = [
-    { name: '如何教養青少年', href: '/courses/teen-parenting' },
-    { name: '如何教養兒童', href: '/courses/child-parenting' },
-    { name: '親密之旅', href: '/courses/intimacy-journey' },
-    { name: '理財有道', href: '/courses/financial-wisdom' },
-    { name: '兒童品格班', href: '/courses/children-character' },
-  ];
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
     <nav className={`fixed w-full z-50 bg-white ${scrolled ? 'shadow-md' : ''}`}>
       <div className="container mx-auto flex items-center justify-between h-16 md:h-28 px-4">
-        <div className="flex items-center w-full justify-between">
-          <Link href="/" className="flex items-center h-full">
-            <div className="h-10 lg:h-16 cursor-pointer">
-              <img 
-                src="/images/logo-horizontal.png" 
-                alt="南科福氣教會"
-                className="h-full w-auto"
-              />
-            </div>
-          </Link>
-          <div className="lg:hidden">
-            <button
-              className="p-2 text-yellow-500 hover:text-yellow-600 transition-colors focus:outline-none"
-              aria-label="開啟主選單"
-              onClick={() => setMobileMenuOpen(prev => !prev)}
-            >
-              <Menu size={24} />
-            </button>
-          </div>
-        </div>
+        <Link href="/" className="flex items-center h-full">
+          <img
+            src="/images/logo-horizontal.png"
+            alt="南科福氣教會"
+            className="h-10 lg:h-16 w-auto"
+          />
+        </Link>
+        <button
+          className="lg:hidden p-2 text-yellow-500 hover:text-yellow-600 transition"
+          onClick={() => setMobileMenuOpen(o => !o)}
+          aria-label="開啟選單"
+        >
+          <Menu size={24} />
+        </button>
 
-        {/* 適用於桌面的連結 */}
+        {/* 桌面版選單 */}
         <div className="hidden lg:flex items-center">
-          <ul className="flex flex-row items-center gap-12 whitespace-nowrap">
+          <ul className="flex items-center gap-12 whitespace-nowrap">
             {links.map(l => {
               if (l.isAbout) {
                 return (
-                  <li key={l.name} className="relative group inline-block">
+                  <li key="about" className="relative group">
                     <button
-                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition cursor-pointer focus:outline-none text-base lg:text-lg"
+                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition text-base lg:text-lg"
                       onClick={e => { e.preventDefault(); setAboutOpen(o => !o); }}
                     >
-                      {l.name}
-                      <ChevronDown className="w-4 h-4 ml-1" />
+                      關於我們 <ChevronDown className="w-4 h-4 ml-1" />
                     </button>
-                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg z-50 border border-gray-200 transition-all duration-200 ${aboutOpen ? 'block' : 'hidden'}`}>
-                      {aboutLinks.map(link => (
-                        <li key={link.name}>
-                          <Link href={link.href}
-                            className="block px-4 py-2 text-gray-800 hover:bg-pink-500/10 transition"
-                            onClick={() => setAboutOpen(false)}
-                          >
-                            {link.name}
+                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 ${aboutOpen ? 'block' : 'hidden'}`}>
+                      {aboutLinks.map(a => (
+                        <li key={a.name}>
+                          <Link href={a.href} className="block px-4 py-2 text-gray-800 hover:bg-pink-500/10">
+                            {a.name}
                           </Link>
                         </li>
                       ))}
                     </ul>
                   </li>
                 );
-              } else if (l.isCourses) {
+              }
+              if (l.isCourses) {
                 return (
-                  <li key={l.name} className="relative group inline-block">
+                  <li key="courses" className="relative group">
                     <button
-                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition cursor-pointer focus:outline-none text-base lg:text-lg"
+                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition text-base lg:text-lg"
                       onClick={e => { e.preventDefault(); setCoursesOpen(o => !o); }}
                     >
-                      {l.name}
-                      <ChevronDown className="w-4 h-4 ml-1" />
+                      課程資訊 <ChevronDown className="w-4 h-4 ml-1" />
                     </button>
-                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg z-50 border border-gray-200 transition-all duration-200 ${coursesOpen ? 'block' : 'hidden'}`}>
-                      {coursesLinks.map(link => (
-                        <li key={link.name}>
-                          <Link href={link.href}
-                            className="block px-4 py-2 text-gray-800 hover:bg-pink-500/10 transition"
-                            onClick={() => setCoursesOpen(false)}
-                          >
-                            {link.name}
+                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 ${coursesOpen ? 'block' : 'hidden'}`}>
+                      {coursesLinks.map(c => (
+                        <li key={c.name}>
+                          <Link href={c.href} className="block px-4 py-2 text-gray-800 hover:bg-pink-500/10">
+                            {c.name}
                           </Link>
                         </li>
                       ))}
                     </ul>
                   </li>
                 );
-              } else if (l.isVideo) {
+              }
+              if (l.isVideo) {
                 return (
-                  <li key={l.name} className="relative group inline-block">
+                  <li key="video" className="relative group">
                     <button
-                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition cursor-pointer focus:outline-none text-base lg:text-lg"
+                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition text-base lg:text-lg"
                       onClick={e => { e.preventDefault(); setVideoOpen(o => !o); }}
                     >
-                      {l.name}
-                      <ChevronDown className="w-4 h-4 ml-1" />
+                      影音平台 <ChevronDown className="w-4 h-4 ml-1" />
                     </button>
-                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg z-50 border border-gray-200 transition-all duration-200 ${videoOpen ? 'block' : 'hidden'}`}>
-                      {videoLinks.map(link => (
-                        <li key={link.name}>
-                          <Link href={link.href}
-                            className="block px-4 py-2 text-gray-800 hover:bg-pink-500/10 transition"
-                            onClick={() => setVideoOpen(false)}
-                          >
-                            {link.name}
+                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 ${videoOpen ? 'block' : 'hidden'}`}>
+                      {videoLinks.map(v => (
+                        <li key={v.name}>
+                          <Link href={v.href} className="block px-4 py-2 text-gray-800 hover:bg-pink-500/10">
+                            {v.name}
                           </Link>
                         </li>
                       ))}
                     </ul>
                   </li>
                 );
-              } else if (l.isMember) {
+              }
+              if (l.isMember) {
                 return (
-                  <li key={l.name} className="relative group inline-block">
+                  <li key="member" className="relative group">
                     <button
-                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition cursor-pointer focus:outline-none text-base lg:text-lg"
+                      className="flex items-center gap-1 text-gray-800 hover:text-pink-500 transition text-base lg:text-lg"
                       onClick={e => { e.preventDefault(); setMemberOpen(o => !o); }}
                     >
-                      {l.name}
-                      <ChevronDown className="w-4 h-4 ml-1" />
+                      會友專區 <ChevronDown className="w-4 h-4 ml-1" />
                     </button>
-                    <ul className={`absolute left-0 mt-2 w-48 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg z-50 border border-gray-200 transition-all duration-200 ${memberOpen ? 'block' : 'hidden'}`}>
-                      {memberLinks.map(link => (
-                        <li key={link.name}>
-                          {link.onClick ? (
+                    <ul className={`absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 ${memberOpen ? 'block' : 'hidden'}`}>
+                      {memberLinks.map(m => (
+                        <li key={m.name}>
+                          {m.onClick ? (
                             <a
-                              href={link.href}
-                              className={`block px-4 py-2 cursor-pointer flex items-center ${link.className || (link.current ? 'text-pink-500 font-semibold' : 'text-gray-800 hover:bg-pink-500/10')} transition`}
-                              onClick={e => { e.preventDefault(); link.onClick?.(e); setMemberOpen(false); }}
+                              href={m.href}
+                              onClick={e => { e.preventDefault(); m.onClick?.(e); setMemberOpen(false); }}
+                              className={`flex items-center px-4 py-2 transition ${m.className || (m.current ? 'text-pink-500 font-semibold' : 'text-gray-800 hover:bg-pink-500/10')}`}
                             >
-                              {link.icon}{link.name}
+                              {m.icon}{m.name}
                             </a>
                           ) : (
                             <Link
-                              href={link.href}
-                              className={`block px-4 py-2 ${link.current ? 'text-pink-500 font-semibold' : 'text-gray-800 hover:bg-pink-500/10'} transition`}
+                              href={m.href}
                               onClick={() => setMemberOpen(false)}
+                              className={`block px-4 py-2 transition ${m.current ? 'text-pink-500 font-semibold' : 'text-gray-800 hover:bg-pink-500/10'}`}
                             >
-                              {link.name}
+                              {m.name}
                             </Link>
                           )}
                         </li>
@@ -238,103 +223,135 @@ export default function NavBar() {
                     </ul>
                   </li>
                 );
-              } else {
-                return (
-                  <li key={l.name}>
-                    <Link href={l.href} className="text-gray-800 hover:text-pink-500 transition text-base lg:text-lg">
-                      {l.name}
-                    </Link>
-                  </li>
-                );
               }
+              return (
+                <li key={l.name}>
+                  <Link href={l.href} className="text-gray-800 hover:text-pink-500 transition text-base lg:text-lg">
+                    {l.name}
+                  </Link>
+                </li>
+              );
             })}
           </ul>
-          <a
+          <Link
             href="/donate"
-            className="ml-12 px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-pink-500/30 whitespace-nowrap"
+            className="ml-12 px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium hover:opacity-90 shadow-lg transition"
           >
             線上奉獻
-          </a>
+          </Link>
         </div>
       </div>
 
       {/* 手機版全螢幕浮層選單 */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col lg:hidden">
-          <div className="flex items-center justify-between w-full px-4 py-3 bg-white border-b border-yellow-500/20">
-            <Link href="/" className="flex-shrink-0">
-              <div className="h-10 cursor-pointer">
-                <img src="/images/logo-horizontal.png" alt="南科福氣教會" className="h-full w-auto" />
-              </div>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <Link href="/">
+              <img src="/images/logo-horizontal.png" alt="南科福氣教會" className="h-10 w-auto" />
             </Link>
-            <button
-              className="text-yellow-500 hover:text-yellow-600 p-2 -mr-2"
-              onClick={() => setMobileMenuOpen(prev => !prev)}
-              aria-label="關閉選單"
-            >
-              <X size={24} />
+            <button onClick={() => setMobileMenuOpen(false)} aria-label="關閉選單">
+              <X size={24} className="text-yellow-500" />
             </button>
           </div>
-          <div className="flex-1 w-full px-4 py-4">
-            <div className="space-y-3">
-              {links.map(l => (
-                <div key={l.name}>
-                  {l.name === '關於我們' ? (
-                    /* ...about submenu... same as above... */
-                    <></>
-                  ) : l.name === '影音平台' ? (
-                    /* ...video submenu... */
-                    <></>
-                  ) : l.name === '會友專區' ? (
-                    <div className="space-y-1">
-                      <button
-                        className="block w-full px-3 py-3 text-xl font-semibold text-gray-800 hover:bg-yellow-500/10 rounded-xl transition-all duration-300 flex justify-between items-center"
-                        onClick={e => { e.preventDefault(); setMemberOpen(prev => !prev); }}
-                      >
-                        {l.name}
-                        <ChevronDown
-                          size={24}
-                          className={`ml-2 transition-transform duration-300 ${memberOpen ? 'rotate-180' : ''}`}
-                          style={{ color: '#FFD700' }}
-                        />
-                      </button>
-                      {memberOpen && (
-                        <div className="space-y-2 pl-5">
-                          {memberLinks.map(sub => (
-                            <Link
-                              key={sub.name}
-                              href={sub.href}
-                              className={`block w-full px-3 py-2 text-lg font-medium ${sub.current ? 'text-pink-500 font-semibold' : 'text-gray-700 hover:bg-yellow-500/5'} rounded-xl transition-all duration-300`}
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              {sub.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : l.name === '課程資訊' ? (
-                    /* ...courses submenu... */
-                    <></>
-                  ) : (
-                    <Link
-                      href={l.href}
-                      className="block w-full px-3 py-3 text-xl font-semibold text-gray-800 hover:bg-yellow-500/10 rounded-xl transition-all duration-300"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {l.name}
-                    </Link>
-                  )}
-                </div>
-              ))}
-              <a
-                href="/donate"
-                className="block w-full px-4 py-3 text-center text-xl font-bold text-white bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 rounded-2xl shadow-lg hover:shadow-yellow-500/30 transition-all duration-300"
-                onClick={() => setMobileMenuOpen(false)}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            {/* 首頁 */}
+            <Link href="/" className="block px-4 py-3 text-xl font-semibold hover:bg-gray-100 rounded-lg">
+              首頁
+            </Link>
+            {/* 關於我們 */}
+            <div>
+              <div
+                className="flex justify-between items-center px-4 py-3 text-xl font-semibold hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => setAboutOpen(o => !o)}
               >
-                線上奉獻
-              </a>
+                關於我們
+                <ChevronDown className={`transform transition ${aboutOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {aboutOpen && (
+                <div className="pl-6 space-y-2">
+                  {aboutLinks.map(a => (
+                    <Link key={a.name} href={a.href} className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
+                      {a.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
+            {/* 課程資訊 */}
+            <div>
+              <div
+                className="flex justify-between items-center px-4 py-3 text-xl font-semibold hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => setCoursesOpen(c => !c)}
+              >
+                課程資訊
+                <ChevronDown className={`transform transition ${coursesOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {coursesOpen && (
+                <div className="pl-6 space-y-2">
+                  {coursesLinks.map(c => (
+                    <Link key={c.name} href={c.href} className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
+                      {c.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 影音平台 */}
+            <div>
+              <div
+                className="flex justify-between items-center px-4 py-3 text-xl font-semibold hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => setVideoOpen(v => !v)}
+              >
+                影音平台
+                <ChevronDown className={`transform transition ${videoOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {videoOpen && (
+                <div className="pl-6 space-y-2">
+                  {videoLinks.map(v => (
+                    <Link key={v.name} href={v.href} className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
+                      {v.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 會友專區 */}
+            <div>
+              <div
+                className="flex justify-between items-center px-4 py-3 text-xl font-semibold hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => setMemberOpen(m => !m)}
+              >
+                會友專區
+                <ChevronDown className={`transform transition ${memberOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {memberOpen && (
+                <div className="pl-6 space-y-2">
+                  {memberLinks.map(m => (
+                    <React.Fragment key={m.name}>
+                      {m.onClick ? (
+                        <a
+                          onClick={m.onClick}
+                          className="flex items-center px-4 py-2 hover:bg-gray-100 rounded-lg"
+                        >
+                          {m.icon}{m.name}
+                        </a>
+                      ) : (
+                        <Link href={m.href} className="block px-4 py-2 hover:bg-gray-100 rounded-lg">
+                          {m.name}
+                        </Link>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 線上奉獻 */}
+            <Link
+              href="/donate"
+              className="block text-center px-4 py-3 text-xl font-bold text-white bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg"
+            >
+              線上奉獻
+            </Link>
           </div>
         </div>
       )}

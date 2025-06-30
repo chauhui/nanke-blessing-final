@@ -1,29 +1,24 @@
-import { createClient } from '@sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
+import { createClient } from '@sanity/client'
+import imageUrlBuilder from '@sanity/image-url'
 
 export const client = createClient({
-  projectId: 'von9yh08',
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2024-01-01',
-  useCdn: false,
-  token: process.env.SANITY_WRITE_TOKEN,
-});
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!, // ← 前端專用
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  apiVersion: '2023-05-03', // 建議跟 auth 端一致
+  useCdn: true, // 前端查詢資料建議用 CDN
+  // 前端**不要**帶 token
+})
 
 // 建立 image-url builder
-const builder = imageUrlBuilder(client);
+const builder = imageUrlBuilder(client)
 
-/**
- * 將圖片 source 轉為可用的圖片 URL，
- * 使用方式： urlFor(source).width(600).height(400).url()
- */
-export const urlFor = (source: any) => builder.image(source);
+export const urlFor = (source: any) => builder.image(source)
 
 export const fetchQuery = async (query: string) => {
   try {
-    const result = await client.fetch(query);
-    return result;
+    return await client.fetch(query)
   } catch (error) {
-    console.error('Sanity query error:', error);
-    throw error;
+    console.error('Sanity query error:', error)
+    throw error
   }
-};
+}

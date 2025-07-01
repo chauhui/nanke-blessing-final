@@ -36,7 +36,7 @@ export default function Home() {
         <meta property="og:url" content="https://nanke-blessing.vercel.app/" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://nanke-blessing.vercel.app/images/og-image.jpg" />
-        <meta name="description" content="南科福氣教會 Nanke Blessed & Blessing Church，台南基督教會。歡迎您加入！" />
+        <meta name="description" content="南科福氣教會 Nanke Blessed & Blessing Church，歡迎您加入！" />
       </Head>
       <div className="relative">
         <NavBar />

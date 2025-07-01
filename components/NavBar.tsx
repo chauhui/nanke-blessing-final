@@ -109,7 +109,7 @@ export default function NavBar() {
       <div className="container mx-auto flex items-center justify-between h-16 md:h-28 px-4">
         <Link href="/" className="flex items-center h-full">
           <img
-            src="/images/logo-horizontal.png"
+            src="/images/logo-horizontal-1.png"
             alt="南科福氣教會"
             className="h-10 lg:h-16 w-auto"
           />
@@ -247,7 +247,7 @@ export default function NavBar() {
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col lg:hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
             <Link href="/">
-              <img src="/images/logo-horizontal.png" alt="南科福氣教會" className="h-10 w-auto" />
+              <img src="/images/logo-horizontal-1.png" alt="南科福氣教會" className="h-10 w-auto" />
             </Link>
             <button onClick={() => setMobileMenuOpen(false)} aria-label="關閉選單">
               <X size={24} className="text-yellow-500" />

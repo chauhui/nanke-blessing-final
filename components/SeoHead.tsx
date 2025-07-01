@@ -8,7 +8,7 @@ export default function SeoHead() {
   const siteDescription = '歡迎來到南科福氣教會，與我們一起經歷信仰、盼望與愛的同在';
   const siteUrl = SITE_URL;
   // 使用公開可訪問的圖片 URL
-  const siteImage = `${SITE_URL}/images/og-image.jpg`; // 使用 og-image.jpg 作為預覽圖片
+  const siteImage = `${SITE_URL}/images/og-image-1.jpg`; // 使用 og-image-1.jpg 作為預覽圖片
   const siteImageWidth = '1200';
   const siteImageHeight = '630';
   const siteImageAlt = '南科福氣教會';

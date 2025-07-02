@@ -102,6 +102,7 @@ export default function NavBar() {
     { name: '課程資訊', href: '/courses', isCourses: true },
     { name: '影音平台', href: 'https://www.youtube.com/@南科福氣教會/featured', isVideo: true },
     { name: '會友專區', href: '/member', isMember: true },
+    // 線上奉獻：不用加在這裡，直接在下方分開寫（如原本設計）
   ];
 
   return (
@@ -233,6 +234,7 @@ export default function NavBar() {
               );
             })}
           </ul>
+          {/* 桌面版的「線上奉獻」按鈕 */}
           <Link
             href="/donate"
             className="ml-12 px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-medium hover:opacity-90 shadow-lg transition"

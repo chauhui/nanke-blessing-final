@@ -16,7 +16,6 @@ const DONATE_TYPES = [
 export default function DonatePage() {
   const [form, setForm] = useState({
     name: '',
-    email: '',
     amount: '',
     type: '',
     note: '',
@@ -30,7 +29,6 @@ export default function DonatePage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // 可在這裡加驗證&串後端，這裡只顯示成功訊息
     setSubmitted(true);
   }
 
@@ -47,9 +45,9 @@ export default function DonatePage() {
 
           <div className="border border-gray-200 rounded-lg p-6 mb-6 bg-gray-50">
             <h2 className="text-lg font-medium text-gray-800 mb-2">銀行轉帳／ATM</h2>
-            <div className="text-gray-700 mb-1">戶名：南科福氣教會</div>
-            <div className="text-gray-700 mb-1">銀行：808 玉山銀行（新市分行）</div>
-            <div className="text-gray-700 mb-2 tracking-widest">帳號：1234567890123</div>
+            <div className="text-gray-700 mb-1">戶名：臺南市南科美善福音協會吳俊男</div>
+            <div className="text-gray-700 mb-1">銀行：050 臺灣企銀（善化分行）</div>
+            <div className="text-gray-700 mb-2 tracking-widest">帳號：702-12-175658</div>
             <div className="text-gray-400 text-xs">＊備註請填寫奉獻用途及姓名</div>
           </div>
 
@@ -82,25 +80,13 @@ export default function DonatePage() {
               />
             </div>
             <div className="mb-4">
-              <label className="block mb-1 text-gray-600" htmlFor="name">姓名</label>
+              <label className="block mb-1 text-gray-600" htmlFor="name">姓名（奉獻編號）</label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 className="w-full border border-gray-200 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400"
                 value={form.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1 text-gray-600" htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                className="w-full border border-gray-200 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                value={form.email}
                 onChange={handleChange}
                 required
               />
@@ -141,7 +127,7 @@ export default function DonatePage() {
             </button>
             {submitted && (
               <div className="mt-4 text-green-600 text-center">
-                已收到您的奉獻指定資訊（如需自動收據將寄送Email）。
+                已收到您的奉獻指定資訊（如需收據請聯絡同工）。
               </div>
             )}
           </form>

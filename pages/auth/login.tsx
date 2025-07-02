@@ -5,12 +5,11 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
+import { useSession } from "next-auth/react";
 
 type Props = {
   csrfToken: string;
 };
-
-import { useSession } from "next-auth/react";
 
 export default function LoginPage({ csrfToken }: Props) {
   const [email, setEmail] = useState("");
@@ -19,14 +18,12 @@ export default function LoginPage({ csrfToken }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
-  
-  // 從 URL 讀取 callbackUrl，若沒有則使用預設值
-  const callbackUrl = searchParams.get('callbackUrl') || '/member/meal';
-  console.log('Login - callbackUrl from URL:', callbackUrl);
 
-  // 登入成功後自動跳轉 callbackUrl，避免卡在登入頁
+  // 取得 callbackUrl，預設 /member/meal
+  const callbackUrl = searchParams.get('callbackUrl') || '/member/meal';
+
+  // session 有效就自動跳轉
   useEffect(() => {
-    // 只要 session 有效且 callbackUrl 存在，馬上跳轉
     if (status === "authenticated" && callbackUrl && callbackUrl !== '/auth/login') {
       window.location.href = decodeURIComponent(callbackUrl);
     }
@@ -37,7 +34,7 @@ export default function LoginPage({ csrfToken }: Props) {
     const errorParam = searchParams.get('error');
     if (errorParam === 'AccountNotApproved') {
       setError('您的帳號尚未通過審核，請聯繫管理員');
-      // 清除錯誤參數，避免重複顯示
+      // 清除錯誤參數
       const newParams = new URLSearchParams(searchParams.toString());
       newParams.delete('error');
       router.replace(`${router.pathname}?${newParams.toString()}`);
@@ -47,25 +44,50 @@ export default function LoginPage({ csrfToken }: Props) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    console.log('Login - Attempting sign in with callbackUrl:', callbackUrl);
-    
+
     try {
-      // 使用 signIn 並讓 NextAuth 處理重定向
+      // 不要讓 NextAuth 自動 redirect
       const result = await signIn('credentials', {
-        redirect: true,  // 讓 NextAuth 處理重定向
+        redirect: false,
         email,
         password,
         callbackUrl: decodeURIComponent(callbackUrl),
       });
 
-      // 如果執行到這裡，表示登入失敗
-      if (result?.error) {
-        console.error('Login failed:', result.error);
-        setError('登入失敗，請檢查您的電子郵件和密碼');
+      // debug log（可刪）
+      // console.log('signIn result:', result);
+
+      // 處理登入錯誤訊息
+      if (!result) {
+        setError('伺服器連線失敗，請稍後再試');
+        return;
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('登入過程中發生錯誤，請稍後再試');
+
+      if (result.error) {
+        if (
+          result.error === 'AccountNotApproved'
+        ) {
+          setError('您的帳號尚未通過審核，請聯繫管理員');
+        } else if (
+          result.error === 'CredentialsSignin' ||
+          result.error === 'Unauthorized' ||
+          result.error.toLowerCase().includes('credentials')
+        ) {
+          setError('電子郵件或密碼錯誤');
+        } else {
+          setError('登入過程中發生錯誤，請稍後再試。' + result.error);
+        }
+        return;
+      }
+
+      // 登入成功，自行跳轉
+      if (result.ok && result.url) {
+        window.location.href = decodeURIComponent(result.url);
+      } else {
+        setError('登入過程中發生錯誤，請稍後再試。');
+      }
+    } catch (error: any) {
+      setError('登入過程中發生錯誤，請稍後再試。');
     }
   };
 
@@ -81,7 +103,6 @@ export default function LoginPage({ csrfToken }: Props) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* next-auth 要的 CSRF Token */}
           <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
           
           <label className="block">

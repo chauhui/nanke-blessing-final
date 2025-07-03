@@ -19,4 +19,3 @@ export const schemaTypes = [
   userRegistration,
   donation,       // <--- 加這一行
 ];
-

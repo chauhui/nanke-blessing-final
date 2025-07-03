@@ -10,13 +10,15 @@ export default defineType({
       name: 'amount',
       title: '奉獻金額（元）',
       type: 'number',
-      validation: Rule => Rule.required().min(1)
+      validation: Rule => Rule.required().min(1),
+      readOnly: true,
     }),
     defineField({
       name: 'name',
       title: '姓名（奉獻編號）',
       type: 'string',
-      validation: Rule => Rule.required()
+      validation: Rule => Rule.required(),
+      readOnly: true,
     }),
     defineField({
       name: 'type',
@@ -32,18 +34,21 @@ export default defineType({
         ],
         layout: 'radio'
       },
-      validation: Rule => Rule.required()
+      validation: Rule => Rule.required(),
+      readOnly: true,
     }),
     defineField({
       name: 'note',
       title: '用途說明（如選其他）',
-      type: 'string'
+      type: 'string',
+      readOnly: true,
     }),
     defineField({
       name: 'createdAt',
       title: '送出時間',
       type: 'datetime',
-      initialValue: () => new Date().toISOString()
+      initialValue: () => new Date().toISOString(),
+      readOnly: true,
     })
   ]
 })

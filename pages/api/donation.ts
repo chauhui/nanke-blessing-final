@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     const doc = {
       _type: 'donation',
-      amount,
+      amount: Number(amount), // 僅此行加上 Number()，其餘不動
       name,
       type,
       note: note || '',

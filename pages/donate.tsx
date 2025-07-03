@@ -34,10 +34,11 @@ export default function DonatePage() {
     setSubmitted(false);
 
     try {
+      // 這裡強制 amount 轉為 number 型別
       const res = await fetch('/api/donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, amount: Number(form.amount) }),
       });
       if (!res.ok) {
         throw new Error('送出失敗，請稍後再試。');

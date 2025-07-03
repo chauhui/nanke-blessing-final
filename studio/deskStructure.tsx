@@ -2,10 +2,8 @@ import React from 'react';
 import GroupReportStatsTool from './components/GroupReportStatsTool';
 import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool';
 import GroupedRegistrations from './components/GroupedRegistrations';
+import DonationStatsTool from './components/DonationStatsTool'; // << 新增
 
-// 不需要 import S，不需要 StructureBuilder 型別！
-
-// 最保險做法，直接給 S 註明 any 型別（因 Sanity v3+ 沒公開型別也查不到）
 export const structure = (S: any) => {
   const userRegistrationListItem = S.listItem()
     .title('用戶註冊')
@@ -22,7 +20,7 @@ export const structure = (S: any) => {
             .schemaType('userRegistration')
             .documentId(docId)
         )
-    )
+    );
 
   const registrationListItem = S.listItem()
     .title('報名記錄')
@@ -52,7 +50,7 @@ export const structure = (S: any) => {
                 .component(RegistrationBulkDeleteTool)
             )
         ])
-    )
+    );
 
   const eventListItem = S.listItem()
     .title('活動')
@@ -62,7 +60,7 @@ export const structure = (S: any) => {
         .id('event-type-list')
         .title('活動')
         .defaultOrdering([{ field: 'date', direction: 'desc' }])
-    )
+    );
 
   const memberListItem = S.listItem()
     .title('成員')
@@ -72,7 +70,7 @@ export const structure = (S: any) => {
         .id('member-type-list')
         .title('所有成員')
         .defaultOrdering([{ field: 'name', direction: 'asc' }])
-    )
+    );
 
   const groupListItem = S.listItem()
     .title('所有小組')
@@ -88,14 +86,14 @@ export const structure = (S: any) => {
             .title(`小組：${groupId}`)
             .items([
               S.listItem()
-                .id(`group-edit-${groupId}`)                   // 新增 id
+                .id(`group-edit-${groupId}`)
                 .title('編輯小組設定')
                 .schemaType('group')
                 .child(
                   S.document().schemaType('group').documentId(groupId)
                 ),
               S.listItem()
-                .id(`group-members-${groupId}`)                // 新增 id
+                .id(`group-members-${groupId}`)
                 .title('成員列表')
                 .child(
                   S.documentList()
@@ -108,7 +106,7 @@ export const structure = (S: any) => {
                 ),
             ])
         )
-    )
+    );
 
   const groupReportStatsListItem = S.listItem()
     .title('小組回報統計')
@@ -119,9 +117,9 @@ export const structure = (S: any) => {
         .id('group-report-stats')
         .title('小組回報統計')
         .component(GroupReportStatsTool)
-    )
+    );
 
-  // 新增「奉獻資訊」list item
+  // 原本的奉獻資訊
   const donationListItem = S.listItem()
     .title('奉獻資訊')
     .id('donation-list')
@@ -130,7 +128,19 @@ export const structure = (S: any) => {
         .id('donation-type-list')
         .title('奉獻資訊')
         .defaultOrdering([{ field: 'createdAt', direction: 'desc' }])
-    )
+    );
+
+  // 新增奉獻統計
+  const donationStatsListItem = S.listItem()
+    .title('奉獻統計')
+    .id('donation-stats-menu')
+    .icon(() => <span>💰</span>)
+    .child(
+      S.component()
+        .id('donation-stats')
+        .title('奉獻統計')
+        .component(DonationStatsTool)
+    );
 
   return S.list()
     .title('內容')
@@ -148,6 +158,8 @@ export const structure = (S: any) => {
       S.divider(),
       groupReportStatsListItem,
       S.divider(),
-      donationListItem, // 這一行就是新加的！
-    ])
-}
+      donationListItem,
+      donationStatsListItem, // << 新增的自訂統計功能
+      S.divider(),
+    ]);
+};

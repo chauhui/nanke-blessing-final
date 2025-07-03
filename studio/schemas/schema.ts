@@ -6,6 +6,7 @@ import schemaTypes from 'all:part:@sanity/base/schema-type'
 
 // Document types
 import event from './event'
+import donation from './donation' // 新增這一行
 
 // Then we give our schema to the builder and provide the result to Sanity
 export default createSchema({
@@ -17,6 +18,7 @@ export default createSchema({
     // The following are document types which will appear
     // in the studio.
     event,
+    donation,    // 新增這一行
     // When added to this list, object types can be used as
     // { type: 'typename' } in other document schemas
   ])

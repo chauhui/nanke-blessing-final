@@ -7,6 +7,7 @@ import groupReport from './groupReport';
 import group from './group';
 import member from './member';
 import userRegistration from './userRegistration';
+import donation from './donation'; // <--- 加這一行
 
 export const schemaTypes = [
   event,
@@ -16,4 +17,6 @@ export const schemaTypes = [
   group,
   member,
   userRegistration,
+  donation,       // <--- 加這一行
 ];
+

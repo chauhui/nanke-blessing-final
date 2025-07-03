@@ -1,5 +1,3 @@
-// pages/donate.tsx
-
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import React, { useState } from 'react';
@@ -21,15 +19,36 @@ export default function DonatePage() {
     note: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError(null);
+    setSubmitted(false);
+
+    try {
+      const res = await fetch('/api/donation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        throw new Error('送出失敗，請稍後再試。');
+      }
+      setSubmitted(true);
+      setForm({ name: '', amount: '', type: '', note: '' });
+    } catch (err: any) {
+      setError(err?.message || '發生未知錯誤');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -122,9 +141,13 @@ export default function DonatePage() {
             <button
               type="submit"
               className="w-full mt-2 py-2 rounded bg-gray-900 text-white font-semibold hover:bg-gray-800 transition"
+              disabled={loading}
             >
-              送出奉獻資訊
+              {loading ? '送出中...' : '送出奉獻資訊'}
             </button>
+            {error && (
+              <div className="mt-4 text-red-600 text-center">{error}</div>
+            )}
             {submitted && (
               <div className="mt-4 text-green-600 text-center">
                 已收到您的奉獻指定資訊（如需收據請聯絡同工）。

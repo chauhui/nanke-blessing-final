@@ -121,6 +121,17 @@ export const structure = (S: any) => {
         .component(GroupReportStatsTool)
     )
 
+  // 新增「奉獻資訊」list item
+  const donationListItem = S.listItem()
+    .title('奉獻資訊')
+    .id('donation-list')
+    .child(
+      S.documentTypeList('donation')
+        .id('donation-type-list')
+        .title('奉獻資訊')
+        .defaultOrdering([{ field: 'createdAt', direction: 'desc' }])
+    )
+
   return S.list()
     .title('內容')
     .id('root-list')
@@ -136,5 +147,7 @@ export const structure = (S: any) => {
       groupListItem,
       S.divider(),
       groupReportStatsListItem,
+      S.divider(),
+      donationListItem, // 這一行就是新加的！
     ])
 }

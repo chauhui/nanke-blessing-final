@@ -121,7 +121,7 @@ export default function DonationStatsTool() {
           {Object.entries(byType).map(([k, v]) => (
             <tr key={k}>
               <td style={{ padding: 8 }}>{k}</td>
-              <td style={{ padding: 8, textAlign: 'right' }}>{v.toLocaleString()}</td>
+              <td style={{ padding: 8, textAlign: 'right' }}>{(v as number).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>

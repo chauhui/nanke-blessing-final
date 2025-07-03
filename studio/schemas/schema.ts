@@ -1,25 +1,20 @@
-// First, we must import the schema creator
-import createSchema from 'part:@sanity/base/schema-creator'
-
-// Then import schema types from any plugins that might expose them
-import schemaTypes from 'all:part:@sanity/base/schema-type'
-
-// Document types
+// studio/schemas/schema.ts
 import event from './event'
-import donation from './donation' // 新增這一行
+import donation from './donation'
+import registration from './registration'
+import memberReport from './memberReport'
+import groupReport from './groupReport'
+import group from './group'
+import member from './member'
+import userRegistration from './userRegistration'
 
-// Then we give our schema to the builder and provide the result to Sanity
-export default createSchema({
-  // We name our schema
-  name: 'default',
-  // Then proceed to concatenate our document type
-  // to the ones provided by any plugins that are installed
-  types: schemaTypes.concat([
-    // The following are document types which will appear
-    // in the studio.
-    event,
-    donation,    // 新增這一行
-    // When added to this list, object types can be used as
-    // { type: 'typename' } in other document schemas
-  ])
-})
+export const schemaTypes = [
+  event,
+  donation,
+  registration,
+  memberReport,
+  groupReport,
+  group,
+  member,
+  userRegistration,
+]

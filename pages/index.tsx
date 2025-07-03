@@ -31,11 +31,11 @@ export default function Home() {
         <title>南科福氣教會 Nanke Blessed & Blessing Church</title>
 <meta property="og:title" content="南科福氣教會 Nanke Blessed & Blessing Church" />
 <meta property="og:description" content="歡迎來到南科福氣教會，我們在台南為主發光！" />
-<meta property="og:image" content="https://nanke-blessing.vercel.app/images/og-image.jpg?v=20250701" />
+<meta property="og:image" content="https://nanke-blessing.vercel.app/images/og-image-1.jpg?v=20250701" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://nanke-blessing.vercel.app/" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://nanke-blessing.vercel.app/images/og-image.jpg?v=20250701" />
+<meta name="twitter:image" content="https://nanke-blessing.vercel.app/images/og-image-1.jpg?v=20250701" />
 <meta name="description" content="南科福氣教會 Nanke Blessed & Blessing Church，歡迎您加入！" />
       </Head>
       <div className="relative">

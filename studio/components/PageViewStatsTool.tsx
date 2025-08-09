@@ -1,7 +1,7 @@
 import React, { useEffect, useState, forwardRef } from "react"
 import type { Ref } from "react"
 import { useClient } from "sanity"
-import type { PaneComponentProps } from "sanity"
+import type { Tool } from "sanity"
 import { Card, Heading, Box, Select, Text } from "@sanity/ui"
 import {
   ResponsiveContainer,
@@ -21,8 +21,10 @@ type PageViewLog = {
   userAgent?: string
 }
 
+type Props = { tool: Tool }
+
 function PageViewStatsTool(
-  props: PaneComponentProps,
+  _props: Props,
   ref: Ref<HTMLDivElement>
 ) {
   const client = useClient({ apiVersion: "2024-01-01" })
@@ -50,7 +52,7 @@ function PageViewStatsTool(
   useEffect(() => {
     client
       .fetch<PageViewLog[]>(
-        `*[_type==\"pageViewLog\" && date>= $start && date<= $end]{page,date,country,referer,userAgent}`,
+        `*[_type=="pageViewLog" && date >= $start && date <= $end]{page,date,country,referer,userAgent}`,
         { start: startDate, end: endDate }
       )
       .then(setData)
@@ -83,7 +85,7 @@ function PageViewStatsTool(
     chartData.push({ date: dateKey, views })
   }
 
-  // 控制 X 軸顯示：單信手機顯示少量簡短日期
+  // 控制 X 軸顯示：手機顯示少量簡短日期
   const interval = Math.max(1, Math.ceil(chartData.length / (isMobile ? 4 : 12)))
 
   // 統計列表
@@ -141,7 +143,7 @@ function PageViewStatsTool(
       </Box>
 
       {/* 圖表容器 */}
-      <Box style={{ width: '100%', height: isMobile ? 240 : 360 }}>
+      <Box style={{ width: "100%", height: isMobile ? 240 : 360 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={chartData}
@@ -158,7 +160,7 @@ function PageViewStatsTool(
               }}
               tick={{ fontSize: isMobile ? 10 : 12 }}
               minTickGap={isMobile ? 20 : 0}
-              textAnchor={isMobile ? 'middle' : 'end'}
+              textAnchor={isMobile ? "middle" : "end"}
             />
             <YAxis allowDecimals={false} />
             <Tooltip wrapperStyle={{ fontSize: isMobile ? 12 : 14 }} cursor={false} />
@@ -204,4 +206,4 @@ function PageViewStatsTool(
   )
 }
 
-export default forwardRef<HTMLDivElement, PaneComponentProps>(PageViewStatsTool)
+export default forwardRef<HTMLDivElement, Props>(PageViewStatsTool)

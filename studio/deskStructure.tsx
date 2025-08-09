@@ -2,7 +2,9 @@ import React from 'react';
 import GroupReportStatsTool from './components/GroupReportStatsTool';
 import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool';
 import GroupedRegistrations from './components/GroupedRegistrations';
-import DonationStatsTool from './components/DonationStatsTool'; // << 新增
+import DonationStatsTool from './components/DonationStatsTool';
+// 新增網站流量統計
+import PageViewStatsTool from './components/PageViewStatsTool';
 
 export const structure = (S: any) => {
   const userRegistrationListItem = S.listItem()
@@ -142,6 +144,18 @@ export const structure = (S: any) => {
         .component(DonationStatsTool)
     );
 
+  // 只新增網站流量統計
+  const pageViewStatsListItem = S.listItem()
+    .title('網站流量統計')
+    .id('page-view-stats-menu')
+    .icon(() => <span>📊</span>)
+    .child(
+      S.component()
+        .id('page-view-stats')
+        .title('網站流量統計')
+        .component(PageViewStatsTool)
+    );
+
   return S.list()
     .title('內容')
     .id('root-list')
@@ -157,9 +171,10 @@ export const structure = (S: any) => {
       groupListItem,
       S.divider(),
       groupReportStatsListItem,
+      pageViewStatsListItem, // << 新增
       S.divider(),
       donationListItem,
-      donationStatsListItem, // << 新增的自訂統計功能
+      donationStatsListItem,
       S.divider(),
     ]);
 };

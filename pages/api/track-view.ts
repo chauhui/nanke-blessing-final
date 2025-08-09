@@ -1,7 +1,7 @@
 // pages/api/track-view.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@sanity/client'
-import geoip from 'geoip-lite'
+import * as geoip from 'geoip-lite'
 
 const client = createClient({
   projectId: 'von9yh08',

@@ -55,7 +55,7 @@ export default function SmallGroup() {
     { id: 6, name: "青少年團契", day: "日", time: "16:00 ~ 18:30", location: "牧師家" },
     { id: 7, name: "黃晨小組", day: "一", time: "19:30 ~ 21:00", location: "牧師家(1、2樓)" },
     { id: 8, name: "勝騰小組", day: "一", time: "20:00 ~ 22:00", location: "牧師家(1、2樓)" },
-    { id: 9, name: "玉真小組", day: "一", time: "10:00 ~ 12:00", location: "慧如家" }
+    { id: 9, name: "玉真小組", day: "一", time: "10:00 ~ 12:00", location: "玉真家" }
   ];
 
   return (

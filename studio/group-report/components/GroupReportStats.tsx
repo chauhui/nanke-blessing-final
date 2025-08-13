@@ -11,14 +11,36 @@ declare const window: CustomWindow
 // 型別
 interface Group { _id: string; _type: string; name: string }
 interface Member { _id: string; _type: string; name: string }
-interface ReportItem { oikos?: string; member?: Member }
+interface ReportItem {
+  member?: Member
+  // 出席
+  devotion?: boolean
+  cellGroup?: boolean
+  sundayService?: boolean
+  prayerMeeting?: boolean
+  happinessGroup?: boolean
+  // OIKOS / 門訓
+  oikos?: 'p' | 'l' | 'v' | 'm' | 'f' | 't' | ''
+  discipleship?: '' | 'door-up' | 'door-down' | 'bless-up' | 'bless-down' | 'done'
+}
 interface Report extends SanityDocument { _id: string; date: string; group: Group; reports: ReportItem[] }
 interface GroupStat { name: string; count: number }
 interface RecentReport { group: string; date: string; count: number }
+
 interface OikosStats {
   total: number
   byType: { p: number; l: number; v: number; m: number; f: number; t: number }
 }
+interface AttendStats {
+  devotion: number
+  cellGroup: number
+  sundayService: number
+  prayerMeeting: number
+  happinessGroup: number
+}
+interface DsDist { 'door-up': number; 'door-down': number; 'bless-up': number; 'bless-down': number; 'done': number }
+interface DsStats { total: number; dist: DsDist }
+
 interface Stats {
   totalReports: number
   thisWeek: number
@@ -26,6 +48,8 @@ interface Stats {
   groups: GroupStat[]
   recentReports: RecentReport[]
   oikosStats: OikosStats
+  attend: AttendStats
+  discipleship: DsStats
 }
 
 export default function GroupReportStats() {
@@ -36,6 +60,8 @@ export default function GroupReportStats() {
     groups: [],
     recentReports: [],
     oikosStats: { total: 0, byType: { p: 0, l: 0, v: 0, m: 0, f: 0, t: 0 } },
+    attend: { devotion: 0, cellGroup: 0, sundayService: 0, prayerMeeting: 0, happinessGroup: 0 },
+    discipleship: { total: 0, dist: { 'door-up': 0, 'door-down': 0, 'bless-up': 0, 'bless-down': 0, done: 0 } },
   })
 
   // 使用 window.sanityClient
@@ -46,14 +72,23 @@ export default function GroupReportStats() {
 
     const fetchStats = async () => {
       try {
-        // 取回所有 groupReport（僅修正 GROQ 括號配對）
+        // 把需要的欄位一次取齊（含 discipleship）
         const reports = await client.fetch<Report[]>(
           `*[_type == "groupReport" && defined(reports)]{
-              _id,
-              date,
-              group,
-              reports[]{ member, oikos }
-            } | order(date desc)`
+            _id,
+            date,
+            group,
+            reports[]{
+              member,
+              devotion,
+              cellGroup,
+              sundayService,
+              prayerMeeting,
+              happinessGroup,
+              oikos,
+              discipleship
+            }
+          } | order(date desc)`
         )
 
         const statsData: Stats = {
@@ -63,6 +98,8 @@ export default function GroupReportStats() {
           groups: [],
           recentReports: [],
           oikosStats: { total: 0, byType: { p: 0, l: 0, v: 0, m: 0, f: 0, t: 0 } },
+          attend: { devotion: 0, cellGroup: 0, sundayService: 0, prayerMeeting: 0, happinessGroup: 0 },
+          discipleship: { total: 0, dist: { 'door-up': 0, 'door-down': 0, 'bless-up': 0, 'bless-down': 0, done: 0 } },
         }
 
         const now = new Date()
@@ -87,15 +124,33 @@ export default function GroupReportStats() {
 
           if (Array.isArray(report.reports)) {
             report.reports.forEach((r) => {
-              if (!r || !r.oikos) return
-              statsData.oikosStats.total++
-              switch (r.oikos) {
-                case 'p': statsData.oikosStats.byType.p++; break
-                case 'l': statsData.oikosStats.byType.l++; break
-                case 'v': statsData.oikosStats.byType.v++; break
-                case 'm': statsData.oikosStats.byType.m++; break
-                case 'f': statsData.oikosStats.byType.f++; break
-                case 't': statsData.oikosStats.byType.t++; break
+              if (!r) return
+
+              // 五項出席
+              if (r.devotion) statsData.attend.devotion++
+              if (r.cellGroup) statsData.attend.cellGroup++
+              if (r.sundayService) statsData.attend.sundayService++
+              if (r.prayerMeeting) statsData.attend.prayerMeeting++
+              if (r.happinessGroup) statsData.attend.happinessGroup++
+
+              // 門訓系統：凡有值就算（含 done）
+              const ds = (r.discipleship || '').trim() as ReportItem['discipleship']
+              if (ds) {
+                statsData.discipleship.total++
+                if (ds in statsData.discipleship.dist) {
+                  // @ts-expect-error 細部鍵值已在型別中定義
+                  statsData.discipleship.dist[ds]++
+                }
+              }
+
+              // OIKOS
+              const ok = (r.oikos || '') as ReportItem['oikos']
+              if (ok) {
+                statsData.oikosStats.total++
+                if (ok in statsData.oikosStats.byType) {
+                  // @ts-expect-error 六種鍵值已在型別中定義
+                  statsData.oikosStats.byType[ok]++
+                }
               }
             })
           }
@@ -140,7 +195,8 @@ export default function GroupReportStats() {
         }
       `}</style>
 
-      <Grid columns={[1, 1, 2, 3]} gap={3} style={{ marginBottom: '1rem' }}>
+      {/* KPI */}
+      <Grid columns={[1, 1, 3]} gap={3} style={{ marginBottom: '1rem' }}>
         <Card padding={3} radius={2} shadow={1} border className="hc-card">
           <Flex align="center" justify="space-between">
             <Box>
@@ -169,6 +225,39 @@ export default function GroupReportStats() {
             </Box>
             <Badge tone="caution" padding={2} radius={2} fontSize={1}>上週</Badge>
           </Flex>
+        </Card>
+      </Grid>
+
+      {/* 出席 KPI（簡表） */}
+      <Grid columns={[1, 1, 2]} gap={3} style={{ marginBottom: '1rem' }}>
+        <Card padding={3} radius={2} shadow={1} border className="hc-card">
+          <Text size={[1, 1, 2]} weight="semibold" className="hc-title" style={{ marginBottom: 12 }}>
+            出席統計
+          </Text>
+          <Stack space={2}>
+            <Flex align="center" justify="space-between"><Text>靈修小組</Text><Badge tone="primary">{stats.attend.devotion}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>細胞小組</Text><Badge tone="primary">{stats.attend.cellGroup}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>主日</Text><Badge tone="primary">{stats.attend.sundayService}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>禱告會</Text><Badge tone="primary">{stats.attend.prayerMeeting}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>幸福小組</Text><Badge tone="primary">{stats.attend.happinessGroup}</Badge></Flex>
+          </Stack>
+        </Card>
+
+        <Card padding={3} radius={2} shadow={1} border className="hc-card">
+          <Text size={[1, 1, 2]} weight="semibold" className="hc-title" style={{ marginBottom: 12 }}>
+            門訓系統統計
+          </Text>
+          <Stack space={2}>
+            <Flex align="center" justify="space-between">
+              <Text className="hc-strong">合計（含 done）</Text>
+              <Badge tone="positive">{stats.discipleship.total}</Badge>
+            </Flex>
+            <Flex align="center" justify="space-between"><Text>門上</Text><Badge>{stats.discipleship.dist['door-up']}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>門下</Text><Badge>{stats.discipleship.dist['door-down']}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>福上</Text><Badge>{stats.discipleship.dist['bless-up']}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>福下</Text><Badge>{stats.discipleship.dist['bless-down']}</Badge></Flex>
+            <Flex align="center" justify="space-between"><Text>完成</Text><Badge tone="primary">{stats.discipleship.dist['done']}</Badge></Flex>
+          </Stack>
         </Card>
       </Grid>
 

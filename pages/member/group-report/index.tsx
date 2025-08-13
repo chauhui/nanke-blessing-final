@@ -182,6 +182,19 @@ function GroupReport() {
     return <div className="p-4 text-center">載入中...</div>;
   }
 
+  // ----(桌機版欄寬控制)----
+  const attendanceKeys = ['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const;
+  type AttendanceKey = typeof attendanceKeys[number];
+
+  // 寬度設定：把「禱告會」從 w-20 調成 w-24，其餘維持；幸福小組 w-28 保持單行
+  const tdWidthClass: Record<AttendanceKey, string> = {
+    devotion: 'w-28',        // 靈修小組
+    cellGroup: 'w-28',       // 細胞小組
+    sundayService: 'w-28',   // 主日
+    prayerMeeting: 'w-24',   // ← 調寬，避免表頭換行
+    happinessGroup: 'w-28',  // 幸福小組
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50 pt-40 pb-8 px-4">
@@ -274,7 +287,7 @@ function GroupReport() {
                     {reports.map(r => (
                       <div
                         key={r.memberId}
-                        className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm"
+                        className="bg白 p-4 rounded-lg border border-gray-200 shadow-sm"
                       >
                         <div className="flex justify-between items-center mb-3">
                           <h3 className="font-medium text-base text-gray-900">
@@ -312,10 +325,10 @@ function GroupReport() {
                                 />
                                 <span>
                                   {{
-                                    devotion: '靈修',
-                                    cellGroup: '小組',
+                                    devotion: '靈修小組',
+                                    cellGroup: '細胞小組',
                                     sundayService: '主日',
-                                    prayerMeeting: '禱告',
+                                    prayerMeeting: '禱告會',
                                     happinessGroup: '幸福小組',
                                   }[key]}
                                 </span>
@@ -344,6 +357,7 @@ function GroupReport() {
                               <option value="door-down">門下</option>
                               <option value="bless-up">福上</option>
                               <option value="bless-down">福下</option>
+                              <option value="done">完成</option>
                             </select>
                           </div>
                           <div>
@@ -361,7 +375,7 @@ function GroupReport() {
                               <option value="p">代禱</option>
                               <option value="l">LINE</option>
                               <option value="v">探訪</option>
-                              <option value="m">幸福講座</option>
+                              <option value="m">幸福小組/講座</option>
                               <option value="f">聚餐</option>
                               <option value="t">旅遊</option>
                             </select>
@@ -391,25 +405,27 @@ function GroupReport() {
                       <table className="min-w-full bg-white">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-36">
+                            {/* 組員欄位：縮小寬度並避免換行 */}
+                            <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-28 whitespace-nowrap">
                               組員
                             </th>
                             <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-28">
                               身份
                             </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-20">
-                              靈修
+                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
+                              靈修小組
                             </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-20">
-                              小組
+                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
+                              細胞小組
                             </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-20">
+                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
                               主日
                             </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-20">
-                              禱告
+                            {/* 禱告會：加上 nowrap 並調成 w-24 */}
+                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-24">
+                              禱告會
                             </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-24">
+                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
                               幸福小組
                             </th>
                             <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-28">
@@ -426,8 +442,9 @@ function GroupReport() {
                         <tbody className="divide-y divide-gray-200">
                           {reports.map(r => (
                             <tr key={r.memberId} className="hover:bg-gray-50">
-                              <td className="py-4 px-4 text-gray-900 border-b border-gray-100">
-                                {r.memberName}
+                              {/* 資料列：固定寬度並截斷顯示 */}
+                              <td className="py-4 px-4 text-gray-900 border-b border-gray-100 w-28">
+                                <div className="truncate">{r.memberName}</div>
                               </td>
                               <td className="py-4 px-3 border-b border-gray-100">
                                 <select
@@ -452,27 +469,27 @@ function GroupReport() {
                                   ))}
                                 </select>
                               </td>
-                              {['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'].map(
-                                key => (
-                                  <td
-                                    key={key}
-                                    className="py-3 px-3 text-center border-b border-gray-100"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                      checked={(r as any)[key]}
-                                      onChange={e =>
-                                        handleReportChange(
-                                          r.memberId,
-                                          key as any,
-                                          e.target.checked
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                )
-                              )}
+
+                              {attendanceKeys.map((key) => (
+                                <td
+                                  key={key}
+                                  className={`py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap ${tdWidthClass[key]}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    checked={(r as any)[key]}
+                                    onChange={e =>
+                                      handleReportChange(
+                                        r.memberId,
+                                        key as any,
+                                        e.target.checked
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ))}
+
                               <td className="py-3 px-3 border-b border-gray-100">
                                 <select
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -500,6 +517,9 @@ function GroupReport() {
                                   <option value="bless-down" className="text-gray-900">
                                     福下
                                   </option>
+                                  <option value="done" className="text-gray-900">
+                                    完成
+                                  </option>
                                 </select>
                               </td>
                               <td className="py-3 px-3 border-b border-gray-100">
@@ -523,7 +543,7 @@ function GroupReport() {
                                     探訪
                                   </option>
                                   <option value="m" className="text-gray-900">
-                                    幸福講座
+                                    幸福小組/講座
                                   </option>
                                   <option value="f" className="text-gray-900">
                                     聚餐
@@ -557,7 +577,7 @@ function GroupReport() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !groupId}
-                  className={`inline-flex items-center justify-center px-8 py-3 rounded-full text-white font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${
+                  className={`inline-flex items-center justify-center px-8 py-3 rounded-full text白 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${
                     isSubmitting
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600'

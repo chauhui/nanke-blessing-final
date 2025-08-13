@@ -8,9 +8,14 @@ interface CustomWindow extends Window {
 }
 declare const window: CustomWindow
 
-// 型別
+// ===== 型別 =====
 interface Group { _id: string; _type: string; name: string }
 interface Member { _id: string; _type: string; name: string }
+
+// OIKOS 與門訓的鍵（做為嚴格 union）
+type OikosKey = 'p' | 'l' | 'v' | 'm' | 'f' | 't'
+type DiscipleshipKey = 'door-up' | 'door-down' | 'bless-up' | 'bless-down' | 'done'
+
 interface ReportItem {
   member?: Member
   // 出席
@@ -20,8 +25,8 @@ interface ReportItem {
   prayerMeeting?: boolean
   happinessGroup?: boolean
   // OIKOS / 門訓
-  oikos?: 'p' | 'l' | 'v' | 'm' | 'f' | 't' | ''
-  discipleship?: '' | 'door-up' | 'door-down' | 'bless-up' | 'bless-down' | 'done'
+  oikos?: OikosKey | ''
+  discipleship?: DiscipleshipKey | ''
 }
 interface Report extends SanityDocument { _id: string; date: string; group: Group; reports: ReportItem[] }
 interface GroupStat { name: string; count: number }
@@ -29,7 +34,7 @@ interface RecentReport { group: string; date: string; count: number }
 
 interface OikosStats {
   total: number
-  byType: { p: number; l: number; v: number; m: number; f: number; t: number }
+  byType: Record<OikosKey, number>
 }
 interface AttendStats {
   devotion: number
@@ -38,7 +43,7 @@ interface AttendStats {
   prayerMeeting: number
   happinessGroup: number
 }
-interface DsDist { 'door-up': number; 'door-down': number; 'bless-up': number; 'bless-down': number; 'done': number }
+type DsDist = Record<DiscipleshipKey, number>
 interface DsStats { total: number; dist: DsDist }
 
 interface Stats {
@@ -51,6 +56,13 @@ interface Stats {
   attend: AttendStats
   discipleship: DsStats
 }
+
+// 型別守衛
+const isOikosKey = (x: string): x is OikosKey =>
+  (['p', 'l', 'v', 'm', 'f', 't'] as const).includes(x as OikosKey)
+
+const isDsKey = (x: string): x is DiscipleshipKey =>
+  (['door-up', 'door-down', 'bless-up', 'bless-down', 'done'] as const).includes(x as DiscipleshipKey)
 
 export default function GroupReportStats() {
   const [stats, setStats] = useState<Stats>({
@@ -134,23 +146,17 @@ export default function GroupReportStats() {
               if (r.happinessGroup) statsData.attend.happinessGroup++
 
               // 門訓系統：凡有值就算（含 done）
-              const ds = (r.discipleship || '').trim() as ReportItem['discipleship']
-              if (ds) {
+              const dsRaw = (r.discipleship || '').trim()
+              if (isDsKey(dsRaw)) {
                 statsData.discipleship.total++
-                if (ds in statsData.discipleship.dist) {
-                  // @ts-expect-error 細部鍵值已在型別中定義
-                  statsData.discipleship.dist[ds]++
-                }
+                statsData.discipleship.dist[dsRaw] += 1
               }
 
               // OIKOS
-              const ok = (r.oikos || '') as ReportItem['oikos']
-              if (ok) {
+              const oikosRaw = (r.oikos || '').trim()
+              if (isOikosKey(oikosRaw)) {
                 statsData.oikosStats.total++
-                if (ok in statsData.oikosStats.byType) {
-                  // @ts-expect-error 六種鍵值已在型別中定義
-                  statsData.oikosStats.byType[ok]++
-                }
+                statsData.oikosStats.byType[oikosRaw] += 1
               }
             })
           }
@@ -249,7 +255,7 @@ export default function GroupReportStats() {
           </Text>
           <Stack space={2}>
             <Flex align="center" justify="space-between">
-              <Text className="hc-strong">合計（含 done）</Text>
+              <Text className="hc-strong">合計（含完成）</Text>
               <Badge tone="positive">{stats.discipleship.total}</Badge>
             </Flex>
             <Flex align="center" justify="space-between"><Text>門上</Text><Badge>{stats.discipleship.dist['door-up']}</Badge></Flex>

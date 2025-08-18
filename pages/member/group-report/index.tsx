@@ -1,10 +1,10 @@
 // pages/member/group-report/index.tsx
 import React, { useState, useEffect } from 'react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 
-// **注意：這裡以「命名匯入(client)」的方式取出 Sanity client**
+// 以命名匯入的方式取出 Sanity client
 import { client as sanityClient } from '@/lib/sanity.client';
 
 interface MemberReport {
@@ -40,10 +40,28 @@ function GroupReport() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
 
-  // 取所有小組（僅登入後執行）
+  // 未登入時導回
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (
+      status === 'unauthenticated' &&
+      typeof window !== 'undefined' &&
+      window.location.pathname !== '/auth/login'
+    ) {
+      const callbackUrl = encodeURIComponent(router.asPath);
+      router.replace(`/auth/login?callbackUrl=${callbackUrl}`);
+    }
+    if (
+      status === 'authenticated' &&
+      typeof window !== 'undefined' &&
+      window.location.pathname === '/auth/login'
+    ) {
+      const cb = new URLSearchParams(window.location.search).get('callbackUrl');
+      if (cb) window.location.href = decodeURIComponent(cb);
+    }
+  }, [status, router]);
 
+  // 取所有小組
+  useEffect(() => {
     async function fetchGroups() {
       try {
         const data: { _id: string; name: string }[] = await sanityClient.fetch(
@@ -57,12 +75,10 @@ function GroupReport() {
       }
     }
     fetchGroups();
-  }, [status]);
+  }, []);
 
-  // 當 groupId 變更時，抓成員並初始化 reports（僅登入後執行）
+  // 當 groupId 變更時，抓成員並初始化 reports
   useEffect(() => {
-    if (status !== 'authenticated') return;
-
     async function fetchMembersForGroup() {
       if (!groupId) {
         setReports([]);
@@ -95,7 +111,7 @@ function GroupReport() {
       }
     }
     fetchMembersForGroup();
-  }, [groupId, status]);
+  }, [groupId]);
 
   // 欄位更新
   const handleReportChange = (
@@ -168,33 +184,8 @@ function GroupReport() {
     }
   };
 
-  // === NextAuth 守門 ===
-  if (status === 'loading') {
-    return (
-      <Layout>
-        <div className="min-h-screen pt-40 pb-8 flex items-center justify-center">
-          <div className="text-gray-600">載入中…</div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (status === 'unauthenticated') {
-    return (
-      <Layout>
-        <div className="min-h-screen pt-40 pb-8 flex items-center justify-center">
-          <div className="rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-            <p className="mb-4 text-gray-700">請先登入才能使用小組長回報。</p>
-            <button
-              onClick={() => signIn(undefined, { callbackUrl: router.asPath })}
-              className="px-6 py-2 rounded-full text-white bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 shadow"
-            >
-              前往登入
-            </button>
-          </div>
-        </div>
-      </Layout>
-    );
+  if (status !== 'authenticated') {
+    return <div className="p-4 text-center">載入中...</div>;
   }
 
   // ----(桌機版欄寬控制)----
@@ -209,11 +200,29 @@ function GroupReport() {
 
   // 寬度設定
   const tdWidthClass: Record<AttendanceKey, string> = {
-    devotion: 'w-28',        // 靈修小組
-    cellGroup: 'w-28',       // 細胞小組
-    sundayService: 'w-28',   // 主日
-    prayerMeeting: 'w-24',   // 禱告會
-    happinessGroup: 'w-28',  // 幸福小組
+    devotion: 'w-28', // 靈修小組
+    cellGroup: 'w-28', // 細胞小組
+    sundayService: 'w-28', // 主日
+    prayerMeeting: 'w-24', // 調寬，避免表頭換行
+    happinessGroup: 'w-28', // 幸福小組
+  };
+
+  // ----(手機版出席鍵/顯示文字的型別安全寫法)----
+  const mobileKeys = [
+    'devotion',
+    'cellGroup',
+    'sundayService',
+    'prayerMeeting',
+    'happinessGroup',
+  ] as const;
+  type MobileKey = typeof mobileKeys[number];
+
+  const mobileLabelMap: Record<MobileKey, string> = {
+    devotion: '靈修小組',
+    cellGroup: '細胞小組',
+    sundayService: '主日',
+    prayerMeeting: '禱告會',
+    happinessGroup: '幸福小組',
   };
 
   return (
@@ -311,9 +320,7 @@ function GroupReport() {
                         className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm"
                       >
                         <div className="flex justify-between items-center mb-3">
-                          <h3 className="font-medium text-base text-gray-900">
-                            {r.memberName}
-                          </h3>
+                          <h3 className="font-medium text-base text-gray-900">{r.memberName}</h3>
                           <select
                             className="text-base p-1.5 border border-gray-300 rounded-md"
                             value={r.identity}
@@ -328,49 +335,31 @@ function GroupReport() {
                             ))}
                           </select>
                         </div>
+
                         <div className="flex flex-wrap gap-3 text-base">
-                          {['devotion', 'cellGroup', 'sundayService', 'prayerMeeting', 'happinessGroup'].map(
-                            (key) => (
-                              <label key={key} className="flex items-center space-x-1 whitespace-nowrap">
-                                <input
-                                  type="checkbox"
-                                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                                  checked={(r as any)[key]}
-                                  onChange={(e) =>
-                                    handleReportChange(
-                                      r.memberId,
-                                      key as any,
-                                      e.target.checked
-                                    )
-                                  }
-                                />
-                                <span>
-                                  {{
-                                    devotion: '靈修小組',
-                                    cellGroup: '細胞小組',
-                                    sundayService: '主日',
-                                    prayerMeeting: '禱告會',
-                                    happinessGroup: '幸福小組',
-                                  }[key as any]}
-                                </span>
-                              </label>
-                            )
-                          )}
+                          {mobileKeys.map((key) => (
+                            <label key={key} className="flex items-center space-x-1 whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                                checked={Boolean((r as any)[key])}
+                                onChange={(e) =>
+                                  handleReportChange(r.memberId, key, e.target.checked)
+                                }
+                              />
+                              <span>{mobileLabelMap[key]}</span>
+                            </label>
+                          ))}
                         </div>
+
                         <div className="mt-3 space-y-2">
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              門訓系統
-                            </label>
+                            <label className="block text-xs text-gray-500 mb-1">門訓系統</label>
                             <select
                               className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
                               value={r.discipleship}
                               onChange={(e) =>
-                                handleReportChange(
-                                  r.memberId,
-                                  'discipleship',
-                                  e.target.value
-                                )
+                                handleReportChange(r.memberId, 'discipleship', e.target.value)
                               }
                             >
                               <option value="">-</option>
@@ -382,15 +371,11 @@ function GroupReport() {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              OIKOS
-                            </label>
+                            <label className="block text-xs text-gray-500 mb-1">OIKOS</label>
                             <select
                               className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
                               value={r.oikos}
-                              onChange={(e) =>
-                                handleReportChange(r.memberId, 'oikos', e.target.value)
-                              }
+                              onChange={(e) => handleReportChange(r.memberId, 'oikos', e.target.value)}
                             >
                               <option value="">-</option>
                               <option value="p">代禱</option>
@@ -402,16 +387,12 @@ function GroupReport() {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              備註
-                            </label>
+                            <label className="block text-xs text-gray-500 mb-1">備註</label>
                             <input
                               type="text"
                               className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
                               value={r.note}
-                              onChange={(e) =>
-                                handleReportChange(r.memberId, 'note', e.target.value)
-                              }
+                              onChange={(e) => handleReportChange(r.memberId, 'note', e.target.value)}
                               placeholder="輸入備註"
                             />
                           </div>
@@ -472,19 +453,11 @@ function GroupReport() {
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.identity}
                                   onChange={(e) =>
-                                    handleReportChange(
-                                      r.memberId,
-                                      'identity',
-                                      e.target.value
-                                    )
+                                    handleReportChange(r.memberId, 'identity', e.target.value)
                                   }
                                 >
                                   {identityOptions.map((opt) => (
-                                    <option
-                                      key={opt.value}
-                                      value={opt.value}
-                                      className="text-gray-900"
-                                    >
+                                    <option key={opt.value} value={opt.value} className="text-gray-900">
                                       {opt.label}
                                     </option>
                                   ))}
@@ -501,11 +474,7 @@ function GroupReport() {
                                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                     checked={(r as any)[key]}
                                     onChange={(e) =>
-                                      handleReportChange(
-                                        r.memberId,
-                                        key as any,
-                                        e.target.checked
-                                      )
+                                      handleReportChange(r.memberId, key, e.target.checked)
                                     }
                                   />
                                 </td>
@@ -516,11 +485,7 @@ function GroupReport() {
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.discipleship}
                                   onChange={(e) =>
-                                    handleReportChange(
-                                      r.memberId,
-                                      'discipleship',
-                                      e.target.value
-                                    )
+                                    handleReportChange(r.memberId, 'discipleship', e.target.value)
                                   }
                                 >
                                   <option value="" className="text-gray-500">
@@ -547,9 +512,7 @@ function GroupReport() {
                                 <select
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.oikos}
-                                  onChange={(e) =>
-                                    handleReportChange(r.memberId, 'oikos', e.target.value)
-                                  }
+                                  onChange={(e) => handleReportChange(r.memberId, 'oikos', e.target.value)}
                                 >
                                   <option value="" className="text-gray-500">
                                     -
@@ -579,9 +542,7 @@ function GroupReport() {
                                   type="text"
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.note}
-                                  onChange={(e) =>
-                                    handleReportChange(r.memberId, 'note', e.target.value)
-                                  }
+                                  onChange={(e) => handleReportChange(r.memberId, 'note', e.target.value)}
                                   placeholder="輸入備註"
                                 />
                               </td>

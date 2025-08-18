@@ -6,63 +6,68 @@ const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   apiVersion: '2024-01-01',
-  token: process.env.SANITY_WRITE_TOKEN, // 需要寫入權限
+  token: process.env.SANITY_WRITE_TOKEN, // 需有寫入權限
   useCdn: false,
 })
 
-function getIP(req: NextApiRequest) {
-  const xf = (req.headers['x-forwarded-for'] as string) || ''
-  const xv = (req.headers['x-vercel-forwarded-for'] as string) || ''
-  const xr = (req.headers['x-real-ip'] as string) || ''
-  const cand = xf || xv || xr || req.socket.remoteAddress || ''
-  return cand.split(',')[0].trim()
-}
-
-function getCountry(req: NextApiRequest) {
-  // Vercel/Cloudflare 都會帶這些 header（取其一）
-  const c =
-    (req.headers['x-vercel-ip-country'] as string) ||
-    (req.headers['cf-ipcountry'] as string) ||
+function getIp(req: NextApiRequest) {
+  const fwd = (req.headers['x-forwarded-for'] || '') as string
+  const ip =
+    fwd.split(',')[0]?.trim() ||
+    (req.headers['x-real-ip'] as string) ||
+    req.socket.remoteAddress ||
     ''
-  return c ? c.toUpperCase() : '未知'
+  return ip
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ ok: false, message: 'Method Not Allowed' })
+    res.status(405).json({ message: 'Method Not Allowed' })
+    return
   }
 
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {})
-    const page: string = body.page || ''
-    const referer: string = body.referrer || body.referer || ''
-    const userAgent: string = (req.headers['user-agent'] as string) || body.userAgent || ''
-    const hostHeader =
-      (req.headers['x-forwarded-host'] as string) ||
-      (req.headers.host as string) ||
-      ''
-    const site: string = (body.site || hostHeader || '').toLowerCase()
+    const { page = '', referrer = '', referer = '', userAgent = '', site = '' } = (req.body || {}) as {
+      page?: string
+      referrer?: string
+      referer?: string
+      userAgent?: string
+      site?: string
+    }
 
-    const ip = getIP(req)
-    const country = getCountry(req)
+    // 從 Vercel 提供的標頭拿國別 (如: "TW", "US")
+    const countryHeader =
+      (req.headers['x-vercel-ip-country'] as string) ||
+      (req.headers['x-vercel-ip-country-region'] as string) ||
+      ''
+    const country = countryHeader || '未知'
+
+    const ip = getIp(req)
+    const ua = userAgent || ((req.headers['user-agent'] as string) || '')
+    const host =
+      (req.headers['x-forwarded-host'] as string)?.toLowerCase() ||
+      (req.headers.host as string)?.toLowerCase() ||
+      site?.toLowerCase() ||
+      ''
+
+    // YYYY-MM-DD（便於後台統計）
     const date = new Date().toISOString().slice(0, 10)
 
     await client.create({
       _type: 'pageViewLog',
       date,
       page,
-      referer,
-      userAgent,
+      referer: referrer || referer || '',
+      userAgent: ua,
       country,
-      host: site,      // 後台用這個區分正式站/本地
+      host,
       ip,
       createdAt: new Date().toISOString(),
     })
 
-    return res.status(200).json({ ok: true })
+    res.status(200).json({ ok: true })
   } catch (err: any) {
     console.error('track-view error:', err)
-    return res.status(500).json({ ok: false, message: err?.message || 'server error' })
+    res.status(500).json({ ok: false, message: err?.message || 'server error' })
   }
 }

@@ -1,6 +1,6 @@
 // pages/member/group-report/index.tsx
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 
@@ -17,7 +17,7 @@ interface MemberReport {
   prayerMeeting: boolean;
   happinessGroup: boolean;
   oikos: string;
-  discipleship: string; 
+  discipleship: string;
   note: string;
 }
 
@@ -40,20 +40,10 @@ function GroupReport() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
 
-  // 未登入時導回
+  // 取所有小組（僅登入後執行）
   useEffect(() => {
-    if (status === 'unauthenticated' && typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
-      const callbackUrl = encodeURIComponent(router.asPath);
-      router.replace(`/auth/login?callbackUrl=${callbackUrl}`);
-    }
-    if (status === 'authenticated' && typeof window !== 'undefined' && window.location.pathname === '/auth/login') {
-      const cb = new URLSearchParams(window.location.search).get('callbackUrl');
-      if (cb) window.location.href = decodeURIComponent(cb);
-    }
-  }, [status, router]);
+    if (status !== 'authenticated') return;
 
-  // 取所有小組
-  useEffect(() => {
     async function fetchGroups() {
       try {
         const data: { _id: string; name: string }[] = await sanityClient.fetch(
@@ -67,10 +57,12 @@ function GroupReport() {
       }
     }
     fetchGroups();
-  }, []);
+  }, [status]);
 
-  // 當 groupId 變更時，抓成員並初始化 reports
+  // 當 groupId 變更時，抓成員並初始化 reports（僅登入後執行）
   useEffect(() => {
+    if (status !== 'authenticated') return;
+
     async function fetchMembersForGroup() {
       if (!groupId) {
         setReports([]);
@@ -82,7 +74,7 @@ function GroupReport() {
           { groupId }
         );
         setReports(
-          memberDocs.map(m => ({
+          memberDocs.map((m) => ({
             memberId: m._id,
             memberName: m.name,
             identity: 'member',
@@ -103,7 +95,7 @@ function GroupReport() {
       }
     }
     fetchMembersForGroup();
-  }, [groupId]);
+  }, [groupId, status]);
 
   // 欄位更新
   const handleReportChange = (
@@ -120,10 +112,8 @@ function GroupReport() {
       | 'note',
     value: any
   ) => {
-    setReports(prev =>
-      prev.map(r =>
-        r.memberId === memberId ? { ...r, [field]: value } : r
-      )
+    setReports((prev) =>
+      prev.map((r) => (r.memberId === memberId ? { ...r, [field]: value } : r))
     );
   };
 
@@ -145,7 +135,7 @@ function GroupReport() {
       const payload = {
         date,
         groupId,
-        reports: reports.map(r => ({
+        reports: reports.map((r) => ({
           member: r.memberId,
           identity: r.identity,
           devotion: r.devotion,
@@ -178,20 +168,51 @@ function GroupReport() {
     }
   };
 
-  if (status !== 'authenticated') {
-    return <div className="p-4 text-center">載入中...</div>;
+  // === NextAuth 守門 ===
+  if (status === 'loading') {
+    return (
+      <Layout>
+        <div className="min-h-screen pt-40 pb-8 flex items-center justify-center">
+          <div className="text-gray-600">載入中…</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <Layout>
+        <div className="min-h-screen pt-40 pb-8 flex items-center justify-center">
+          <div className="rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+            <p className="mb-4 text-gray-700">請先登入才能使用小組長回報。</p>
+            <button
+              onClick={() => signIn(undefined, { callbackUrl: router.asPath })}
+              className="px-6 py-2 rounded-full text-white bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 shadow"
+            >
+              前往登入
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   // ----(桌機版欄寬控制)----
-  const attendanceKeys = ['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const;
+  const attendanceKeys = [
+    'devotion',
+    'cellGroup',
+    'sundayService',
+    'prayerMeeting',
+    'happinessGroup',
+  ] as const;
   type AttendanceKey = typeof attendanceKeys[number];
 
-  // 寬度設定：把「禱告會」從 w-20 調成 w-24，其餘維持；幸福小組 w-28 保持單行
+  // 寬度設定
   const tdWidthClass: Record<AttendanceKey, string> = {
     devotion: 'w-28',        // 靈修小組
     cellGroup: 'w-28',       // 細胞小組
     sundayService: 'w-28',   // 主日
-    prayerMeeting: 'w-24',   // ← 調寬，避免表頭換行
+    prayerMeeting: 'w-24',   // 禱告會
     happinessGroup: 'w-28',  // 幸福小組
   };
 
@@ -238,7 +259,7 @@ function GroupReport() {
                       type="date"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
                       value={date}
-                      onChange={e => setDate(e.target.value)}
+                      onChange={(e) => setDate(e.target.value)}
                       required
                     />
                   </div>
@@ -259,13 +280,13 @@ function GroupReport() {
                       id="group"
                       className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
                       value={groupId}
-                      onChange={e => setGroupId(e.target.value)}
+                      onChange={(e) => setGroupId(e.target.value)}
                       required
                     >
                       <option value="" className="text-gray-500">
                         請選擇小組
                       </option>
-                      {groupList.map(g => (
+                      {groupList.map((g) => (
                         <option key={g._id} value={g._id} className="text-gray-800">
                           {g.name}
                         </option>
@@ -284,10 +305,10 @@ function GroupReport() {
 
                   {/* 手機版：卡片列表 */}
                   <div className="md:hidden space-y-4">
-                    {reports.map(r => (
+                    {reports.map((r) => (
                       <div
                         key={r.memberId}
-                        className="bg白 p-4 rounded-lg border border-gray-200 shadow-sm"
+                        className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm"
                       >
                         <div className="flex justify-between items-center mb-3">
                           <h3 className="font-medium text-base text-gray-900">
@@ -296,11 +317,11 @@ function GroupReport() {
                           <select
                             className="text-base p-1.5 border border-gray-300 rounded-md"
                             value={r.identity}
-                            onChange={e =>
+                            onChange={(e) =>
                               handleReportChange(r.memberId, 'identity', e.target.value)
                             }
                           >
-                            {identityOptions.map(opt => (
+                            {identityOptions.map((opt) => (
                               <option key={opt.value} value={opt.value}>
                                 {opt.label}
                               </option>
@@ -309,13 +330,13 @@ function GroupReport() {
                         </div>
                         <div className="flex flex-wrap gap-3 text-base">
                           {['devotion', 'cellGroup', 'sundayService', 'prayerMeeting', 'happinessGroup'].map(
-                            key => (
+                            (key) => (
                               <label key={key} className="flex items-center space-x-1 whitespace-nowrap">
                                 <input
                                   type="checkbox"
                                   className="w-4 h-4 text-blue-600 border-gray-300 rounded"
                                   checked={(r as any)[key]}
-                                  onChange={e =>
+                                  onChange={(e) =>
                                     handleReportChange(
                                       r.memberId,
                                       key as any,
@@ -330,7 +351,7 @@ function GroupReport() {
                                     sundayService: '主日',
                                     prayerMeeting: '禱告會',
                                     happinessGroup: '幸福小組',
-                                  }[key]}
+                                  }[key as any]}
                                 </span>
                               </label>
                             )
@@ -344,7 +365,7 @@ function GroupReport() {
                             <select
                               className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
                               value={r.discipleship}
-                              onChange={e =>
+                              onChange={(e) =>
                                 handleReportChange(
                                   r.memberId,
                                   'discipleship',
@@ -367,7 +388,7 @@ function GroupReport() {
                             <select
                               className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
                               value={r.oikos}
-                              onChange={e =>
+                              onChange={(e) =>
                                 handleReportChange(r.memberId, 'oikos', e.target.value)
                               }
                             >
@@ -388,7 +409,7 @@ function GroupReport() {
                               type="text"
                               className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
                               value={r.note}
-                              onChange={e =>
+                              onChange={(e) =>
                                 handleReportChange(r.memberId, 'note', e.target.value)
                               }
                               placeholder="輸入備註"
@@ -440,7 +461,7 @@ function GroupReport() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {reports.map(r => (
+                          {reports.map((r) => (
                             <tr key={r.memberId} className="hover:bg-gray-50">
                               {/* 資料列：固定寬度並截斷顯示 */}
                               <td className="py-4 px-4 text-gray-900 border-b border-gray-100 w-28">
@@ -450,7 +471,7 @@ function GroupReport() {
                                 <select
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.identity}
-                                  onChange={e =>
+                                  onChange={(e) =>
                                     handleReportChange(
                                       r.memberId,
                                       'identity',
@@ -458,7 +479,7 @@ function GroupReport() {
                                     )
                                   }
                                 >
-                                  {identityOptions.map(opt => (
+                                  {identityOptions.map((opt) => (
                                     <option
                                       key={opt.value}
                                       value={opt.value}
@@ -479,7 +500,7 @@ function GroupReport() {
                                     type="checkbox"
                                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                     checked={(r as any)[key]}
-                                    onChange={e =>
+                                    onChange={(e) =>
                                       handleReportChange(
                                         r.memberId,
                                         key as any,
@@ -494,7 +515,7 @@ function GroupReport() {
                                 <select
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.discipleship}
-                                  onChange={e =>
+                                  onChange={(e) =>
                                     handleReportChange(
                                       r.memberId,
                                       'discipleship',
@@ -526,7 +547,7 @@ function GroupReport() {
                                 <select
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.oikos}
-                                  onChange={e =>
+                                  onChange={(e) =>
                                     handleReportChange(r.memberId, 'oikos', e.target.value)
                                   }
                                 >
@@ -558,7 +579,7 @@ function GroupReport() {
                                   type="text"
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.note}
-                                  onChange={e =>
+                                  onChange={(e) =>
                                     handleReportChange(r.memberId, 'note', e.target.value)
                                   }
                                   placeholder="輸入備註"
@@ -577,7 +598,7 @@ function GroupReport() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !groupId}
-                  className={`inline-flex items-center justify-center px-8 py-3 rounded-full text白 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${
+                  className={`inline-flex items-center justify-center px-8 py-3 rounded-full text-white font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${
                     isSubmitting
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600'

@@ -1,7 +1,7 @@
+// studio/components/PageViewStatsTool.tsx
 import React, { useEffect, useState, forwardRef } from "react"
 import type { Ref } from "react"
 import { useClient } from "sanity"
-import type { PaneComponentProps } from "sanity"
 import { Card, Heading, Box, Select, Text } from "@sanity/ui"
 import {
   ResponsiveContainer,
@@ -22,26 +22,17 @@ type PageViewLog = {
   host?: string
 }
 
-function normHost(log: PageViewLog) {
-  if (log.host) return log.host
-  if (log.referer) {
-    try {
-      const u = new URL(log.referer)
-      return u.host
-    } catch { /* ignore */ }
-  }
-  return "(unknown)"
-}
+const PROD_HOST = "nanke-blessing.vercel.app"
 
 function PageViewStatsTool(
-  props: PaneComponentProps,
+  _props: unknown,               // 這裡原本是 PaneComponentProps，改成 unknown/any 即可
   ref: Ref<HTMLDivElement>
 ) {
   const client = useClient({ apiVersion: "2024-01-01" })
   const [data, setData] = useState<PageViewLog[]>([])
   const [page, setPage] = useState("all")
-  const [host, setHost] = useState("all")
 
+  // 日期範圍
   const todayStr = new Date().toISOString().slice(0, 10)
   const defaultStart = new Date(Date.now() - 29 * 24 * 3600 * 1000)
     .toISOString()
@@ -49,6 +40,7 @@ function PageViewStatsTool(
   const [startDate, setStartDate] = useState(defaultStart)
   const [endDate, setEndDate] = useState(todayStr)
 
+  // 手機判定
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
     const upd = () => setIsMobile(window.innerWidth <= 600)
@@ -57,62 +49,61 @@ function PageViewStatsTool(
     return () => window.removeEventListener("resize", upd)
   }, [])
 
-  // ★ 不再在 GROQ 先按 host 篩掉，統一抓回來再過濾，避免看不到資料
+  // 僅統計正式站；舊資料以 referer 前綴回補
   useEffect(() => {
+    const hostPrefix = `https://${PROD_HOST}*`
     client
       .fetch<PageViewLog[]>(
-        `*[_type=="pageViewLog" && date >= $start && date <= $end]{
-           page,date,country,referer,userAgent,host
-         } | order(date asc)`,
-        { start: startDate, end: endDate }
+        `*[_type=="pageViewLog" 
+           && date >= $start && date <= $end 
+           && (
+                host == $host 
+                || (!defined(host) && defined(referer) && referer match $hostPrefix)
+              )
+          ]{
+            page,date,country,referer,userAgent,host
+          } | order(date asc)`,
+        { start: startDate, end: endDate, host: PROD_HOST, hostPrefix }
       )
       .then(setData)
-      .catch((e) => {
-        console.error("fetch pageViewLog failed:", e)
-        setData([])
-      })
   }, [client, startDate, endDate])
 
-  // 依選擇的 host/page 過濾
-  const filtered = data.filter(d => {
-    const h = normHost(d)
-    if (host !== "all" && h !== host) return false
-    if (page !== "all" && d.page !== page) return false
-    return true
-  })
-
-  const pages = Array.from(new Set(filtered.map((d) => d.page)))
-  const hosts = Array.from(new Set(data.map(normHost))).sort()
-
-  // 每日瀏覽量
-  const bucket: Record<string, number> = {}
-  filtered.forEach(d => {
+  // 組 chartData：統計每日瀏覽量
+  const pages = Array.from(new Set(data.map((d) => d.page)))
+  const viewCount: Record<string, number> = {}
+  data.forEach((d) => {
+    if (page !== "all" && d.page !== page) return
     const key = `${d.date}-${d.page}`
-    bucket[key] = (bucket[key] || 0) + 1
+    viewCount[key] = (viewCount[key] || 0) + 1
   })
   const start = new Date(startDate)
   const end = new Date(endDate)
-  const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 864e5) + 1)
+  const days = Math.ceil((end.getTime() - start.getTime()) / 864e5) + 1
   const chartData: { date: string; views: number }[] = []
   for (let i = 0; i < days; i++) {
     const d = new Date(start.getTime() + i * 864e5)
     const dateKey = d.toISOString().slice(0, 10)
     let views = 0
     if (page === "all") {
-      views = pages.reduce((sum, p) => sum + (bucket[`${dateKey}-${p}`] || 0), 0)
+      views = pages.reduce(
+        (sum, p) => sum + (viewCount[`${dateKey}-${p}`] || 0),
+        0
+      )
     } else {
-      views = bucket[`${dateKey}-${page}`] || 0
+      views = viewCount[`${dateKey}-${page}`] || 0
     }
     chartData.push({ date: dateKey, views })
   }
 
+  // 控制 X 軸顯示
   const interval = Math.max(1, Math.ceil(chartData.length / (isMobile ? 4 : 12)))
 
   // 統計列表
   const countryStat: Record<string, number> = {}
   const refererStat: Record<string, number> = {}
   const deviceStat: Record<string, number> = {}
-  filtered.forEach((d) => {
+  data.forEach((d) => {
+    if (page !== "all" && d.page !== page) return
     const c = d.country || "未知"
     const r = d.referer || "直接"
     const dv = d.userAgent?.includes("Mobile") ? "Mobile" : "Desktop"
@@ -123,7 +114,7 @@ function PageViewStatsTool(
 
   return (
     <Card padding={4} radius={4} ref={ref}>
-      <Heading>網站瀏覽統計 Dashboard</Heading>
+      <Heading>網站瀏覽統計 Dashboard（{PROD_HOST}）</Heading>
 
       {/* 篩選區 */}
       <Box marginY={3} style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
@@ -147,17 +138,14 @@ function PageViewStatsTool(
           />
         </Box>
         <Box>
-          <label>來源網域：</label>
-          <Select value={host} onChange={(e) => setHost(e.currentTarget.value)} style={{ minWidth: 200 }}>
-            <option value="all">全部</option>
-            {hosts.map(h => <option key={h} value={h}>{h}</option>)}
-          </Select>
-        </Box>
-        <Box>
           <label>頁面：</label>
-          <Select value={page} onChange={(e) => setPage(e.currentTarget.value)} style={{ minWidth: 160 }}>
+          <Select
+            value={page}
+            onChange={(e) => setPage(e.currentTarget.value)}
+            style={{ minWidth: 160 }}
+          >
             <option value="all">全部</option>
-            {Array.from(new Set(filtered.map(d => d.page))).map(p => (
+            {pages.map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
           </Select>
@@ -176,9 +164,9 @@ function PageViewStatsTool(
               dataKey="date"
               interval={interval}
               height={isMobile ? 40 : 60}
-              tickFormatter={(d) => {
-                const x = new Date(d)
-                return `${x.getMonth() + 1}/${x.getDate()}`
+              tickFormatter={(dateStr) => {
+                const d = new Date(dateStr)
+                return `${d.getMonth() + 1}/${d.getDate()}`
               }}
               tick={{ fontSize: isMobile ? 10 : 12 }}
               minTickGap={isMobile ? 20 : 0}
@@ -191,7 +179,7 @@ function PageViewStatsTool(
         </ResponsiveContainer>
       </Box>
 
-      {/* 簡要統計 */}
+      {/* 明細 */}
       <Box marginY={isMobile ? 2 : 4} style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
         <Box>
           <Text weight="bold">國家：</Text>
@@ -222,4 +210,4 @@ function PageViewStatsTool(
   )
 }
 
-export default forwardRef<HTMLDivElement, PaneComponentProps>(PageViewStatsTool)
+export default forwardRef<HTMLDivElement, unknown>(PageViewStatsTool)

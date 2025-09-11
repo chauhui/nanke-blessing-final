@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@headlessui/react": "^2.1.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",

@@ -1,24 +1,47 @@
-import { createClient } from '@sanity/client'
+// lib/sanity.ts
+import {createClient, type ClientConfig} from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
 
-export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!, // ← 前端專用
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: '2023-05-03', // 建議跟 auth 端一致
-  useCdn: true, // 前端查詢資料建議用 CDN
-  // 前端**不要**帶 token
-})
+const projectId =
+  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? process.env.SANITY_PROJECT_ID ?? ''
+const dataset =
+  process.env.NEXT_PUBLIC_SANITY_DATASET ?? process.env.SANITY_DATASET ?? ''
+const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION ?? '2024-01-01'
 
-// 建立 image-url builder
-const builder = imageUrlBuilder(client)
+if (!projectId || !dataset) {
+  // 直接用空字串初始化，避免 throw 讓整站掛；錯誤交由 fetch 時記錄
+  console.warn('[sanity] projectId/dataset missing. Check env.')
+}
 
+const config: ClientConfig = {
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: true,              // 公開內容用 CDN
+  perspective: 'published',  // 明確取 published
+}
+
+const baseClient = createClient(config)
+
+// ---- 互相容匯出（避免既有程式壞掉） ----
+export const sanityClient = baseClient
+export const client = baseClient
+export const sanity = baseClient
+export default baseClient
+
+// 圖片
+const builder = imageUrlBuilder(baseClient)
 export const urlFor = (source: any) => builder.image(source)
 
-export const fetchQuery = async (query: string) => {
+// 包一層 fetch，方便共用
+export const fetchQuery = async <T>(
+  query: string,
+  params?: Record<string, any>
+): Promise<T> => {
   try {
-    return await client.fetch(query)
-  } catch (error) {
-    console.error('Sanity query error:', error)
-    throw error
+    return await baseClient.fetch<T>(query, params)
+  } catch (err) {
+    console.error('[sanity] fetch error:', err)
+    throw err
   }
 }

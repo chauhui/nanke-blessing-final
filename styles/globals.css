@@ -24,7 +24,18 @@ html {
   scroll-behavior: smooth;
 }
 
-/* 全站字型設定 */
+/* 全站字型設定：英數用 Arial，中文維持 Noto Sans TC / 系統中文字體 */
+@font-face {
+  font-family: 'ArialLatin';
+  src: local('Arial'), local('ArialMT'), local('Helvetica Neue'), local('Helvetica'), local('Liberation Sans');
+  unicode-range: U+0000-00FF; /* A–Z, a–z, 0–9 與常見西文符號 */
+  font-display: swap;
+}
 
+/* 以 CSS 變數集中管理字體順序：把英數交給 ArialLatin，其餘走中文系統字體 */
+:root {
+  --font-sans: ArialLatin, 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei',
+               system-ui, -apple-system, 'Segoe UI', Arial, Helvetica, sans-serif;
+}
 
-/* 查看文件是否存在 */ 
+/*（查看文件是否存在）*/

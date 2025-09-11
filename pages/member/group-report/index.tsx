@@ -1,24 +1,25 @@
 // pages/member/group-report/index.tsx
-import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
+import React, { useState, useEffect } from 'react'
+import type { GetServerSideProps } from 'next'
+import { getSession, useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import Layout from '@/components/Layout'
 
 // 以命名匯入的方式取出 Sanity client
-import { client as sanityClient } from '@/lib/sanity.client';
+import { client as sanityClient } from '@/lib/sanity.client'
 
 interface MemberReport {
-  memberId: string;    // 真正的 member document _id
-  memberName: string;  // 畫面呈現用的「組員姓名」
-  identity: string;
-  devotion: boolean;
-  cellGroup: boolean;
-  sundayService: boolean;
-  prayerMeeting: boolean;
-  happinessGroup: boolean;
-  oikos: string;
-  discipleship: string;
-  note: string;
+  memberId: string
+  memberName: string
+  identity: string
+  devotion: boolean
+  cellGroup: boolean
+  sundayService: boolean
+  prayerMeeting: boolean
+  happinessGroup: boolean
+  oikos: string
+  discipleship: string
+  note: string
 }
 
 const identityOptions = [
@@ -26,69 +27,49 @@ const identityOptions = [
   { value: 'parent', label: '家長' },
   { value: 'staff', label: '合心同工' },
   { value: 'member', label: '組員' },
-];
+]
 
 function GroupReport() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { status } = useSession()
+  const router = useRouter()
 
-  const [groupList, setGroupList] = useState<{ _id: string; name: string }[]>([]);
-  const [groupId, setGroupId] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [reports, setReports] = useState<MemberReport[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [groupList, setGroupList] = useState<{ _id: string; name: string }[]>([])
+  const [groupId, setGroupId] = useState<string>('')
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [reports, setReports] = useState<MemberReport[]>([])
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [successMessage, setSuccessMessage] = useState<string>('')
 
-  // 未登入時導回
-  useEffect(() => {
-    if (
-      status === 'unauthenticated' &&
-      typeof window !== 'undefined' &&
-      window.location.pathname !== '/auth/login'
-    ) {
-      const callbackUrl = encodeURIComponent(router.asPath);
-      router.replace(`/auth/login?callbackUrl=${callbackUrl}`);
-    }
-    if (
-      status === 'authenticated' &&
-      typeof window !== 'undefined' &&
-      window.location.pathname === '/auth/login'
-    ) {
-      const cb = new URLSearchParams(window.location.search).get('callbackUrl');
-      if (cb) window.location.href = decodeURIComponent(cb);
-    }
-  }, [status, router]);
-
-  // 取所有小組
+  // 取得所有小組
   useEffect(() => {
     async function fetchGroups() {
       try {
         const data: { _id: string; name: string }[] = await sanityClient.fetch(
           `*[_type == "group"]{ _id, name }`
-        );
-        setGroupList(data);
-        if (data.length) setGroupId(data[0]._id);
+        )
+        setGroupList(data)
+        if (data.length) setGroupId(data[0]._id)
       } catch (err) {
-        console.error('取得小組列表錯誤：', err);
-        setErrorMessage('無法取得小組列表，請稍後再試');
+        console.error('取得小組列表錯誤：', err)
+        setErrorMessage('無法取得小組列表，請稍後再試')
       }
     }
-    fetchGroups();
-  }, []);
+    fetchGroups()
+  }, [])
 
   // 當 groupId 變更時，抓成員並初始化 reports
   useEffect(() => {
     async function fetchMembersForGroup() {
       if (!groupId) {
-        setReports([]);
-        return;
+        setReports([])
+        return
       }
       try {
         const memberDocs: { _id: string; name: string }[] = await sanityClient.fetch(
           `*[_type == "member" && $groupId in groups[]._ref]{ _id, name }`,
           { groupId }
-        );
+        )
         setReports(
           memberDocs.map((m) => ({
             memberId: m._id,
@@ -103,15 +84,15 @@ function GroupReport() {
             discipleship: '',
             note: '',
           }))
-        );
+        )
       } catch (err) {
-        console.error('取得組員列表錯誤：', err);
-        setErrorMessage('無法取得該小組的組員，請稍後再試');
-        setReports([]);
+        console.error('取得組員列表錯誤：', err)
+        setErrorMessage('無法取得該小組的組員，請稍後再試')
+        setReports([])
       }
     }
-    fetchMembersForGroup();
-  }, [groupId]);
+    fetchMembersForGroup()
+  }, [groupId])
 
   // 欄位更新
   const handleReportChange = (
@@ -130,23 +111,25 @@ function GroupReport() {
   ) => {
     setReports((prev) =>
       prev.map((r) => (r.memberId === memberId ? { ...r, [field]: value } : r))
-    );
-  };
+    )
+  }
 
   // 提交
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
+    e.preventDefault()
+    setErrorMessage('')
+    setSuccessMessage('')
+
     if (!groupId) {
-      setErrorMessage('請先選擇小組');
-      return;
+      setErrorMessage('請先選擇小組')
+      return
     }
     if (!reports.length) {
-      setErrorMessage('此小組沒有可回報的組員');
-      return;
+      setErrorMessage('此小組沒有可回報的組員')
+      return
     }
-    setIsSubmitting(true);
+
+    setIsSubmitting(true)
     try {
       const payload = {
         date,
@@ -163,29 +146,31 @@ function GroupReport() {
           discipleship: r.discipleship,
           note: r.note,
         })),
-      };
+      }
+
       const res = await fetch('/api/group-report/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
-      });
-      const data = await res.json();
+      })
+
+      const data = await res.json()
       if (!res.ok) {
-        setErrorMessage(data.message || '提交失敗');
+        setErrorMessage(data.message || '提交失敗')
       } else {
-        setSuccessMessage('回報已成功提交！');
+        setSuccessMessage('回報已成功提交！')
       }
     } catch (err) {
-      console.error(err);
-      setErrorMessage('提交異常，請稍後再試');
+      console.error(err)
+      setErrorMessage('提交異常，請稍後再試')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  if (status !== 'authenticated') {
-    return <div className="p-4 text-center">載入中...</div>;
+  if (status === 'loading') {
+    return <div className="p-4 text-center">載入中...</div>
   }
 
   // ----(桌機版欄寬控制)----
@@ -195,27 +180,26 @@ function GroupReport() {
     'sundayService',
     'prayerMeeting',
     'happinessGroup',
-  ] as const;
-  type AttendanceKey = typeof attendanceKeys[number];
+  ] as const
+  type AttendanceKey = typeof attendanceKeys[number]
 
-  // 寬度設定
   const tdWidthClass: Record<AttendanceKey, string> = {
-    devotion: 'w-28', // 靈修小組
-    cellGroup: 'w-28', // 細胞小組
-    sundayService: 'w-28', // 主日
-    prayerMeeting: 'w-24', // 調寬，避免表頭換行
-    happinessGroup: 'w-28', // 幸福小組
-  };
+    devotion: 'w-28',
+    cellGroup: 'w-28',
+    sundayService: 'w-28',
+    prayerMeeting: 'w-24',
+    happinessGroup: 'w-28',
+  }
 
-  // ----(手機版出席鍵/顯示文字的型別安全寫法)----
+  // ----(手機版顯示)----
   const mobileKeys = [
     'devotion',
     'cellGroup',
     'sundayService',
     'prayerMeeting',
     'happinessGroup',
-  ] as const;
-  type MobileKey = typeof mobileKeys[number];
+  ] as const
+  type MobileKey = typeof mobileKeys[number]
 
   const mobileLabelMap: Record<MobileKey, string> = {
     devotion: '靈修小組',
@@ -223,7 +207,7 @@ function GroupReport() {
     sundayService: '主日',
     prayerMeeting: '禱告會',
     happinessGroup: '幸福小組',
-  };
+  }
 
   return (
     <Layout>
@@ -242,9 +226,7 @@ function GroupReport() {
 
           <div className="bg-white p-8 rounded-xl shadow-md">
             {errorMessage && (
-              <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
-                {errorMessage}
-              </div>
+              <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">{errorMessage}</div>
             )}
             {successMessage && (
               <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg">
@@ -337,15 +319,13 @@ function GroupReport() {
                         </div>
 
                         <div className="flex flex-wrap gap-3 text-base">
-                          {mobileKeys.map((key) => (
+                          {(['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const).map((key) => (
                             <label key={key} className="flex items-center space-x-1 whitespace-nowrap">
                               <input
                                 type="checkbox"
                                 className="w-4 h-4 text-blue-600 border-gray-300 rounded"
                                 checked={Boolean((r as any)[key])}
-                                onChange={(e) =>
-                                  handleReportChange(r.memberId, key, e.target.checked)
-                                }
+                                onChange={(e) => handleReportChange(r.memberId, key, e.target.checked)}
                               />
                               <span>{mobileLabelMap[key]}</span>
                             </label>
@@ -407,29 +387,20 @@ function GroupReport() {
                       <table className="min-w-full bg-white">
                         <thead className="bg-gray-50">
                           <tr>
-                            {/* 組員欄位：縮小寬度並避免換行 */}
                             <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-28 whitespace-nowrap">
                               組員
                             </th>
                             <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-28">
                               身份
                             </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
-                              靈修小組
-                            </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
-                              細胞小組
-                            </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
-                              主日
-                            </th>
-                            {/* 禱告會：加上 nowrap 並調成 w-24 */}
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-24">
-                              禱告會
-                            </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap w-28">
-                              幸福小組
-                            </th>
+                            {(['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const).map((key) => (
+                              <th
+                                key={key}
+                                className={`py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap ${tdWidthClass[key]}`}
+                              >
+                                {mobileLabelMap[key]}
+                              </th>
+                            ))}
                             <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-28">
                               門訓系統
                             </th>
@@ -444,7 +415,6 @@ function GroupReport() {
                         <tbody className="divide-y divide-gray-200">
                           {reports.map((r) => (
                             <tr key={r.memberId} className="hover:bg-gray-50">
-                              {/* 資料列：固定寬度並截斷顯示 */}
                               <td className="py-4 px-4 text-gray-900 border-b border-gray-100 w-28">
                                 <div className="truncate">{r.memberName}</div>
                               </td>
@@ -464,7 +434,7 @@ function GroupReport() {
                                 </select>
                               </td>
 
-                              {attendanceKeys.map((key) => (
+                              {(['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const).map((key) => (
                                 <td
                                   key={key}
                                   className={`py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap ${tdWidthClass[key]}`}
@@ -473,9 +443,7 @@ function GroupReport() {
                                     type="checkbox"
                                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                     checked={(r as any)[key]}
-                                    onChange={(e) =>
-                                      handleReportChange(r.memberId, key, e.target.checked)
-                                    }
+                                    onChange={(e) => handleReportChange(r.memberId, key, e.target.checked)}
                                   />
                                 </td>
                               ))}
@@ -488,55 +456,31 @@ function GroupReport() {
                                     handleReportChange(r.memberId, 'discipleship', e.target.value)
                                   }
                                 >
-                                  <option value="" className="text-gray-500">
-                                    -
-                                  </option>
-                                  <option value="door-up" className="text-gray-900">
-                                    門上
-                                  </option>
-                                  <option value="door-down" className="text-gray-900">
-                                    門下
-                                  </option>
-                                  <option value="bless-up" className="text-gray-900">
-                                    福上
-                                  </option>
-                                  <option value="bless-down" className="text-gray-900">
-                                    福下
-                                  </option>
-                                  <option value="done" className="text-gray-900">
-                                    完成
-                                  </option>
+                                  <option value="" className="text-gray-500">-</option>
+                                  <option value="door-up" className="text-gray-900">門上</option>
+                                  <option value="door-down" className="text-gray-900">門下</option>
+                                  <option value="bless-up" className="text-gray-900">福上</option>
+                                  <option value="bless-down" className="text-gray-900">福下</option>
+                                  <option value="done" className="text-gray-900">完成</option>
                                 </select>
                               </td>
+
                               <td className="py-3 px-3 border-b border-gray-100">
                                 <select
                                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                   value={r.oikos}
                                   onChange={(e) => handleReportChange(r.memberId, 'oikos', e.target.value)}
                                 >
-                                  <option value="" className="text-gray-500">
-                                    -
-                                  </option>
-                                  <option value="p" className="text-gray-900">
-                                    代禱
-                                  </option>
-                                  <option value="l" className="text-gray-900">
-                                    LINE
-                                  </option>
-                                  <option value="v" className="text-gray-900">
-                                    探訪
-                                  </option>
-                                  <option value="m" className="text-gray-900">
-                                    幸福小組/講座
-                                  </option>
-                                  <option value="f" className="text-gray-900">
-                                    聚餐
-                                  </option>
-                                  <option value="t" className="text-gray-900">
-                                    旅遊
-                                  </option>
+                                  <option value="" className="text-gray-500">-</option>
+                                  <option value="p" className="text-gray-900">代禱</option>
+                                  <option value="l" className="text-gray-900">LINE</option>
+                                  <option value="v" className="text-gray-900">探訪</option>
+                                  <option value="m" className="text-gray-900">幸福小組/講座</option>
+                                  <option value="f" className="text-gray-900">聚餐</option>
+                                  <option value="t" className="text-gray-900">旅遊</option>
                                 </select>
                               </td>
+
                               <td className="py-4 px-4 border-b border-gray-100">
                                 <input
                                   type="text"
@@ -573,7 +517,23 @@ function GroupReport() {
         </div>
       </div>
     </Layout>
-  );
+  )
 }
 
-export default GroupReport;
+export default GroupReport
+
+// ✅ 伺服端檢查登入，未登入直接 302 到登入頁（帶回跳轉）
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getSession(ctx) // 不需匯入 authOptions，最穩定
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: `/auth/login?callbackUrl=${encodeURIComponent(ctx.resolvedUrl)}`,
+        permanent: false,
+      },
+    }
+  }
+
+  return { props: {} }
+}

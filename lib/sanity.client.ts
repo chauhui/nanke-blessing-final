@@ -1,4 +1,4 @@
-///// lib/sanity.client.ts
+///// lib/sanity.ts
 import { createClient, type ClientConfig, type QueryParams } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
 
@@ -18,7 +18,7 @@ const config: ClientConfig = {
 
 const baseClient = createClient(config)
 
-// ---- 互相容匯出 ----
+// ---- 互相容匯出（維持原用法）----
 export const sanityClient = baseClient
 export const client = baseClient
 export const sanity = baseClient
@@ -27,11 +27,14 @@ export default baseClient
 const builder = imageUrlBuilder(baseClient)
 export const urlFor = (source: any) => builder.image(source)
 
-// ---- 型別正確的 fetch 包裝（避免 overload 衝突）----
+// ---- 正確型別的 fetch 包裝，避免 overload 編譯錯誤 ----
 export function fetchQuery<T>(query: string): Promise<T>
 export function fetchQuery<T>(query: string, params: QueryParams): Promise<T>
-export function fetchQuery<T>(query: string, params?: QueryParams): Promise<T> {
-  return params
-    ? baseClient.fetch<T>(query, params)
-    : baseClient.fetch<T>(query)
+export async function fetchQuery<T>(query: string, params?: QueryParams): Promise<T> {
+  try {
+    return params ? await baseClient.fetch<T>(query, params) : await baseClient.fetch<T>(query)
+  } catch (err) {
+    console.error('[sanity] fetch error:', err)
+    throw err
+  }
 }

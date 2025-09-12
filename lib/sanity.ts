@@ -1,5 +1,5 @@
-// lib/sanity.ts
-import {createClient, type ClientConfig} from '@sanity/client'
+///// lib/sanity.ts
+import { createClient, type ClientConfig, type QueryParams } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
 
 const projectId =
@@ -8,38 +8,33 @@ const dataset =
   process.env.NEXT_PUBLIC_SANITY_DATASET ?? process.env.SANITY_DATASET ?? ''
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION ?? '2024-01-01'
 
-if (!projectId || !dataset) {
-  // 直接用空字串初始化，避免 throw 讓整站掛；錯誤交由 fetch 時記錄
-  console.warn('[sanity] projectId/dataset missing. Check env.')
-}
-
 const config: ClientConfig = {
   projectId,
   dataset,
   apiVersion,
-  useCdn: true,              // 公開內容用 CDN
-  perspective: 'published',  // 明確取 published
+  useCdn: true,
+  perspective: 'published',
 }
 
 const baseClient = createClient(config)
 
-// ---- 互相容匯出（避免既有程式壞掉） ----
+// ---- 互相容匯出（維持原用法）----
 export const sanityClient = baseClient
 export const client = baseClient
 export const sanity = baseClient
 export default baseClient
 
-// 圖片
 const builder = imageUrlBuilder(baseClient)
 export const urlFor = (source: any) => builder.image(source)
 
-// 包一層 fetch，方便共用
-export const fetchQuery = async <T>(
-  query: string,
-  params?: Record<string, any>
-): Promise<T> => {
+// ---- 正確型別的 fetch 包裝，避免 overload 編譯錯誤 ----
+export function fetchQuery<T>(query: string): Promise<T>
+export function fetchQuery<T>(query: string, params: QueryParams): Promise<T>
+export async function fetchQuery<T>(query: string, params?: QueryParams): Promise<T> {
   try {
-    return await baseClient.fetch<T>(query, params)
+    return params
+      ? await baseClient.fetch<T>(query, params)
+      : await baseClient.fetch<T>(query)
   } catch (err) {
     console.error('[sanity] fetch error:', err)
     throw err

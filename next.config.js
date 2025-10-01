@@ -1,24 +1,7 @@
 /** @type {import('next').NextConfig} */
 
-// ---- Security Headers ----
-const csp = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://apis.google.com https://www.gstatic.com https://www.youtube.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "img-src 'self' data: https:",
-  "font-src 'self' https://fonts.gstatic.com data:",
-  "connect-src 'self' https://*.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://region1.google-analytics.com https://www.googleapis.com https://accounts.google.com https://apidata.googleusercontent.com https:",
-  "frame-src https://calendar.google.com https://*.google.com https://www.youtube.com https://www.youtube-nocookie.com",
-  "media-src 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "block-all-mixed-content",
-  "upgrade-insecure-requests"
-].join("; ");
-
+// 其餘安全標頭由 Next 靜態下發；CSP 由 middleware 動態產生（含 nonce）
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -27,7 +10,6 @@ const securityHeaders = [
   { key: "X-XSS-Protection", value: "1; mode=block" }
 ];
 
-// ---- Next.js Config ----
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,

@@ -82,6 +82,16 @@ export default function GroupReportStatsTool() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const [reportToDelete, setReportToDelete] = useState<string | null>(null);
 
+  // === RWD：<640px 視為手機，改走卡片式，不需要水平捲動 ===
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639.98px)");
+    const onChange = () => setIsMobile(mq.matches);
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
   // 取資料（含日期區間）
   useEffect(() => {
     setLoading(true);
@@ -149,7 +159,7 @@ export default function GroupReportStatsTool() {
     { id: "group9", name: "玉真小組" },
   ];
 
-  // 統計（含 done）
+  // 統計
   const generateStats = (report: any): ReportStats => {
     const stats: ReportStats = {
       totalMembers: Array.isArray(report.reports) ? report.reports.length : 0,
@@ -180,8 +190,8 @@ export default function GroupReportStatsTool() {
       }
 
       const ok = (r.oikos || "").trim();
-      if (ok && stats.oikos.hasOwnProperty(ok)) {
-        stats.oikos[ok as keyof typeof stats.oikos]++;
+      if (ok && (stats.oikos as any)[ok] !== undefined) {
+        (stats.oikos as any)[ok]++;
       }
     });
 
@@ -352,7 +362,7 @@ export default function GroupReportStatsTool() {
                       ))}
                     </Grid>
 
-                    {/* OIKOS 活動統計（文案對齊前台） */}
+                    {/* OIKOS 活動統計 */}
                     <Card padding={3} radius={2} shadow={1} style={{ marginBottom: "1rem", background: "#ffffff" }}>
                       <Text size={1} weight="semibold" style={{ marginBottom: 8 }}>OIKOS 活動統計</Text>
                       <Grid columns={[2, 3, 6]} gap={2}>
@@ -389,60 +399,124 @@ export default function GroupReportStatsTool() {
                       </Card>
                     )}
 
-                    {/* 明細表格（表頭對齊前台） */}
-                    <Card padding={3} radius={2} shadow={1} style={{ background: "#ffffff" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-                        <thead>
-                          <tr style={{ background: "#e7eaf6" }}>
-                            <th style={{ textAlign: "left",  padding: "8px" }}>姓名</th>
-                            <th style={{ textAlign: "left",  padding: "8px" }}>身份</th>
-                            <th style={{ textAlign: "center",padding: "8px" }}>靈修小組</th>
-                            <th style={{ textAlign: "center",padding: "8px" }}>細胞小組</th>
-                            <th style={{ textAlign: "center",padding: "8px" }}>主日</th>
-                            <th style={{ textAlign: "center",padding: "8px" }}>禱告會</th>
-                            <th style={{ textAlign: "center",padding: "8px" }}>幸福小組</th>
-                            <th style={{ textAlign: "left",  padding: "8px" }}>門訓系統</th>
-                            <th style={{ textAlign: "left",  padding: "8px" }}>OIKOS</th>
-                            <th style={{ textAlign: "left",  padding: "8px" }}>備註</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(report.reports || []).map((r: any, idx: number) => (
-                            <tr key={idx} style={{ borderBottom: "1px solid #eee" }}>
-                              <td style={{ padding: "8px" }}>{r.member?.name || "未命名"}</td>
-                              <td style={{ padding: "8px" }}>
+                    {/* 明細（RWD）：手機＝卡片；桌機＝表格 */}
+                    {isMobile ? (
+                      // === 手機卡片（不需要水平捲動、顯示 OIKOS 與門訓） ===
+                      <Stack space={3}>
+                        {(report.reports || []).map((r: any, idx: number) => (
+                          <Card key={idx} radius={2} shadow={1} padding={3} style={{ background: "#fff" }}>
+                            <Flex justify="space-between" align="center" wrap="wrap" gap={2}>
+                              <Text size={2} weight="semibold">{r.member?.name || "未命名"}</Text>
+                              <Badge padding={1} radius={2} fontSize={0}>
                                 {r.identity === "leader" ? "組長"
                                   : r.identity === "parent" ? "家長"
                                   : r.identity === "staff" ? "合心同工" : "組員"}
-                              </td>
-                              <td style={{ padding: "8px", textAlign: "center" }}>{r.devotion ? "✓" : ""}</td>
-                              <td style={{ padding: "8px", textAlign: "center" }}>{r.cellGroup ? "✓" : ""}</td>
-                              <td style={{ padding: "8px", textAlign: "center" }}>{r.sundayService ? "✓" : ""}</td>
-                              <td style={{ padding: "8px", textAlign: "center" }}>{r.prayerMeeting ? "✓" : ""}</td>
-                              <td style={{ padding: "8px", textAlign: "center" }}>{r.happinessGroup ? "✓" : ""}</td>
-                              <td style={{ padding: "8px" }}>
-                                {r.discipleship ? (
-                                  <Badge tone={r.discipleship === "done" ? "positive" : "primary"} padding={1} radius={2} fontSize={0}>
-                                    {discipleshipOptions[r.discipleship] || r.discipleship}
-                                  </Badge>
-                                ) : "-"}
-                              </td>
-                              <td style={{ padding: "8px" }}>
-                                {r.oikos === "p" ? "代禱"
-                                  : r.oikos === "l" ? "LINE"
-                                  : r.oikos === "v" ? "探訪"
-                                  : r.oikos === "m" ? "幸福小組/講座"
-                                  : r.oikos === "f" ? "聚餐"
-                                  : r.oikos === "t" ? "旅遊" : "-"}
-                              </td>
-                              <td style={{ padding: "8px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {r.note || ""}
-                              </td>
+                              </Badge>
+                            </Flex>
+
+                            <Grid columns={2} gap={2} style={{ marginTop: 8 }}>
+                              <Text size={1}>靈修：{r.devotion ? "✓" : "-"}</Text>
+                              <Text size={1}>細胞：{r.cellGroup ? "✓" : "-"}</Text>
+                              <Text size={1}>主日：{r.sundayService ? "✓" : "-"}</Text>
+                              <Text size={1}>禱告：{r.prayerMeeting ? "✓" : "-"}</Text>
+                              <Text size={1}>幸福：{r.happinessGroup ? "✓" : "-"}</Text>
+                              <Text size={1}>
+                                OIKOS：{
+                                  r.oikos === "p" ? "代禱"
+                                    : r.oikos === "l" ? "LINE"
+                                    : r.oikos === "v" ? "探訪"
+                                    : r.oikos === "m" ? "幸福小組/講座"
+                                    : r.oikos === "f" ? "聚餐"
+                                    : r.oikos === "t" ? "旅遊" : "-"
+                                }
+                              </Text>
+                              <Text size={1} style={{ gridColumn: "1 / -1" }}>
+                                門訓：{r.discipleship
+                                  ? (discipleshipOptions[r.discipleship] || r.discipleship)
+                                  : "-"}
+                              </Text>
+                              {r.note && (
+                                <Text size={1} muted style={{ gridColumn: "1 / -1" }}>
+                                  備註：{r.note}
+                                </Text>
+                              )}
+                            </Grid>
+                          </Card>
+                        ))}
+                      </Stack>
+                    ) : (
+                      // === 中大螢幕表格（無水平捲動；欄位會自動換行） ===
+                      <Card padding={3} radius={2} shadow={1} style={{ background: "#ffffff" }}>
+                        <table
+                          style={{
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            fontSize: 14,
+                            tableLayout: "auto",
+                            wordBreak: "keep-all",
+                          }}
+                        >
+                          <thead>
+                            <tr style={{ background: "#e7eaf6" }}>
+                              <th style={{ textAlign: "left", padding: "8px" }}>姓名</th>
+                              <th style={{ textAlign: "left", padding: "8px" }}>身份</th>
+                              <th style={{ textAlign: "center", padding: "8px" }}>靈修小組</th>
+                              <th style={{ textAlign: "center", padding: "8px" }}>細胞小組</th>
+                              <th style={{ textAlign: "center", padding: "8px" }}>主日</th>
+                              <th style={{ textAlign: "center", padding: "8px" }}>禱告會</th>
+                              <th style={{ textAlign: "center", padding: "8px" }}>幸福小組</th>
+                              <th style={{ textAlign: "left", padding: "8px" }}>門訓系統</th>
+                              <th style={{ textAlign: "left", padding: "8px" }}>OIKOS</th>
+                              <th style={{ textAlign: "left", padding: "8px" }}>備註</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </Card>
+                          </thead>
+                          <tbody>
+                            {(report.reports || []).map((r: any, idx: number) => (
+                              <tr key={idx} style={{ borderBottom: "1px solid #eee" }}>
+                                <td style={{ padding: "8px" }}>{r.member?.name || "未命名"}</td>
+                                <td style={{ padding: "8px" }}>
+                                  {r.identity === "leader" ? "組長"
+                                    : r.identity === "parent" ? "家長"
+                                    : r.identity === "staff" ? "合心同工" : "組員"}
+                                </td>
+                                <td style={{ padding: "8px", textAlign: "center" }}>{r.devotion ? "✓" : ""}</td>
+                                <td style={{ padding: "8px", textAlign: "center" }}>{r.cellGroup ? "✓" : ""}</td>
+                                <td style={{ padding: "8px", textAlign: "center" }}>{r.sundayService ? "✓" : ""}</td>
+                                <td style={{ padding: "8px", textAlign: "center" }}>{r.prayerMeeting ? "✓" : ""}</td>
+                                <td style={{ padding: "8px", textAlign: "center" }}>{r.happinessGroup ? "✓" : ""}</td>
+                                <td style={{ padding: "8px" }}>
+                                  {r.discipleship ? (
+                                    <Badge tone={r.discipleship === "done" ? "positive" : "primary"} padding={1} radius={2} fontSize={0}>
+                                      {discipleshipOptions[r.discipleship] || r.discipleship}
+                                    </Badge>
+                                  ) : "-"}
+                                </td>
+                                <td style={{ padding: "8px" }}>
+                                  {r.oikos === "p" ? "代禱"
+                                    : r.oikos === "l" ? "LINE"
+                                    : r.oikos === "v" ? "探訪"
+                                    : r.oikos === "m" ? "幸福小組/講座"
+                                    : r.oikos === "f" ? "聚餐"
+                                    : r.oikos === "t" ? "旅遊" : "-"}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    maxWidth: "240px",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap"
+                                  }}
+                                  title={r.note || ""}
+                                >
+                                  {r.note || ""}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </Card>
+                    )}
                   </Box>
                 )}
               </Card>

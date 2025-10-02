@@ -22,7 +22,29 @@ export const qMonthlyPlan = groq`*[_type=="monthlyPlan" && month==$ym][0]{
 export const ym = (d: Date = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit' }).format(d)
 
-// 提供給前端呼叫的函式（下一步會在頁面/元件接這個函式）
+// 提供給前端呼叫的函式
 export async function getMonthlyPlan(client: SanityClient, d: Date = new Date()) {
   return client.fetch(qMonthlyPlan, { ym: ym(d) })
+}
+
+// --- 新增：生命見證查詢 ---
+export const testimoniesQuery = groq`
+*[_type == "testimony" && isPublished == true]
+| order(order asc, _createdAt desc) {
+  _id,
+  title,
+  tag,
+  description,
+  youtubeUrl,
+  "thumbUrl": coalesce(thumbnail.asset->url, "")
+}
+`
+
+export type Testimony = {
+  _id: string
+  title: string
+  tag?: string
+  description?: string
+  youtubeUrl: string
+  thumbUrl?: string
 }

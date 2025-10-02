@@ -1,4 +1,4 @@
-/////// pages/index.tsx
+// pages/index.tsx
 import Head from 'next/head'
 import NavBar from '@/components/NavBar'
 import HeroCarousel from '@/components/HeroCarousel'
@@ -7,15 +7,32 @@ import Footer from '@/components/Footer'
 import { useEffect, useMemo, useState } from 'react'
 import type { GetServerSideProps } from 'next'
 import { sanityClient } from '@/lib/sanity'  // 只用這個，不改其他檔
+import { testimoniesQuery, type Testimony } from '@/lib/queries'
 
 type Entry = { date: string; title: string; note?: string | null }
 type MonthlyPlan = { themeTitle: string; entries: Entry[] } | null
 
 type HomeProps = {
   monthlyPlan: MonthlyPlan
+  testimonies?: Testimony[] // ← 改為可選，避免未定義
 }
 
-export default function Home({ monthlyPlan }: HomeProps) {
+function extractYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    if (u.hostname.includes('youtu.be')) return u.pathname.replace('/', '')
+    if (u.hostname.includes('youtube.com')) {
+      if (u.pathname === '/watch') return u.searchParams.get('v')
+      if (u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2]
+      if (u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2]
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
   const [showCookieBanner, setShowCookieBanner] = useState(false)
 
   useEffect(() => {
@@ -112,7 +129,7 @@ export default function Home({ monthlyPlan }: HomeProps) {
 
         {/* Cookie Consent */}
         {showCookieBanner && (
-          <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 w-[92%] md:w-auto md:min-w-[720px] rounded-2xl border border-gray-200 bg-white/95 backdrop-blur px-4 py-3 shadow-xl">
+          <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 w-[92%] md:w-auto md:min-w-[720px] rounded-2xl border border-gray-200 bg白/95 backdrop-blur px-4 py-3 shadow-xl">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <p className="text-[13px] md:text-[14px] text-gray-600">
                 本網站使用 cookie 儲存登入狀態與個人化設定。請點選「同意」以確保功能正常運作。
@@ -208,7 +225,7 @@ export default function Home({ monthlyPlan }: HomeProps) {
             </div>
           </section>
 
-          {/* 生命見證（不變） */}
+          {/* 生命見證（改為後台 Sanity 管理） */}
           <section className="bg-slate-50 border-t border-gray-200">
             <div className="container mx-auto px-4 py-10 md:py-12">
               <div className="mb-5 md:mb-6">
@@ -220,57 +237,46 @@ export default function Home({ monthlyPlan }: HomeProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-7">
-                <article className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-card transition px-5 py-5 md:px-6 md:py-6">
-                  <header className="mb-3 flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-xs md:text-[12px] font-semibold">
-                      夫妻
-                    </span>
-                    <h3 className="text-[17px] md:text-[18.5px] font-semibold tracking-tight text-gray-800">
-                      榮杰與菊珍
-                    </h3>
-                  </header>
-                  <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm mb-4">
-                    <div className="aspect-video">
-                      <iframe
-                        src="https://www.youtube.com/embed/KJ_XkJoTW0A"
-                        title="YouTube video player"
-                        loading="lazy"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        className="w-full h-full"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[16px] md:text-[17px] leading-[1.75] text-gray-700">
-                    分享了夫妻間過往的摩擦、溝通困難，以及在信仰過程中如何學會理解、包容與彼此支持。
-                  </p>
-                </article>
+                {(testimonies ?? []).map((t) => {
+                  const vid = extractYouTubeId(t.youtubeUrl)
+                  const embedSrc = vid ? `https://www.youtube.com/embed/${vid}` : t.youtubeUrl
+                  return (
+                    <article
+                      key={t._id}
+                      className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-card transition px-5 py-5 md:px-6 md:py-6"
+                    >
+                      <header className="mb-3 flex items-center gap-2">
+                        {t.tag ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-xs md:text-[12px] font-semibold">
+                            {t.tag}
+                          </span>
+                        ) : null}
+                        <h3 className="text-[17px] md:text-[18.5px] font-semibold tracking-tight text-gray-800">
+                          {t.title}
+                        </h3>
+                      </header>
 
-                <article className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-card transition px-5 py-5 md:px-6 md:py-6">
-                  <header className="mb-3 flex items中心 gap-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-xs md:text-[12px] font-semibold">
-                      親子
-                    </span>
-                    <h3 className="text-[17px] md:text-[18.5px] font-semibold tracking-tight text-gray-800">
-                      淑貞與菀芮
-                    </h3>
-                  </header>
-                  <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm mb-4">
-                    <div className="aspect-video">
-                      <iframe
-                        src="https://www.youtube.com/embed/uMW2kAhZN9k"
-                        title="YouTube video player"
-                        loading="lazy"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        className="w-full h-full"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[16px] md:text-[17px] leading-[1.75] text-gray-700">
-                    分享在教養兒童過程中所經歷的挑戰與掙扎，並透過信仰的力量學會彼此理解與支持。
-                  </p>
-                </article>
+                      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm mb-4">
+                        <div className="aspect-video">
+                          <iframe
+                            src={embedSrc}
+                            title={t.title}
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            className="w-full h-full"
+                          />
+                        </div>
+                      </div>
+
+                      {t.description ? (
+                        <p className="text-[16px] md:text-[17px] leading-[1.75] text-gray-700">
+                          {t.description}
+                        </p>
+                      ) : null}
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -282,7 +288,7 @@ export default function Home({ monthlyPlan }: HomeProps) {
   )
 }
 
-// ====== SSR：只抓「本月主題」 ======
+// ====== SSR：抓「本月主題」與「生命見證」 ======
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
   const ymKey = new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',
@@ -303,10 +309,19 @@ export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
   `
 
   try {
-    const monthlyPlan = await sanityClient.fetch<MonthlyPlan>(monthlyPlanQuery, { ymKey })
-    return { props: { monthlyPlan: monthlyPlan ?? null } }
+    const [monthlyPlan, testimonies] = await Promise.all([
+      sanityClient.fetch<MonthlyPlan>(monthlyPlanQuery, { ymKey }),
+      sanityClient.fetch<Testimony[]>(testimoniesQuery),
+    ])
+
+    return {
+      props: {
+        monthlyPlan: monthlyPlan ?? null,
+        testimonies: testimonies ?? [],
+      },
+    }
   } catch (e) {
     console.error('[SSR fetch error]:', e)
-    return { props: { monthlyPlan: null } }
+    return { props: { monthlyPlan: null, testimonies: [] } }
   }
 }

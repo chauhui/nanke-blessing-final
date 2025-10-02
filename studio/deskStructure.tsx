@@ -1,3 +1,4 @@
+// studio/structure/index.ts
 import GroupReportStatsTool from './components/GroupReportStatsTool'
 import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool'
 import GroupedRegistrations from './components/GroupedRegistrations'
@@ -80,6 +81,17 @@ export const structure = (S: any) => {
         .id('monthly-plan-type-list')
         .title('本月主題（月別）')
         .defaultOrdering([{ field: 'month', direction: 'desc' }])
+    )
+
+  // ★ 新增：生命見證
+  const testimonyListItem = S.listItem()
+    .title('生命見證')
+    .id('testimony-list')
+    .child(
+      S.documentTypeList('testimony')
+        .id('testimony-type-list')
+        .title('生命見證')
+        .defaultOrdering([{ field: 'order', direction: 'asc' }, { field: '_createdAt', direction: 'desc' }])
     )
 
   const memberListItem = S.listItem()
@@ -182,6 +194,8 @@ export const structure = (S: any) => {
       eventListItem,
       // 👉 把「本月主題」放在活動後面，與行事曆平級
       monthlyPlanListItem,
+      // ★ 生命見證放在本月主題之後
+      testimonyListItem,
       S.divider(),
       memberListItem,
       S.divider(),

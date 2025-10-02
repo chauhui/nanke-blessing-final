@@ -1,6 +1,6 @@
 // components/TestimoniesCMS.tsx
 import React from 'react'
-import type { Testimony } from '@/lib/queries/testimony'
+import type { Testimony } from '@/lib/queries' // ← 修正路徑：從 lib/queries 匯入
 
 function extractYouTubeId(url: string): string | null {
   try {

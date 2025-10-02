@@ -4,9 +4,8 @@ import { getToken } from "next-auth/jwt";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// ---- 建立 CSP（含 nonce）----
+// ---- CSP（含 nonce）— 會覆蓋 next.config.js 送出的 baseCSP ----
 function buildCSP(nonce: string): string {
-  // 基礎的 script-src：使用 nonce 放行本次回應內的 inline/runtime
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
@@ -16,8 +15,7 @@ function buildCSP(nonce: string): string {
     "https://www.gstatic.com",
     "https://www.youtube.com",
   ];
-
-  // ⚠️ 開發環境必須允許 eval，不然 Next/webpack dev 會白畫面
+  // Dev 必須允許 eval，否則 Next/webpack 開發模式會白畫面
   if (!isProd) scriptSrc.push("'unsafe-eval'");
 
   const parts = [
@@ -40,18 +38,18 @@ function buildCSP(nonce: string): string {
   return parts.join("; ");
 }
 
-// 僅排除 Next 內部靜態與 auth API，避免不必要處理
+// 僅排除 Next 靜態/內部與 auth API
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api/auth).*)"],
 };
 
 export default async function middleware(req: NextRequest) {
-  // 1) 產生 nonce，傳給 _document（用於 <NextScript nonce=.../>）
+  // 產生 nonce 並傳遞給 _document 使用（<NextScript nonce=.../>）
   const nonce = crypto.randomUUID();
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-csp-nonce", nonce);
 
-  // 2) 會員區驗證（僅 /member/*）
+  // 會員路徑驗證
   const path = req.nextUrl.pathname;
   if (path.startsWith("/member")) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -59,13 +57,14 @@ export default async function middleware(req: NextRequest) {
       const url = req.nextUrl.clone();
       url.pathname = "/auth/login";
       url.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
-      const res = NextResponse.redirect(url);
-      res.headers.set("Content-Security-Policy", buildCSP(nonce));
-      return res;
+      const redirect = NextResponse.redirect(url);
+      // 覆蓋 baseCSP，送出 nonce 版 CSP
+      redirect.headers.set("Content-Security-Policy", buildCSP(nonce));
+      return redirect;
     }
   }
 
-  // 3) 正常放行 + 注入 CSP
+  // 正常放行並覆蓋 baseCSP 為 nonce 版
   const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.headers.set("Content-Security-Policy", buildCSP(nonce));
   return res;

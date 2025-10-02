@@ -1,7 +1,28 @@
 /** @type {import('next').NextConfig} */
 
-// 其餘安全標頭由 Next 靜態下發；CSP 交給 middleware 動態產生（含 nonce）
+const isProd = process.env.NODE_ENV === "production";
+
+// ---- 基本 CSP（給掃描工具 & 保底用，沒有 nonce）----
+const baseCSP = [
+  "default-src 'self'",
+  "script-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://apis.google.com https://www.gstatic.com https://www.youtube.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: https:",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  `connect-src 'self' https://*.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://region1.google-analytics.com https://www.googleapis.com https://accounts.google.com https://apidata.googleusercontent.com ${
+    isProd ? "" : "http://localhost:3000"
+  } https:`,
+  "frame-src https://calendar.google.com https://*.google.com https://www.youtube.com https://www.youtube-nocookie.com",
+  "media-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "block-all-mixed-content",
+  ...(isProd ? ["upgrade-insecure-requests"] : [])
+].join("; ");
+
 const securityHeaders = [
+  { key: "Content-Security-Policy", value: baseCSP },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -31,7 +52,10 @@ const nextConfig = {
 
   async headers() {
     return [
-      { source: "/:path*", headers: securityHeaders }
+      {
+        source: "/:path*",
+        headers: securityHeaders
+      }
     ];
   }
 };

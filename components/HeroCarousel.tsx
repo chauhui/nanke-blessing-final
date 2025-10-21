@@ -2,7 +2,7 @@
 'use client'
 
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, EffectFade, Navigation, Pagination } from 'swiper/modules'
+import { Autoplay, EffectFade, Pagination } from 'swiper/modules'
 import { useEffect, useMemo, useState } from 'react'
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -89,18 +89,10 @@ export default function HeroCarousel({ slides }: Props) {
 
   return (
     <div className="relative w-full h-[56.25vw] md:h-auto md:aspect-[16/9] overflow-hidden">
-      {/* 桌機箭頭 */}
-      <button className="swiper-button-prev absolute left-3 top-1/2 -translate-y-1/2 z-40 hidden md:flex w-8 h-8 items-center justify-center rounded-full bg-white/70 text-gray-700 hover:bg-white transition">
-        ‹
-      </button>
-      <button className="swiper-button-next absolute right-3 top-1/2 -translate-y-1/2 z-40 hidden md:flex w-8 h-8 items-center justify-center rounded-full bg-white/70 text-gray-700 hover:bg-white transition">
-        ›
-      </button>
-
       <Swiper
         key={`ready-${data.length}`}
         className="h-full w-full"
-        modules={[Autoplay, EffectFade, Navigation, Pagination]}
+        modules={[Autoplay, EffectFade, Pagination]}
         slidesPerView={1}
         effect="fade"
         fadeEffect={{ crossFade: true }}
@@ -120,7 +112,6 @@ export default function HeroCarousel({ slides }: Props) {
               }
             : false
         }
-        navigation={{ nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }}
         pagination={{ clickable: true }}
         onInit={(swiper) => {
           try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}

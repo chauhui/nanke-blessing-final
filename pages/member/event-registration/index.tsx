@@ -191,3 +191,18 @@ export default function EventRegistration() {
     </>
   );
 }
+
+// ✅ 伺服端檢查登入，未登入直接 302 到登入頁（帶回跳轉）
+export async function getServerSideProps(ctx: any) {
+  const { getSession } = await import('next-auth/react')
+  const session = await getSession(ctx)
+  if (!session) {
+    return {
+      redirect: {
+        destination: `/auth/login?callbackUrl=${encodeURIComponent(ctx.resolvedUrl)}`,
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+}

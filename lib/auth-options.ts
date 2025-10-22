@@ -1,22 +1,25 @@
-// lib/auth-options.ts
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { createClient } from "next-sanity";
+import type { User } from "next-auth";
 
-// Sanity 初始化
+/** ================== Sanity ================== */
+// 兼容兩種環境變數名稱：SANITY_API_TOKEN 與 SANITY_WRITE_TOKEN
+const SANITY_TOKEN =
+  process.env.SANITY_API_TOKEN || process.env.SANITY_WRITE_TOKEN || "";
+
 const sanityClient = createClient({
   projectId: process.env.SANITY_PROJECT_ID!,
-  dataset: process.env.SANITY_DATASET! || "production",
+  dataset: process.env.SANITY_DATASET || "production",
   apiVersion: "2023-05-03",
   useCdn: false,
-  token: process.env.SANITY_API_TOKEN,
+  token: SANITY_TOKEN, // 必須帶 token 才能讀到受保護文件（含密碼雜湊）
 });
 
-import { User } from "next-auth";
-
-// 必須保證 user 回傳 { id, email, name, ... }
-async function authorize(credentials: any): Promise<User | null> {
+/** =============== Credentials.authorize =============== */
+// 必須回傳 { id, email, name, ... }
+async function authorize(credentials: Record<string, string> | undefined): Promise<User | null> {
   if (!credentials?.email || !credentials?.password) return null;
 
   const user = await sanityClient.fetch<{
@@ -25,31 +28,30 @@ async function authorize(credentials: any): Promise<User | null> {
     name: string;
     isApproved: boolean;
     isAdmin?: boolean;
-    password: string;
+    password: string; // 雜湊
   } | null>(
-    `*[_type=="userRegistration"&&email==$email][0]`,
+    `*[_type=="userRegistration" && email==$email][0]`,
     { email: credentials.email }
   );
 
-  // 查無帳號
-  if (!user) return null;
-  // 未審核
-  if (user.isApproved !== true) throw new Error("AccountNotApproved");
-  // 密碼錯誤
-  const valid = await compare(credentials.password, user.password);
-  if (!valid) return null;
+  if (!user) return null;                       // 查無帳號 → 交給 NextAuth 顯示「帳密錯誤」
+  if (user.isApproved !== true) throw new Error("AccountNotApproved"); // 自訂錯誤代碼
 
-  // NextAuth 的 User 必須包含 id 欄位！
+  const ok = await compare(credentials.password, user.password);
+  if (!ok) return null;                         // 密碼錯誤
+
+  // 確保回傳含 id / email / name
   return {
     id: user._id,
     email: user.email,
     name: user.name,
-    // 這兩行不是 next-auth 預設 User 欄位，但你 callback 會用到就加上
+    // 自訂欄位（若前端/回呼要用）
     isApproved: user.isApproved,
-    isAdmin: user.isAdmin || false,
-  } as any;
+    isAdmin: user.isAdmin ?? false,
+  } as unknown as User;
 }
 
+/** ================== NextAuth Options ================== */
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -61,6 +63,7 @@ export const authOptions: NextAuthOptions = {
       authorize,
     }),
   ],
+
   secret: process.env.NEXTAUTH_SECRET,
 
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
@@ -70,40 +73,46 @@ export const authOptions: NextAuthOptions = {
 
   pages: {
     signIn: "/auth/login",
-    error: "/auth/login",
+    error: "/auth/login", // 讓錯誤（含 AccountNotApproved）回到登入頁
   },
 
   callbacks: {
-    // 不要檢查 isApproved，這邊已經在 authorize 丟例外了
+    // authorize 已處理 isApproved，因此這裡只要 user 存在即可
     async signIn({ user }) {
-      // 只要 user 存在就 true
       return !!user;
     },
+
     async redirect({ url, baseUrl }) {
+      // 站內路徑或完整同網域 URL 都允許
       if (url.startsWith(baseUrl)) return url;
-      if (url.startsWith("/")) return new URL(baseUrl + url).toString();
+      if (url.startsWith("/")) return new URL(url, baseUrl).toString();
       return baseUrl;
     },
+
     async jwt({ token, user }) {
-      // 一定要有 id
       if (user) {
+        // 將 user 重要欄位放進 JWT
         token.id = (user as any).id;
         token.email = (user as any).email;
         token.name = (user as any).name;
-        // 可以加上 isAdmin 等
+        token.isAdmin = (user as any).isAdmin ?? false;
       }
       return token;
     },
+
     async session({ session, token }) {
-      // 這邊一定要設 id，不然前端 Session 拿不到 user.id
+      // 將 JWT 內容帶到 session.user
       session.user = {
         ...session.user,
         id: token.id as string,
         email: token.email as string,
         name: token.name as string,
-        // ... 其他欄位
-      };
+        isAdmin: (token as any).isAdmin ?? false,
+      } as any;
       return session;
     },
   },
 };
+
+// 兼容性：同時提供 default export，方便別處以 default 匯入
+export default authOptions;

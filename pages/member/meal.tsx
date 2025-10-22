@@ -1,21 +1,3 @@
-// pages/member/meal.tsx
-
-import { getSession } from 'next-auth/react'
-import { NextPageContext } from 'next'
-
-// ----------- server side protection -----------
-export async function getServerSideProps(context: NextPageContext) {
-  // 因為有 middleware 處理認證，這裡只需要檢查 session
-  const session = await getSession({ req: context.req })
-  
-  // 如果沒有 session，middleware 會處理重定向
-  // 這裡只返回必要的 props
-  return { 
-    props: {} 
-  }
-}
-
-// ----------- client-rendered component -----------
 import { useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -23,6 +5,22 @@ import { Calendar, MapPin, Users, Utensils } from 'lucide-react'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
 
+// ----------- server side protection -----------
+export async function getServerSideProps(ctx: any) {
+  const { getSession } = await import('next-auth/react')
+  const session = await getSession(ctx)
+  if (!session) {
+    return {
+      redirect: {
+        destination: `/auth/login?callbackUrl=${encodeURIComponent(ctx.resolvedUrl)}`,
+        permanent: false,
+      },
+    }
+  }
+  return { props: {} }
+}
+
+// ----------- client-rendered component -----------
 export default function MealRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 

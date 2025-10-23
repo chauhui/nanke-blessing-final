@@ -34,7 +34,6 @@ export default function DonatePage() {
     setSubmitted(false);
 
     try {
-      // 這裡強制 amount 轉為 number 型別
       const res = await fetch('/api/donation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,15 +68,6 @@ export default function DonatePage() {
             <div className="text-gray-700 mb-1">銀行：050 臺灣企銀（善化分行）</div>
             <div className="text-gray-700 mb-2 tracking-widest">帳號：702-12-175658</div>
             <div className="text-gray-400 text-xs">＊備註請填寫奉獻用途及姓名</div>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 mb-8">
-            <span className="text-gray-700 text-sm">行動支付 QR Code</span>
-            <img
-              src="/images/donate-qr.png"
-              alt="奉獻 QR Code"
-              className="w-40 h-40 rounded-lg border border-gray-200 shadow-sm bg-white object-contain"
-            />
           </div>
 
           <form

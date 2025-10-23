@@ -96,7 +96,7 @@ export default function NavBar() {
 
   const coursesLinks = [
     { name: '如何教養青少年', href: '/courses/teen-parenting' },
-    { name: '如何教養兒童', href: '/courses/child-parenting' },
+    { name: '如何教養孩童', href: '/courses/child-parenting' },
     { name: '親密之旅', href: '/courses/intimacy-journey' },
     { name: '理財有道', href: '/courses/financial-wisdom' },
     { name: '兒童品格班', href: '/courses/children-character' },
@@ -136,7 +136,7 @@ export default function NavBar() {
     <nav className={`fixed w-full z-50 bg-white ${scrolled ? 'shadow-md' : ''}`}>
       <div className="container mx-auto flex items-center justify-between h-16 md:h-28 px-4">
         <Link href="/" className="flex items-center h-full no-underline hover:no-underline">
-          <img src="/images/logo-horizontal-1.png" alt="南科福氣教會" className="h-10 lg:h-16 w-auto" />
+          <img src="/images/logo-horizontal.png" alt="南科福氣教會" className="h-10 lg:h-16 w-auto" />
         </Link>
 
         {/* 手機菜單按鈕 */}
@@ -360,7 +360,7 @@ export default function NavBar() {
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col lg:hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="no-underline hover:no-underline">
-              <img src="/images/logo-horizontal-1.png" alt="南科福氣教會" className="h-10 w-auto" />
+              <img src="/images/logo-horizontal.png" alt="南科福氣教會" className="h-10 w-auto" />
             </Link>
             <button onClick={() => setMobileMenuOpen(false)} aria-label="關閉選單">
               <XIcon className="text-primary" />

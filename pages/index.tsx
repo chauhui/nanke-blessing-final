@@ -6,7 +6,7 @@ import MinistriesPreview from '@/components/MinistriesPreview'
 import Footer from '@/components/Footer'
 import { useEffect, useMemo, useState } from 'react'
 import type { GetServerSideProps } from 'next'
-import { sanityClient } from '@/lib/sanity'  // 只用這個，不改其他檔
+import { sanityClient } from '@/lib/sanity'
 import { testimoniesQuery, type Testimony } from '@/lib/queries'
 
 type Entry = { date: string; title: string; note?: string | null }
@@ -14,7 +14,7 @@ type MonthlyPlan = { themeTitle: string; entries: Entry[] } | null
 
 type HomeProps = {
   monthlyPlan: MonthlyPlan
-  testimonies?: Testimony[] // ← 改為可選，避免未定義
+  testimonies?: Testimony[]
 }
 
 function extractYouTubeId(url: string): string | null {
@@ -62,7 +62,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     return list
   }, [year, month0])
 
-  // === UI：把後台 entries 對到每個主日，沒填就顯示「主題待公布」 ===
   const themeTitle = monthlyPlan?.themeTitle || '敬請期待'
   const byDate = new Map(
     (monthlyPlan?.entries ?? [])
@@ -80,7 +79,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     []
   )
 
-  // === 左側日期方塊（固定高度 72px；只動日期數字大小/粗細） ===
   const leftDateBlock = (date: Date) => {
     const day = new Intl.DateTimeFormat('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
       .format(date)
@@ -97,9 +95,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           flex flex-col items-center justify-center
         "
       >
-        {/* 日期：再放大一號、粗體 */}
         <div className="text-3xl font-bold leading-none tracking-tight text-gray-800">{day}</div>
-        {/* 月份與年份：不動 */}
         <div className="mt-1 text-[11px] leading-none text-gray-500">{monthNum}月, {yearNum}</div>
       </div>
     )
@@ -119,9 +115,24 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
         <meta name="description" content="南科福氣教會 Nanke Blessed & Blessing Church，歡迎您加入！" />
       </Head>
 
-      {/* 只影響這個頁面被「反白選取」的標題字色 */}
+      {/* 只調整顏色（覆蓋 MinistriesPreview 裡的 Tailwind 顏色類別），其他完全不變 */}
       <style jsx global>{`
         .monthly-title::selection { color: #0f766e; } /* teal-700 */
+
+        /* —— 事工卡顏色依照圖片 —— 
+           時間那行(通常使用 text-orange/amber-*) → 粉紅 #EA5F98
+           地點那行(通常使用 text-emerald/green-*) → 藍色 #3B82F6
+           連結維持藍色，hover 更深 */
+        .ministry-palette [class*="text-orange-"],
+        .ministry-palette [class*="text-amber-"] {
+          color: #EA5F98 !important;
+        }
+        .ministry-palette [class*="text-emerald-"],
+        .ministry-palette [class*="text-green-"] {
+          color: #3B82F6 !important;
+        }
+        .ministry-palette a { color: #2563EB !important; }
+        .ministry-palette a:hover { color: #1D4ED8 !important; }
       `}</style>
 
       <div className="relative">
@@ -150,7 +161,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             <HeroCarousel />
           </div>
 
-          {/* 事工預覽 */}
+          {/* 事工預覽（用 class 包住僅為套顏色；不改任何 DOM 結構） */}
           <section className="bg-slate-50 border-y border-gray-200">
             <div className="container mx-auto px-4 py-9 md:py-12">
               <header className="mb-5 md:mb-6">
@@ -160,22 +171,23 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                   認識我們固定聚會與主要事工，快速連結到你關心的內容。
                 </p>
               </header>
-              <MinistriesPreview />
+              <div className="ministry-palette">
+                <MinistriesPreview />
+              </div>
             </div>
           </section>
 
-          {/* 本月主題 & 行事曆（行事曆為 5:4） */}
+          {/* 本月主題 & 行事曆 */}
           <section className="bg-white">
             <div className="container mx-auto px-4 py-10 md:py-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
-                {/* 左：本月主題（與後台連動） */}
+                {/* 左：教會行事曆列表 */}
                 <div className="flex flex-col">
                   <header className="mb-5 md:mb-6">
                     <h2 className="text-2xl md:text-[28px] font-semibold tracking-tight text-gray-800">教會行事曆</h2>
                     <div className="mt-2 h-[3px] w-10 bg-sky-500 rounded-full" />
                   </header>
 
-                  {/* 米色背景淡 50% */}
                   <div className="rounded-xl border border-gray-200 bg-[#FAF7F2] shadow-sm p-5 md:p-6 flex-1">
                     <div className="divide-y divide-gray-100 rounded-xl border border-gray-100">
                       {uiEntries.map((e, i) => {
@@ -184,7 +196,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                           <article key={`${e.date ?? i}`} className="flex gap-4 p-4 md:p-5 hover:bg-black/0 transition">
                             {d ? leftDateBlock(d) : <div className="w-20 h-[72px]" />}
                             <div className="min-w-0 flex-1">
-                              {/* 標題被反白時字色變藍綠色（不是全頁 selection，是這段字） */}
                               <h4 className="monthly-title text-[16px] md:text-[17px] font-normal tracking-tight text-gray-800 line-clamp-2">
                                 {e.title}{e.note ? <span className="monthly-title text-gray-500">（{e.note}）</span> : null}
                               </h4>
@@ -206,7 +217,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                   </div>
                 </div>
 
-                {/* 右：教會行事曆（不變） */}
+                {/* 右：行事曆 iframe */}
                 <div className="flex flex-col h-full">
                   <div className="mt-auto relative rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden aspect-[5/4.12]">
                     <iframe
@@ -225,7 +236,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             </div>
           </section>
 
-          {/* 生命見證（改為後台 Sanity 管理） */}
+          {/* 生命見證 */}
           <section className="bg-slate-50 border-t border-gray-200">
             <div className="container mx-auto px-4 py-10 md:py-12">
               <div className="mb-5 md:mb-6">
@@ -245,7 +256,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                       key={t._id}
                       className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-card transition px-5 py-5 md:px-6 md:py-6"
                     >
-                      <header className="mb-3 flex items-center gap-2">
+                      <header className="mb-3 flex items中心 gap-2">
                         {t.tag ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-xs md:text-[12px] font-semibold">
                             {t.tag}
@@ -288,7 +299,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
   )
 }
 
-// ====== SSR：抓「本月主題」與「生命見證」 ======
+// ====== SSR ======
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
   const ymKey = new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',

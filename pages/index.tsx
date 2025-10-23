@@ -101,19 +101,67 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     )
   }
 
+  const title = '南科福氣教會 Nanke Blessed & Blessing Church'
+  const desc =
+    '主日聚會每週日10:00–12:00，地點：南科育成中心國際會議廳B104。兒童主日學、品格班、週三小組與新營據點，歡迎參與。'
+  const url = 'https://nanke-blessing.vercel.app'
+  const image = 'https://nanke-blessing.vercel.app/images/og-image-1.jpg' // 1200x630 建議
+
   return (
     <>
       <Head>
-        <title>南科福氣教會 Nanke Blessed & Blessing Church</title>
-        <meta property="og:title" content="南科福氣教會 Nanke Blessed & Blessing Church" />
-        <meta property="og:description" content="歡迎來到南科福氣教會，我們在台南為主發光！" />
-        <meta property="og:image" content="https://nanke-blessing.vercel.app/images/og-image-1.jpg" />
+        <title>{title}</title>
+        <meta name="description" content={desc} />
+        <link rel="canonical" href={url} />
+
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://nanke-blessing.vercel.app/" />
+        <meta property="og:site_name" content="南科福氣教會" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={desc} />
+        <meta property="og:url" content={url} />
+        <meta property="og:image" content={image} />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="https://nanke-blessing.vercel.app/images/og-image-1.jpg" />
-        <meta name="description" content="南科福氣教會 Nanke Blessed & Blessing Church，歡迎您加入！" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={desc} />
+        <meta name="twitter:image" content={image} />
+
+        {/* WebSite 結構化資料 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: '南科福氣教會',
+              alternateName: [
+                'Nanke Blessed & Blessing Church',
+                '南科福氣教會 Nanke Blessed & Blessing Church',
+              ],
+              url,
+            }),
+          }}
+        />
+        {/* Organization（可帶 logo） */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: '南科福氣教會',
+              url,
+              logo: `${url}/android-chrome-512x512.png`,
+            }),
+          }}
+        />
       </Head>
+
+      {/* 搜尋摘要常會抓頁面可見內容，放隱藏 H1/段落輔助 */}
+      <h1 className="sr-only">{title}</h1>
+      <p className="hidden">{desc}</p>
 
       {/* 只調整顏色（覆蓋 MinistriesPreview 裡的 Tailwind 顏色類別），其他完全不變 */}
       <style jsx global>{`
@@ -140,7 +188,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
 
         {/* Cookie Consent */}
         {showCookieBanner && (
-          <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 w-[92%] md:w-auto md:min-w-[720px] rounded-2xl border border-gray-200 bg白/95 backdrop-blur px-4 py-3 shadow-xl">
+          <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 w-[92%] md:w-auto md:min-w-[720px] rounded-2xl border border-gray-200 bg-white/95 backdrop-blur px-4 py-3 shadow-xl">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <p className="text-[13px] md:text-[14px] text-gray-600">
                 本網站使用 cookie 儲存登入狀態與個人化設定。請點選「同意」以確保功能正常運作。
@@ -256,7 +304,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                       key={t._id}
                       className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-card transition px-5 py-5 md:px-6 md:py-6"
                     >
-                      <header className="mb-3 flex items中心 gap-2">
+                      <header className="mb-3 flex items-center gap-2">
                         {t.tag ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-xs md:text-[12px] font-semibold">
                             {t.tag}

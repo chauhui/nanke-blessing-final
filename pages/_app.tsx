@@ -68,7 +68,7 @@ export default function MyApp({
   }, [router.events])
 
   const siteName = '南科福氣教會'
-  const siteDesc = 'Nanke Blessed & Blessing Church'
+  const siteDesc = ' | Nanke Blessed & Blessing Church'
   const siteUrl =
     typeof window !== 'undefined'
       ? `https://${window.location.host}`

@@ -68,7 +68,7 @@ export default function MyApp({
   }, [router.events])
 
   const siteName = '南科福氣教會'
-  const siteDesc = ' | Nanke Blessed & Blessing Church'
+  const siteDesc = '位於台南南科園區，為忙碌的科技人與家庭預備溫暖的信仰與陪伴'
   const siteUrl =
     typeof window !== 'undefined'
       ? `https://${window.location.host}`

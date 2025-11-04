@@ -101,7 +101,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     )
   }
 
-  const title = '南科福氣教會 | Nanke Blessed & Blessing Church'
+  const title = '南科福氣教會'
   const desc =
     '南科福氣教會｜位於台南南科園區，為忙碌的科技人與家庭預備溫暖的信仰與陪伴；以關懷、醫治與門訓裝備，幫助你在職場與生活中更新、看見盼望，歡迎一起聚會。'
   const url = 'https://nanke-blessing.vercel.app'
@@ -137,8 +137,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
               '@type': 'WebSite',
               name: '南科福氣教會',
               alternateName: [
-                'Nanke Blessed & Blessing Church',
-                '南科福氣教會 Nanke Blessed & Blessing Church',
+                '南科福氣教會',
               ],
               url,
             }),

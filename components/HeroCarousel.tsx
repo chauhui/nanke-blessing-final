@@ -1,4 +1,3 @@
-// components/HeroCarousel.tsx
 'use client'
 
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -44,19 +43,22 @@ export default function HeroCarousel({ slides }: Props) {
             title: d?.title || '',
             subtitle: d?.subtitle || '',
           }))?.filter((s) => s.img) || []
-        setRemoteSlides(mapped.length ? mapped : null)
+        setRemoteSlides(mapped)
       } catch (err) {
         console.error('Fetch hero slides failed:', err)
-        setRemoteSlides(null)
+        setRemoteSlides([])
       }
     })()
   }, [slides])
 
-  // 使用後台 > 傳入 > 預設
-  const data = useMemo<HeroSlide[]>(
-    () => (remoteSlides?.length ? remoteSlides : slides?.length ? slides : fallbackSlides),
-    [slides, remoteSlides]
-  )
+  // 使用傳入 > 後台 > 預設；載入中則暫不顯示，避免 fallback 閃一下
+  const data = useMemo<HeroSlide[]>(() => {
+    if (slides?.length) return slides
+    if (remoteSlides === null) return []
+    if (remoteSlides.length) return remoteSlides
+    return fallbackSlides
+  }, [slides, remoteSlides])
+
   const hasMultiple = data.length > 1
 
   // —— 產生自然汽水泡泡（隨機尺寸、延遲、速度、水平擺動、輕微模糊/透明）——
@@ -89,76 +91,78 @@ export default function HeroCarousel({ slides }: Props) {
 
   return (
     <div className="relative w-full h-[56.25vw] md:h-auto md:aspect-[16/9] overflow-hidden">
-      <Swiper
-        key={`ready-${data.length}`}
-        className="h-full w-full"
-        modules={[Autoplay, EffectFade, Pagination]}
-        slidesPerView={1}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
-        loop={false}
-        rewind={hasMultiple}
-        speed={650}
-        observer
-        observeParents
-        observeSlideChildren
-        autoplay={
-          hasMultiple
-            ? {
-                delay: 5000,
-                disableOnInteraction: false,
-                stopOnLastSlide: false,
-                waitForTransition: false,
-              }
-            : false
-        }
-        pagination={{ clickable: true }}
-        onInit={(swiper) => {
-          try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}
-        }}
-        onSlideChangeTransitionEnd={(swiper) => {
-          try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}
-        }}
-      >
-        {data.map(({ img, title, subtitle }, idx) => (
-          <SwiperSlide key={`${idx}-${img}`}>
-            <div className="relative h-full w-full">
-              <img
-                src={img}
-                alt=""
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              {/* —— 旌旗感的柔和遮罩：不洗白、只提亮 —— */}
-              <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/10 to-black/0" />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    'radial-gradient(45% 30% at 20% 85%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%)',
-                  mixBlendMode: 'overlay',
-                }}
-              />
+      {data.length > 0 && (
+        <Swiper
+          key={`ready-${data.length}`}
+          className="h-full w-full"
+          modules={[Autoplay, EffectFade, Pagination]}
+          slidesPerView={1}
+          effect="fade"
+          fadeEffect={{ crossFade: true }}
+          loop={false}
+          rewind={hasMultiple}
+          speed={650}
+          observer
+          observeParents
+          observeSlideChildren
+          autoplay={
+            hasMultiple
+              ? {
+                  delay: 5000,
+                  disableOnInteraction: false,
+                  stopOnLastSlide: false,
+                  waitForTransition: false,
+                }
+              : false
+          }
+          pagination={{ clickable: true }}
+          onInit={(swiper) => {
+            try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}
+          }}
+          onSlideChangeTransitionEnd={(swiper) => {
+            try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}
+          }}
+        >
+          {data.map(({ img, title, subtitle }, idx) => (
+            <SwiperSlide key={`${idx}-${img}`}>
+              <div className="relative h-full w-full">
+                <img
+                  src={img}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                {/* —— 旌旗感的柔和遮罩：不洗白、只提亮 —— */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/10 to-black/0" />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'radial-gradient(45% 30% at 20% 85%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%)',
+                    mixBlendMode: 'overlay',
+                  }}
+                />
 
-              {/* —— 文字 —— */}
-              <div className="relative z-20 flex h-full items-center justify-center text-center px-6">
-                <div className="max-w-2xl">
-                  {title ? (
-                    <h1 className="text-white text-2xl md:text-5xl font-bold mb-3 leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]">
-                      {title}
-                    </h1>
-                  ) : null}
-                  {subtitle ? (
-                    <p className="text-white/95 text-base md:text-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
-                      {subtitle}
-                    </p>
-                  ) : null}
+                {/* —— 文字 —— */}
+                <div className="relative z-20 flex h-full items-center justify-center text-center px-6">
+                  <div className="max-w-2xl">
+                    {title ? (
+                      <h1 className="text-white text-2xl md:text-5xl font-bold mb-3 leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]">
+                        {title}
+                      </h1>
+                    ) : null}
+                    {subtitle ? (
+                      <p className="text-white/95 text-base md:text-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
+                        {subtitle}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      )}
 
       {/* —— 氣泡動畫（自然上飄＋左右擺動） —— */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden z-30">

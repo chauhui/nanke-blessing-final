@@ -1,131 +1,178 @@
 // pages/courses/child-parenting.tsx
-
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
 
 export default function ChildParentingCourse() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#fff7f3]">
       <NavBar />
 
-      {/* Banner 區塊 */}
-      <div className="relative pt-32 md:pt-48 pb-12 bg-gradient-to-r from-[#ffdfad] via-[#e2ffe2] to-[#c9d7fc] flex flex-col items-center">
-        <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 mb-4 tracking-tight">
-          如何教養孩童
-        </h1>
-        <p className="text-lg md:text-xl text-gray-700 max-w-2xl text-center">
-          以愛與智慧建立穩固的親子關係，結合信仰原則、實務經驗和互動活動，陪伴孩子快樂成長。
-        </p>
-      </div>
-
-      {/* 重新設計之主區塊（參考各大教會/非營利網站的資訊模組排版） */}
-      <main className="flex-grow bg-gradient-to-b from-rose-50 via-white to-blue-50">
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          <section className="relative max-w-6xl mx-auto">
-            {/* 外圈柔光 */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-3 rounded-[2rem] bg-gradient-to-r from-rose-200/60 via-amber-100/60 to-sky-200/60 blur-2xl"
-            />
-
-            <div className="relative overflow-hidden rounded-[1.75rem] bg-white/90 shadow-xl ring-1 ring-black/5">
-              {/* 左側色帶與裝飾圓片 */}
-              <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-rose-400 to-sky-400" />
-              <div className="absolute -left-3 top-10 h-6 w-6 rounded-r-2xl bg-rose-300/70" />
-              <div className="absolute -left-3 top-24 h-6 w-6 rounded-r-2xl bg-sky-300/70" />
-
-              <div className="p-7 sm:p-10 md:p-14">
-                {/* 標題列 */}
-                <div className="mb-8">
-                  <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight text-gray-900">
-                    教養願景與核心提醒
-                  </h2>
-                  <p className="mt-2 text-gray-600">
-                    用更直覺的閱讀節奏，把經文主旨與落地行動放在同一視野中。
+      <main className="flex-1">
+        {/* Hero 區：經文＋主題 */}
+        <section className="pt-28 md:pt-36 pb-16 bg-gradient-to-br from-[#ffe4ec] via-[#ffe9c9] to-[#e2f6ff]">
+          <div className="max-w-6xl mx-auto px-6 md:px-8">
+            <div className="grid gap-10 lg:grid-cols-[1.5fr,1fr] items-center">
+              {/* 左側：文字 */}
+              <div className="max-w-3xl">
+                <p className="inline-flex items-center rounded-full bg-white/70 px-5 py-1.5 text-sm md:text-base font-medium text-rose-500 shadow-sm mb-4">
+                  基督徒親職 · 神話語為根
+                </p>
+                <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-[#5c2b22] mb-4">
+                  如何教養孩童
+                </h1>
+                <div className="bg-white/80 rounded-2xl p-5 md:p-6 shadow-md border border-white/60 mb-6">
+                  <p className="text-base md:text-lg font-semibold text-[#9a3b34] mb-3">
+                    「教養孩童，使他走當行的道，就是到老，他也不偏離。」— 箴言 22:6
+                  </p>
+                  <p className="text-base md:text-lg text-slate-700">
+                    一起回到聖經，思考如何在日常生活中，用信仰陪伴孩子同行。
                   </p>
                 </div>
-
-                {/* 兩欄排版：左經文卡 / 右重點與補充區 */}
-                <div className="grid gap-8 md:grid-cols-12">
-                  {/* 左：經文卡（重視排印與可讀性） */}
-                  <div className="md:col-span-7">
-                    <div className="relative rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100/70 ring-1 ring-rose-200 px-8 py-10 md:px-10 md:py-12">
-                      {/* 引號裝飾 */}
-                      <svg
-                        aria-hidden="true"
-                        viewBox="0 0 24 24"
-                        className="absolute -top-4 -left-3 h-10 w-10 text-rose-300"
-                        fill="currentColor"
-                      >
-                        <path d="M7.17 6.17A5.5 5.5 0 0 0 2 11.5 5.5 5.5 0 0 0 7.5 17c.55 0 1.08-.08 1.58-.24A4.5 4.5 0 0 1 5 13h2.5A4.5 4.5 0 0 0 12 8.5C12 6.02 9.98 4 7.5 4c-.12 0-.23 0-.33.02zM18.84 6.17A5.5 5.5 0 0 0 13.67 11.5 5.5 5.5 0 0 0 19.17 17c.55 0 1.08-.08 1.58-.24A4.5 4.5 0 0 1 16.67 13h2.5A4.5 4.5 0 0 0 23.17 8.5C23.17 6.02 21.15 4 18.67 4c-.12 0-.23 0-.33.02z" />
-                      </svg>
-
-                      <div className="text-center">
-                        <h3 className="text-3xl md:text-[2.3rem] leading-tight font-black tracking-wide text-[#4a2f2b]">
-                          教養孩童 使他走當行的道
-                          <br className="hidden md:block" />
-                          就是到老 他也不偏離
-                        </h3>
-                        <p className="mt-4 text-lg md:text-xl font-semibold text-[#5b3a35]">
-                          箴言 22:6
-                        </p>
-                      </div>
-
-                      {/* 細分導讀 */}
-                      <div className="mt-8 grid gap-4">
-                        <div className="rounded-xl bg-white/60 backdrop-blur px-5 py-3 ring-1 ring-black/5">
-                          <p className="text-gray-800">
-                            以經文為根基，釐清「當行之道」——價值次序與界線建立。
-                          </p>
-                        </div>
-                        <div className="rounded-xl bg-white/60 backdrop-blur px-5 py-3 ring-1 ring-black/5">
-                          <p className="text-gray-800">
-                            以同行為核心，在日常裡練習看見、陪伴與引導。
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 右：落地行動與重點泡泡 */}
-                  <div className="md:col-span-5 flex flex-col gap-6">
-                    <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-emerald-50 ring-1 ring-black/5 p-6">
-                      <p className="text-sm font-semibold text-sky-600 mb-3">三個落地行動</p>
-                      <ul className="space-y-3 text-gray-800 leading-relaxed">
-                        <li className="flex gap-3">
-                          <span className="mt-2 h-2 w-2 rounded-full bg-rose-400" />
-                          利用聖經的教導引導父母，建立一致的教養語言
-                        </li>
-                        <li className="flex gap-3">
-                          <span className="mt-2 h-2 w-2 rounded-full bg-sky-400" />
-                          有智慧地帶領孩子：覺察情緒、設定界線、合作解方
-                        </li>
-                        <li className="flex gap-3">
-                          <span className="mt-2 h-2 w-2 rounded-full bg-emerald-500" />
-                          使父母的教養更輕省：把握關鍵少而精的日常儀式
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="rounded-2xl p-[1.5px] bg-gradient-to-r from-rose-300 via-amber-300 to-sky-300">
-                      <div className="rounded-2xl bg-white/80 backdrop-blur px-5 py-4 ring-1 ring-black/5">
-                        <p className="font-semibold text-gray-900">
-                          想更了解？歡迎聯繫教會，我們樂意與您一同規劃合宜的教養步驟。
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          主日可至服務台洽詢，或透過教會聯絡方式與同工對談。
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex flex-wrap gap-3">
+                  <span className="inline-flex items-center rounded-full bg-[#ffb7b2] text-sm md:text-base font-semibold text-[#5c2b22] px-4 py-1.5 shadow-sm">
+                    神話語成為教養準則
+                  </span>
+                  <span className="inline-flex items-center rounded-full bg-[#ffd88a] text-sm md:text-base font-semibold text-[#5c2b22] px-4 py-1.5 shadow-sm">
+                    陪孩子認識並跟隨主
+                  </span>
+                  <span className="inline-flex items-center rounded-full bg-[#c8f1a7] text-sm md:text-base font-semibold text-[#285c3d] px-4 py-1.5 shadow-sm">
+                    讓家庭成為祝福起點
+                  </span>
                 </div>
               </div>
 
-              {/* 底部柔光條 */}
-              <div aria-hidden="true" className="h-3 w-full bg-gradient-to-r from-rose-200 via-amber-200 to-sky-200" />
+              {/* 右側：色塊＋簡單插畫感 */}
+              <div className="relative">
+                <div className="relative overflow-hidden rounded-3xl bg-white/80 shadow-xl border border-white/70 p-5 md:p-6">
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="aspect-[4/3] rounded-2xl bg-gradient-to-tr from-[#ffcfdf] to-[#fefdca] flex items-center justify-center text-4xl">
+                      <span role="img" aria-label="kids">
+                        👧👦
+                      </span>
+                    </div>
+                    <div className="aspect-[4/3] rounded-2xl bg-gradient-to-tr from-[#c9f0ff] to-[#fbd4ff] flex items-center justify-center text-4xl">
+                      <span role="img" aria-label="family">
+                        👨‍👩‍👧‍👦
+                      </span>
+                    </div>
+                    <div className="aspect-[4/3] rounded-2xl bg-gradient-to-tr from-[#d4f8c4] to-[#ffe0b2] flex items-center justify-center text-3xl">
+                      <span role="img" aria-label="bible">
+                        📖
+                      </span>
+                    </div>
+                    <div className="aspect-[4/3] rounded-2xl bg-gradient-to-tr from-[#ffe3e3] to-[#e3f2ff] flex items-center justify-center text-3xl">
+                      <span role="img" aria-label="heart">
+                        💗
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-sm md:text-base text-slate-700 text-center leading-relaxed">
+                    用簡單的步伐，在家中一起學習愛、界線與信仰。
+                  </p>
+                </div>
+
+                <div className="hidden md:block absolute -bottom-6 -left-6">
+                  <div className="w-16 h-16 rounded-full bg-[#fdf1c9] border-4 border-white shadow-md flex items-center justify-center text-3xl">
+                    😊
+                  </div>
+                </div>
+              </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
+
+        {/* 三大重點（圖片上的三句話） */}
+        <section className="py-12 md:py-16">
+          <div className="max-w-6xl mx-auto px-6 md:px-8">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#5c2b22] mb-3">
+                課程焦點
+              </h2>
+              <p className="text-base md:text-lg text-slate-600">
+                三個簡單方向，幫助父母在主裡重新整理教養步調。
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="h-full rounded-2xl bg-white shadow-sm border border-[#ffe0c2] px-7 py-7 flex flex-col">
+                <p className="text-sm md:text-base font-semibold tracking-wide text-rose-400 mb-3">
+                  FOCUS 01
+                </p>
+                <h3 className="text-lg md:text-xl font-bold text-[#5c2b22] mb-3">
+                  用神話語引導父母
+                </h3>
+                <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+                  從經文出發，重新對齊教養方向與標準。
+                </p>
+              </div>
+
+              <div className="h-full rounded-2xl bg-white shadow-sm border border-[#ffe0c2] px-7 py-7 flex flex-col">
+                <p className="text-sm md:text-base font-semibold tracking-wide text-amber-500 mb-3">
+                  FOCUS 02
+                </p>
+                <h3 className="text-lg md:text-xl font-bold text-[#5c2b22] mb-3">
+                  有智慧地帶領孩子
+                </h3>
+                <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+                  不只看行為，也學習讀懂孩子心裡真正的需要。
+                </p>
+              </div>
+
+              <div className="h-full rounded-2xl bg-white shadow-sm border border-[#ffe0c2] px-7 py-7 flex flex-col">
+                <p className="text-sm md:text-base font-semibold tracking-wide text-emerald-500 mb-3">
+                  FOCUS 03
+                </p>
+                <h3 className="text-lg md:text-xl font-bold text-[#285c3d] mb-3">
+                  讓父母教養更輕省
+                </h3>
+                <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+                  把重擔交託給主，在群體中彼此扶持，一起走長遠的路。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 課程方向與報名方式 */}
+        <section className="pb-16">
+          <div className="max-w-6xl mx-auto px-6 md:px-8">
+            <div className="grid gap-8 lg:grid-cols-2 items-stretch">
+              <div className="rounded-3xl bg-[#5c2b22] text-white p-7 md:p-9 shadow-lg flex flex-col justify-between">
+                <div>
+                  <p className="text-base md:text-lg tracking-[0.12em] text-amber-200 mb-4">
+                    課程方向
+                  </p>
+                  <h3 className="text-2xl md:text-3xl font-extrabold mb-4">
+                    在恩典與真理中陪孩子長大
+                  </h3>
+                  <p className="text-base md:text-lg leading-relaxed text-amber-50/90 mb-4">
+                    透過信息分享與彼此交流，幫助父母在信仰裡調整眼光、說話方式與陪伴節奏。
+                  </p>
+                  <p className="text-base md:text-lg text-amber-100/90">
+                    具體時間與形式，將依教會與參與家庭實際狀況安排。
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-3xl bg-white shadow-md border border-[#ffe0c2] p-7 md:p-9 flex flex-col">
+                <h3 className="text-xl md:text-2xl font-bold text-[#5c2b22] mb-4">
+                  報名與詢問
+                </h3>
+                <div className="space-y-4 text-base md:text-lg text-slate-700">
+                  <p>
+                    歡迎所有關心下一代的父母、預備成為父母的夫妻，一起來尋找在主裡教養的方向。
+                  </p>
+                  <p>
+                    報名方式：主日可至服務台洽詢，或透過教會聯絡方式與我們聯繫。
+                  </p>
+                  <p>
+                    期待與您一同看見，神如何在家庭中動工，成為孩子一生的祝福。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />

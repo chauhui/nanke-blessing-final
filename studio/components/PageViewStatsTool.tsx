@@ -1,4 +1,3 @@
-// studio/components/PageViewStatsTool.tsx
 import React, { useEffect, useState, forwardRef } from "react"
 import type { Ref } from "react"
 import { useClient } from "sanity"
@@ -28,15 +27,43 @@ const PROD_HOST = "nanke-blessing.vercel.app"
 const ROUTE_NAME_MAP: Array<[RegExp, string]> = [
   [/^\/$/, "首頁"],
   [/^\/about(?:\/)?$/, "關於我們"],
-  [/^\/about\/vision-mission$/, "異象使命"],
-  [/^\/about\/implementation$/, "實踐方向"],
-  [/^\/gatherings$/, "課程資訊"],
+  [/^\/about\/vision-mission\/?$/, "異象使命"],
+  [/^\/about\/implementation\/?$/, "實踐方向"],
+  [/^\/about\/strategy\/?$/, "策略說明"],
+  [/^\/about\/core-values\/?$/, "核心價值"],
+  [/^\/about\/groups\/?$/, "小組與團契"],
+  [/^\/gatherings\/?$/, "課程資訊"],
+  [/^\/courses(?:\/)?$/, "課程列表"],
+  [/^\/courses\/teen-parenting\/?$/, "青少年親職課程"],
+  [/^\/courses\/intimacy-journey\/?$/, "親密之旅課程"],
+  [/^\/courses\/child-parenting\/?$/, "如何教養孩童課程"],
+  [/^\/courses\/financial-wisdom\/?$/, "理財有道課程"],
+  [/^\/courses\/children-character\/?$/, "品格教育課程"],
   [/^\/video(?:\/.*)?$/, "影音平台"],
   [/^\/member(?:\/)?$/, "會友專區"],
-  [/^\/member\/meal$/, "愛宴報名"],
-  [/^\/member\/group-report$/, "小組回報"],
+  [/^\/member\/meal\/?$/, "愛宴報名"],
+  [/^\/member\/group-report\/?$/, "小組回報"],
   [/^\/auth\/login(?:.*)?$/, "登入頁"], // 含 callbackUrl
 ]
+
+/** 國家代碼 → 繁體中文名稱 */
+const COUNTRY_LABEL_MAP: Record<string, string> = {
+  TW: "台灣",
+  NZ: "紐西蘭",
+  US: "美國",
+  JP: "日本",
+  CN: "中國",
+  HK: "香港",
+  SG: "新加坡",
+  unknown: "未知",
+  未知: "未知",
+}
+
+/** 裝置英文 → 繁體 */
+const DEVICE_LABEL_MAP: Record<string, string> = {
+  Mobile: "手機",
+  Desktop: "桌機",
+}
 
 /** 取站內路徑（把同站完整網址轉為 pathname+search；否則回傳原字串） */
 function getInternalPathOrKeep(raw: string, host = PROD_HOST) {
@@ -69,9 +96,9 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
   const [data, setData] = useState<PageViewLog[]>([])
   const [page, setPage] = useState("all")
 
-  // 日期範圍
+  // 日期範圍（預設看最近 7 天）
   const todayStr = new Date().toISOString().slice(0, 10)
-  const defaultStart = new Date(Date.now() - 29 * 24 * 3600 * 1000)
+  const defaultStart = new Date(Date.now() - 6 * 24 * 3600 * 1000)
     .toISOString()
     .slice(0, 10)
   const [startDate, setStartDate] = useState(defaultStart)
@@ -136,8 +163,11 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
     chartData.push({ date: dateKey, views })
   }
 
-  // X 軸密度
-  const interval = Math.max(1, Math.ceil(chartData.length / (isMobile ? 4 : 12)))
+  // X 軸密度：手機與桌機都盡量顯示約 7 個日期
+  const interval =
+    chartData.length > 0
+      ? Math.max(0, Math.ceil(chartData.length / 7) - 1)
+      : 0
 
   // 國家 / 來源 / 裝置 統計（顯示名稱轉換放在 render）
   const countryStat: Record<string, number> = {}
@@ -189,7 +219,8 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
             <option value="all">全部</option>
             {pages.map((p) => (
               <option key={p} value={p}>
-                {toDisplayName(p, PROD_HOST)}（{getInternalPathOrKeep(p, PROD_HOST) || p}）
+                {toDisplayName(p, PROD_HOST)}（
+                {getInternalPathOrKeep(p, PROD_HOST) || p}）
               </option>
             ))}
           </Select>
@@ -218,23 +249,35 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
             />
             <YAxis allowDecimals={false} />
             <Tooltip wrapperStyle={{ fontSize: isMobile ? 12 : 14 }} cursor={false} />
-            <Line type="monotone" dataKey="views" stroke="#8884d8" dot={false} strokeWidth={2} />
+            <Line
+              type="monotone"
+              dataKey="views"
+              stroke="#8884d8"
+              dot={false}
+              strokeWidth={2}
+            />
           </LineChart>
         </ResponsiveContainer>
       </Box>
 
       {/* 統計列表 */}
-      <Box marginY={isMobile ? 2 : 4} style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+      <Box
+        marginY={isMobile ? 2 : 4}
+        style={{ display: "flex", gap: 32, flexWrap: "wrap" }}
+      >
         <Box>
           <Text weight="bold">國家：</Text>
           <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {Object.entries(countryStat).map(([k, v]) => (
-              <li key={k}>
-                <Text>
-                  {k}: {v}
-                </Text>
-              </li>
-            ))}
+            {Object.entries(countryStat).map(([k, v]) => {
+              const label = COUNTRY_LABEL_MAP[k] || k
+              return (
+                <li key={k}>
+                  <Text>
+                    {label}: {v}
+                  </Text>
+                </li>
+              )
+            })}
           </ul>
         </Box>
         <Box>
@@ -252,13 +295,16 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
         <Box>
           <Text weight="bold">裝置：</Text>
           <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {Object.entries(deviceStat).map(([k, v]) => (
-              <li key={k}>
-                <Text>
-                  {k}: {v}
-                </Text>
-              </li>
-            ))}
+            {Object.entries(deviceStat).map(([k, v]) => {
+              const label = DEVICE_LABEL_MAP[k] || k
+              return (
+                <li key={k}>
+                  <Text>
+                    {label}: {v}
+                  </Text>
+                </li>
+              )
+            })}
           </ul>
         </Box>
       </Box>

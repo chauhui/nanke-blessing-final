@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react'
 import type { GetServerSideProps } from 'next'
 import { getSession, useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import Layout from '@/components/Layout'
+import NavBar from '@/components/NavBar'
+import Footer from '@/components/Footer'
 
 // 以命名匯入的方式取出 Sanity client
 import { client as sanityClient } from '@/lib/sanity.client'
@@ -170,7 +171,7 @@ function GroupReport() {
   }
 
   if (status === 'loading') {
-    return <div className="p-4 text-center">載入中...</div>
+    return <div className="min-h-screen bg-[#F7F5F2] flex items-center justify-center text-[#1E1B4B]">載入中...</div>
   }
 
   // ----(桌機版欄寬控制)----
@@ -184,9 +185,9 @@ function GroupReport() {
   type AttendanceKey = typeof attendanceKeys[number]
 
   const tdWidthClass: Record<AttendanceKey, string> = {
-    devotion: 'w-28',
-    cellGroup: 'w-28',
-    sundayService: 'w-28',
+    devotion: 'w-24',
+    cellGroup: 'w-24',
+    sundayService: 'w-24',
     prayerMeeting: 'w-24',
     happinessGroup: 'w-28',
   }
@@ -202,147 +203,160 @@ function GroupReport() {
   type MobileKey = typeof mobileKeys[number]
 
   const mobileLabelMap: Record<MobileKey, string> = {
-    devotion: '靈修小組',
-    cellGroup: '細胞小組',
+    devotion: '靈修',
+    cellGroup: '小組',
     sundayService: '主日',
-    prayerMeeting: '禱告會',
-    happinessGroup: '幸福小組',
+    prayerMeeting: '禱告',
+    happinessGroup: '幸福',
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gray-50 pt-40 pb-8 px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* 標題與訊息 */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-              小組長回報系統
-            </h1>
-            <div className="w-24 h-1.5 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full mx-auto mb-4" />
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              請填寫組員本週聚會出席與關懷狀況
+    // 全站統一米灰背景
+    <div className="min-h-screen flex flex-col bg-[#F7F5F2] text-[#1E1B4B] font-sans selection:bg-[#C7D2FE] selection:text-[#1E1B4B]">
+      <NavBar />
+
+      <main className="flex-grow pt-28 md:pt-40 pb-20 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          
+          {/* 標題區：極簡風格 */}
+          <div className="mb-10 md:mb-14 border-b border-[#D4C5B5] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-[#B45309] font-bold tracking-[0.2em] text-xs uppercase block mb-2">
+                Leader&apos;s Area
+              </span>
+              <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1E1B4B]">
+                小組長回報系統
+              </h1>
+            </div>
+            <p className="text-[#64748B] text-sm">
+              請忠心記錄，守望羊群。
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-xl shadow-md">
+          <div className="space-y-8">
             {errorMessage && (
-              <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">{errorMessage}</div>
+              <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-sm shadow-sm flex items-center gap-3">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {errorMessage}
+              </div>
             )}
             {successMessage && (
-              <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-lg">
+              <div className="p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-sm shadow-sm flex items-center gap-3">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                 {successMessage}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* 回報日期 */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-100">
-                  回報日期
-                </h2>
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="flex-1">
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                      日期
-                    </label>
-                    <input
-                      id="date"
-                      type="date"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      required
-                    />
-                  </div>
+              
+              {/* 控制面板 (日期與小組) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 日期選擇 */}
+                <div className="bg-white p-6 md:p-8 rounded-sm border border-[#D4C5B5] shadow-sm">
+                  <label htmlFor="date" className="block text-sm font-bold text-[#1E1B4B] mb-3 uppercase tracking-wide">
+                    REPORT DATE
+                  </label>
+                  <input
+                    id="date"
+                    type="date"
+                    className="w-full p-3 bg-[#F8FAFC] border border-gray-300 rounded-sm focus:ring-2 focus:ring-[#1E1B4B] focus:border-[#1E1B4B] transition-all text-[#1E1B4B]"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                  />
                 </div>
-              </div>
 
-              {/* 選擇小組 */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-100">
-                  選擇小組
-                </h2>
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="flex-1">
-                    <label htmlFor="group" className="block text-sm font-medium text-gray-700 mb-2">
-                      選擇小組
-                    </label>
+                {/* 小組選擇 */}
+                <div className="bg-white p-6 md:p-8 rounded-sm border border-[#D4C5B5] shadow-sm">
+                  <label htmlFor="group" className="block text-sm font-bold text-[#1E1B4B] mb-3 uppercase tracking-wide">
+                    SELECT GROUP
+                  </label>
+                  <div className="relative">
                     <select
                       id="group"
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                      className="w-full p-3 bg-[#F8FAFC] border border-gray-300 rounded-sm focus:ring-2 focus:ring-[#1E1B4B] focus:border-[#1E1B4B] transition-all text-[#1E1B4B] appearance-none"
                       value={groupId}
                       onChange={(e) => setGroupId(e.target.value)}
                       required
                     >
-                      <option value="" className="text-gray-500">
-                        請選擇小組
-                      </option>
+                      <option value="" className="text-gray-400">請選擇小組...</option>
                       {groupList.map((g) => (
-                        <option key={g._id} value={g._id} className="text-gray-800">
+                        <option key={g._id} value={g._id}>
                           {g.name}
                         </option>
                       ))}
                     </select>
+                    {/* 自定義箭頭 Icon */}
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* 組員回報 */}
+              {/* 組員回報列表 */}
               {groupId && (
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-100">
-                    組員回報
-                  </h2>
+                <div className="bg-white rounded-sm border border-[#D4C5B5] shadow-md overflow-hidden">
+                  <div className="bg-[#1E1B4B] px-6 py-4 border-b border-[#1E1B4B]">
+                    <h2 className="text-white font-bold tracking-wider text-sm flex items-center gap-2">
+                      <span className="w-2 h-2 bg-[#FBBF24] rounded-full"></span>
+                      MEMBER REPORT
+                    </h2>
+                  </div>
 
-                  {/* 手機版：卡片列表 */}
-                  <div className="md:hidden space-y-4">
+                  {/* 手機版：卡片式列表 */}
+                  <div className="md:hidden divide-y divide-gray-100">
                     {reports.map((r) => (
-                      <div
-                        key={r.memberId}
-                        className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm"
-                      >
-                        <div className="flex justify-between items-center mb-3">
-                          <h3 className="font-medium text-base text-gray-900">{r.memberName}</h3>
+                      <div key={r.memberId} className="p-5 bg-white space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="font-serif font-bold text-lg text-[#1E1B4B]">{r.memberName}</h3>
                           <select
-                            className="text-base p-1.5 border border-gray-300 rounded-md"
+                            className="text-sm py-1 px-2 border border-gray-300 rounded-sm bg-gray-50 text-[#475569]"
                             value={r.identity}
-                            onChange={(e) =>
-                              handleReportChange(r.memberId, 'identity', e.target.value)
-                            }
+                            onChange={(e) => handleReportChange(r.memberId, 'identity', e.target.value)}
                           >
                             {identityOptions.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
                           </select>
                         </div>
 
-                        <div className="flex flex-wrap gap-3 text-base">
-                          {(['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const).map((key) => (
-                            <label key={key} className="flex items-center space-x-1 whitespace-nowrap">
+                        {/* 出席勾選區：格狀排列 */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {mobileKeys.map((key) => (
+                            <label 
+                              key={key} 
+                              className={`
+                                flex flex-col items-center justify-center p-2 rounded-sm border cursor-pointer transition-all
+                                ${Boolean((r as any)[key]) 
+                                  ? 'bg-[#1E1B4B] border-[#1E1B4B] text-white shadow-sm' 
+                                  : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'}
+                              `}
+                            >
                               <input
                                 type="checkbox"
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                                className="hidden"
                                 checked={Boolean((r as any)[key])}
                                 onChange={(e) => handleReportChange(r.memberId, key, e.target.checked)}
                               />
-                              <span>{mobileLabelMap[key]}</span>
+                              <span className="text-xs font-bold">{mobileLabelMap[key]}</span>
+                              {Boolean((r as any)[key]) && (
+                                <svg className="w-3 h-3 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                              )}
                             </label>
                           ))}
                         </div>
 
-                        <div className="mt-3 space-y-2">
+                        {/* 狀態與備註 */}
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">門訓系統</label>
+                            <label className="block text-[10px] text-[#94A3B8] uppercase tracking-wider mb-1">Discipleship</label>
                             <select
-                              className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
+                              className="w-full text-sm p-2 border border-gray-300 rounded-sm bg-white"
                               value={r.discipleship}
-                              onChange={(e) =>
-                                handleReportChange(r.memberId, 'discipleship', e.target.value)
-                              }
+                              onChange={(e) => handleReportChange(r.memberId, 'discipleship', e.target.value)}
                             >
-                              <option value="">-</option>
+                              <option value="">- 門訓狀態 -</option>
                               <option value="door-up">門上</option>
                               <option value="door-down">門下</option>
                               <option value="bless-up">福上</option>
@@ -351,180 +365,153 @@ function GroupReport() {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">OIKOS</label>
+                            <label className="block text-[10px] text-[#94A3B8] uppercase tracking-wider mb-1">OIKOS</label>
                             <select
-                              className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
+                              className="w-full text-sm p-2 border border-gray-300 rounded-sm bg-white"
                               value={r.oikos}
                               onChange={(e) => handleReportChange(r.memberId, 'oikos', e.target.value)}
                             >
-                              <option value="">-</option>
+                              <option value="">- 關懷 -</option>
                               <option value="p">代禱</option>
                               <option value="l">LINE</option>
                               <option value="v">探訪</option>
-                              <option value="m">幸福小組/講座</option>
+                              <option value="m">幸福/講座</option>
                               <option value="f">聚餐</option>
                               <option value="t">旅遊</option>
                             </select>
                           </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">備註</label>
-                            <input
-                              type="text"
-                              className="w-full p-1.5 text-sm border border-gray-300 rounded-md"
-                              value={r.note}
-                              onChange={(e) => handleReportChange(r.memberId, 'note', e.target.value)}
-                              placeholder="輸入備註"
-                            />
-                          </div>
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            className="w-full text-sm p-2 border-b border-gray-300 bg-transparent focus:border-[#1E1B4B] focus:ring-0 placeholder-gray-400 transition-colors"
+                            value={r.note}
+                            onChange={(e) => handleReportChange(r.memberId, 'note', e.target.value)}
+                            placeholder="備註..."
+                          />
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  {/* 桌機版：表格 */}
-                  <div className="hidden md:block">
-                    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                      <table className="min-w-full bg-white">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-28 whitespace-nowrap">
-                              組員
-                            </th>
-                            <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-28">
-                              身份
-                            </th>
-                            {(['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const).map((key) => (
-                              <th
-                                key={key}
-                                className={`py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 whitespace-nowrap ${tdWidthClass[key]}`}
+                  {/* 桌機版：簡潔表格 */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="min-w-full text-sm text-left">
+                      <thead className="bg-[#F1F5F9] text-[#64748B] text-xs uppercase font-bold tracking-wider border-b border-gray-200">
+                        <tr>
+                          <th className="py-4 px-6">姓名</th>
+                          <th className="py-4 px-2">身份</th>
+                          {attendanceKeys.map((key) => (
+                            <th key={key} className="py-4 px-2 text-center">{mobileLabelMap[key]}</th>
+                          ))}
+                          <th className="py-4 px-2 text-center">門訓</th>
+                          <th className="py-4 px-2 text-center">OIKOS</th>
+                          <th className="py-4 px-6">備註</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {reports.map((r) => (
+                          <tr key={r.memberId} className="hover:bg-blue-50/30 transition-colors">
+                            <td className="py-3 px-6 font-medium text-[#1E1B4B]">{r.memberName}</td>
+                            <td className="py-3 px-2">
+                              <select
+                                className="w-full text-xs p-1.5 border border-gray-200 rounded-sm bg-white focus:border-[#1E1B4B]"
+                                value={r.identity}
+                                onChange={(e) => handleReportChange(r.memberId, 'identity', e.target.value)}
                               >
-                                {mobileLabelMap[key]}
-                              </th>
-                            ))}
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-28">
-                              門訓系統
-                            </th>
-                            <th className="py-4 px-3 text-center font-medium text-gray-900 border-b border-gray-200 w-28">
-                              OIKOS
-                            </th>
-                            <th className="py-4 px-4 text-left font-medium text-gray-900 border-b border-gray-200 w-40">
-                              備註
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {reports.map((r) => (
-                            <tr key={r.memberId} className="hover:bg-gray-50">
-                              <td className="py-4 px-4 text-gray-900 border-b border-gray-100 w-28">
-                                <div className="truncate">{r.memberName}</div>
-                              </td>
-                              <td className="py-4 px-3 border-b border-gray-100">
-                                <select
-                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                  value={r.identity}
-                                  onChange={(e) =>
-                                    handleReportChange(r.memberId, 'identity', e.target.value)
-                                  }
-                                >
-                                  {identityOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value} className="text-gray-900">
-                                      {opt.label}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-
-                              {(['devotion','cellGroup','sundayService','prayerMeeting','happinessGroup'] as const).map((key) => (
-                                <td
-                                  key={key}
-                                  className={`py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap ${tdWidthClass[key]}`}
-                                >
+                                {identityOptions.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                            </td>
+                            {attendanceKeys.map((key) => (
+                              <td key={key} className="py-3 px-2 text-center">
+                                <label className="inline-flex items-center justify-center cursor-pointer">
                                   <input
                                     type="checkbox"
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="w-5 h-5 text-[#1E1B4B] border-gray-300 rounded focus:ring-[#1E1B4B] cursor-pointer"
                                     checked={(r as any)[key]}
                                     onChange={(e) => handleReportChange(r.memberId, key, e.target.checked)}
                                   />
-                                </td>
-                              ))}
-
-                              <td className="py-3 px-3 border-b border-gray-100">
-                                <select
-                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                  value={r.discipleship}
-                                  onChange={(e) =>
-                                    handleReportChange(r.memberId, 'discipleship', e.target.value)
-                                  }
-                                >
-                                  <option value="" className="text-gray-500">-</option>
-                                  <option value="door-up" className="text-gray-900">門上</option>
-                                  <option value="door-down" className="text-gray-900">門下</option>
-                                  <option value="bless-up" className="text-gray-900">福上</option>
-                                  <option value="bless-down" className="text-gray-900">福下</option>
-                                  <option value="done" className="text-gray-900">完成</option>
-                                </select>
+                                </label>
                               </td>
-
-                              <td className="py-3 px-3 border-b border-gray-100">
-                                <select
-                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                  value={r.oikos}
-                                  onChange={(e) => handleReportChange(r.memberId, 'oikos', e.target.value)}
-                                >
-                                  <option value="" className="text-gray-500">-</option>
-                                  <option value="p" className="text-gray-900">代禱</option>
-                                  <option value="l" className="text-gray-900">LINE</option>
-                                  <option value="v" className="text-gray-900">探訪</option>
-                                  <option value="m" className="text-gray-900">幸福小組/講座</option>
-                                  <option value="f" className="text-gray-900">聚餐</option>
-                                  <option value="t" className="text-gray-900">旅遊</option>
-                                </select>
-                              </td>
-
-                              <td className="py-4 px-4 border-b border-gray-100">
-                                <input
-                                  type="text"
-                                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                  value={r.note}
-                                  onChange={(e) => handleReportChange(r.memberId, 'note', e.target.value)}
-                                  placeholder="輸入備註"
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                            ))}
+                            <td className="py-3 px-2">
+                              <select
+                                className="w-full text-xs p-1.5 border border-gray-200 rounded-sm bg-white focus:border-[#1E1B4B]"
+                                value={r.discipleship}
+                                onChange={(e) => handleReportChange(r.memberId, 'discipleship', e.target.value)}
+                              >
+                                <option value="">-</option>
+                                <option value="door-up">門上</option>
+                                <option value="door-down">門下</option>
+                                <option value="bless-up">福上</option>
+                                <option value="bless-down">福下</option>
+                                <option value="done">完成</option>
+                              </select>
+                            </td>
+                            <td className="py-3 px-2">
+                              <select
+                                className="w-full text-xs p-1.5 border border-gray-200 rounded-sm bg-white focus:border-[#1E1B4B]"
+                                value={r.oikos}
+                                onChange={(e) => handleReportChange(r.memberId, 'oikos', e.target.value)}
+                              >
+                                <option value="">-</option>
+                                <option value="p">代禱</option>
+                                <option value="l">LINE</option>
+                                <option value="v">探訪</option>
+                                <option value="m">講座</option>
+                                <option value="f">聚餐</option>
+                                <option value="t">旅遊</option>
+                              </select>
+                            </td>
+                            <td className="py-3 px-6">
+                              <input
+                                type="text"
+                                className="w-full text-xs p-1.5 border-b border-gray-200 bg-transparent focus:border-[#1E1B4B] focus:ring-0 placeholder-gray-300"
+                                value={r.note}
+                                onChange={(e) => handleReportChange(r.memberId, 'note', e.target.value)}
+                                placeholder="備註..."
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
+              {/* 提交按鈕 */}
               <div className="mt-10 text-center">
                 <button
                   type="submit"
                   disabled={isSubmitting || !groupId}
-                  className={`inline-flex items-center justify-center px-8 py-3 rounded-full text-white font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${
-                    isSubmitting
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600'
-                  }`}
+                  className={`
+                    px-12 py-4 rounded-sm text-sm font-bold tracking-[0.2em] uppercase shadow-lg transition-all duration-300
+                    ${isSubmitting || !groupId
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-[#1E1B4B] text-white hover:bg-[#B45309] hover:shadow-xl hover:-translate-y-1'
+                    }
+                  `}
                 >
-                  {isSubmitting ? '提交中…' : '提交回報'}
+                  {isSubmitting ? 'Submitting...' : 'Submit Report'}
                 </button>
               </div>
             </form>
           </div>
         </div>
-      </div>
-    </Layout>
+      </main>
+
+      <Footer />
+    </div>
   )
 }
 
 export default GroupReport
 
-// ✅ 伺服端檢查登入，未登入直接 302 到登入頁（帶回跳轉）
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx) // 不需匯入 authOptions，最穩定
+  const session = await getSession(ctx)
 
   if (!session) {
     return {

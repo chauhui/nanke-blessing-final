@@ -1,123 +1,146 @@
 // pages/courses/teen-parenting.tsx
+'use client';
 
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
+import Link from 'next/link'
 
 export default function TeenParentingCourse() {
   return (
-    <div className="min-h-screen flex flex-col">
+    // [配色] 全站統一：米灰底色 + 深靛藍文字
+    <div className="min-h-screen flex flex-col bg-[#F7F5F2] text-[#1E1B4B] font-sans selection:bg-[#C7D2FE] selection:text-[#1E1B4B]">
       <NavBar />
 
-      {/* 頁首 Banner */}
-      <div className="relative pt-32 md:pt-44 pb-14 md:pb-20 bg-gradient-to-r from-pink-200 via-orange-100 to-sky-100">
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-800 mb-3 tracking-tight">
-            如何教養青少年
-          </h1>
-          <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
-            幫助家長建立與青少年溝通的橋樑，從聖經角度、專業諮商與實務經驗，一同面對孩子成長過程的挑戰與祝福！
-          </p>
-        </div>
-      </div>
+      {/* ✅ 修正 1: 底部間距縮小為 pb-12 (手機)，電腦版維持 pb-20 */}
+      <main className="flex-grow pt-28 md:pt-40 pb-12 md:pb-20">
+        <div className="container mx-auto px-6 lg:px-12">
+          
+          {/* --- Section 1: 頁面標題 (Header) --- */}
+          {/* ✅ 修正 2: 底部間距縮小為 mb-8 (手機)，電腦版維持 mb-16 */}
+          <div className="border-b border-[#D4C5B5] pb-8 md:pb-10 mb-8 md:mb-16">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2 md:mb-4">
+                   <div className="h-[1px] w-8 bg-[#B45309]"></div>
+                   <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-[#B45309] uppercase">
+                     Parenting Course
+                   </span>
+                </div>
+                {/* ✅ 修正 3: 手機版標題縮小至 text-3xl，電腦版維持原樣 */}
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-[#1E1B4B] leading-tight">
+                  如何教養青少年
+                </h1>
+              </div>
+              
+              <div className="max-w-xl text-left md:text-right">
+                {/* ✅ 修正 4: 手機版內文 text-sm */}
+                <p className="text-[#475569] font-medium leading-relaxed text-sm md:text-base">
+                  建立溝通橋樑，化解親子衝突。<br/>
+                  從<span className="border-b border-[#1E1B4B] text-[#1E1B4B] pb-0.5 mx-1">聖經智慧</span>與<span className="border-b border-[#1E1B4B] text-[#1E1B4B] pb-0.5 mx-1">專業諮商</span>角度，陪孩子走過關鍵期。
+                </p>
+              </div>
+            </div>
+          </div>
 
-      <main className="flex-grow bg-gradient-to-b from-pink-50 via-white to-blue-50">
-        <div className="container mx-auto px-4 py-12 md:py-16">
-          {/* ——「課程內容」主區塊（維持原風格與左右編排） —— */}
-          <section className="relative max-w-5xl mx-auto">
-            {/* 背景裝飾 */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-2 rounded-[2rem] bg-gradient-to-r from-rose-200/60 via-fuchsia-100/60 to-sky-200/60 blur-xl"
-            />
-            <div className="relative rounded-[1.75rem] bg-white/90 shadow-xl ring-1 ring-black/5 overflow-hidden">
-              {/* 左側色帶與圓角扣 */}
-              <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-rose-400 to-sky-400" />
-              <div className="absolute -left-3 top-10 h-6 w-6 rounded-r-2xl bg-rose-300/70" />
-              <div className="absolute -left-3 top-24 h-6 w-6 rounded-r-2xl bg-sky-300/70" />
+          {/* --- Section 2: 課程內容 (Content Grid) --- */}
+          {/* ✅ 修正 5: 手機版 grid gap 縮小至 gap-8 */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* 左側：課程核心 (佔 4 欄) */}
+            <div className="lg:col-span-4">
+              {/* ✅ 修正 6: 手機版內距縮小至 p-6 */}
+              <div className="bg-white border border-[#D4C5B5] p-6 md:p-8 rounded-sm sticky top-28 md:top-32">
+                <h3 className="text-lg md:text-xl font-serif font-bold text-[#1E1B4B] mb-4 md:mb-6 flex items-center gap-3">
+                  <span className="w-2 h-2 bg-[#B45309] rounded-full"></span>
+                  課程焦點
+                </h3>
+                
+                <ul className="space-y-4 md:space-y-6">
+                  <li className="flex gap-3 md:gap-4 items-start group">
+                    <span className="text-[#B45309] font-serif font-bold text-base md:text-lg opacity-60 group-hover:opacity-100 transition-opacity">01.</span>
+                    <div>
+                      <h4 className="font-bold text-[#1E1B4B] mb-1 text-sm md:text-base">理解內在需要</h4>
+                      <p className="text-xs md:text-sm text-[#475569] leading-relaxed">運用聖經智慧，讀懂孩子行為背後的呼求。</p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3 md:gap-4 items-start group">
+                    <span className="text-[#B45309] font-serif font-bold text-base md:text-lg opacity-60 group-hover:opacity-100 transition-opacity">02.</span>
+                    <div>
+                      <h4 className="font-bold text-[#1E1B4B] mb-1 text-sm md:text-base">溝通與引導</h4>
+                      <p className="text-xs md:text-sm text-[#475569] leading-relaxed">學習「聽」比「說」更重要的對話藝術。</p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3 md:gap-4 items-start group">
+                    <span className="text-[#B45309] font-serif font-bold text-base md:text-lg opacity-60 group-hover:opacity-100 transition-opacity">03.</span>
+                    <div>
+                      <h4 className="font-bold text-[#1E1B4B] mb-1 text-sm md:text-base">同行成長</h4>
+                      <p className="text-xs md:text-sm text-[#475569] leading-relaxed">建立信任關係，讓家成為最安全的避風港。</p>
+                    </div>
+                  </li>
+                </ul>
 
-              <div className="p-7 sm:p-10 md:p-14">
-                {/* 標題 */}
-                <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight text-gray-900 mb-6">
-                  青春期關係如何轉變？
+                {/* 裝飾線 */}
+                <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-[#F1F5F9]">
+                  <p className="text-[10px] md:text-xs text-[#94A3B8] tracking-widest uppercase text-center">Nanke Blessed & Blessing Church</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 右側：詳細說明 & 呼召 (佔 8 欄) */}
+            <div className="lg:col-span-8 space-y-8 md:space-y-12">
+              
+              {/* 文章區塊 */}
+              <section>
+                {/* ✅ 修正 7: 手機版標題 text-2xl */}
+                <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#1E1B4B] mb-4 md:mb-6">
+                  青春期，是風暴還是轉機？
                 </h2>
+                {/* ✅ 修正 8: 手機版內文 text-sm，電腦版 text-lg */}
+                <div className="text-sm md:text-lg text-[#475569] leading-loose text-justify space-y-4 md:space-y-6">
+                  <p>
+                    許多父母發現，孩子進入青春期後彷彿變了一個人。沈默寡言、情緒起伏、甚至拒絕溝通。這段時期，往往是親子關係最緊張，卻也是最需要彼此理解的時刻。
+                  </p>
+                  <p>
+                    這門課程不只是一套教養方法，更是一趟父母自我成長的旅程。我們相信，透過真理的亮光與實務的演練，您可以從「焦慮的管教者」轉變為「智慧的同行者」。
+                  </p>
+                </div>
+              </section>
 
-                {/* 左：焦點卡；右：說明文字 */}
-                <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-start">
-                  {/* 焦點提示卡（左） */}
-                  <div className="md:col-span-5">
-                    <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-sky-50 p-6 ring-1 ring-black/5">
-                      <p className="text-sm font-semibold text-rose-500 mb-2">課程焦點</p>
-                      <ul className="space-y-3 text-gray-700 leading-relaxed">
-                        <li className="flex gap-3">
-                          <span className="mt-1 h-2 w-2 rounded-full bg-rose-400" />
-                          運用聖經的智慧，理解孩子的內在需要
-                        </li>
-                        <li className="flex gap-3">
-                          <span className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
-                          學習正確的溝通與引導方式
-                        </li>
-                        <li className="flex gap-3">
-                          <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-                          建立信任、同行成長的親子關係
-                        </li>
-                      </ul>
+              {/* 資訊卡片 (Information Box) */}
+              {/* ✅ 修正 9: 手機版內距 p-6 */}
+              <div className="bg-[#E5E5E5] border-l-4 border-[#1E1B4B] p-6 md:p-10 rounded-r-sm">
+                <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center">
+                  <div className="flex-1">
+                    <h3 className="text-lg md:text-xl font-bold text-[#1E1B4B] mb-2">
+                      想了解更多資訊？
+                    </h3>
+                    <p className="text-xs md:text-base text-[#475569] mb-4 leading-relaxed">
+                      課程時間與報名方式，歡迎於主日後至服務台洽詢，或直接透過下方管道聯繫我們。
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-xs md:text-sm font-medium text-[#1E1B4B]">
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        06-5834626
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Info.NKBBC@gmail.com
+                      </span>
                     </div>
                   </div>
-
-                  {/* 說明文字（右） */}
-                  <div className="md:col-span-7">
-                    <div className="prose prose-lg max-w-none">
-                      <p className="leading-relaxed text-gray-800">
-                        課程中運用聖經的智慧，幫助父母了解孩子的內在需要，
-                        學習正確的溝通與引導方式，建立信任、同行成長。
-                        讓您不只是「教」，更能「陪」，孩子走過關鍵轉變期。
-                      </p>
-                    </div>
-
-                    {/* —— 重新設計的資訊膠囊（取代原按鈕） —— */}
-                    <div className="mt-8">
-                      {/* 外層漸層描邊 */}
-                      <div className="rounded-2xl p-[1.5px] bg-gradient-to-r from-rose-300 via-amber-300 to-sky-300 shadow-sm">
-                        {/* 內層玻璃卡 */}
-                        <div className="rounded-2xl bg-white/80 backdrop-blur px-5 py-4 ring-1 ring-black/5">
-                          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                            {/* 圖標圓片 */}
-                            <div className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-rose-200 to-amber-200 ring-1 ring-black/5 grid place-items-center">
-                              {/* chat/phone icon */}
-                              <svg
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                className="h-5 w-5 text-rose-600"
-                              >
-                                <path d="M7 8a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5H9l-3.2 2.4A1 1 0 0 1 4 16.6V14A6 6 0 0 1 7 8Zm3.5 8.5a1 1 0 0 1 1.12-.22 9.8 9.8 0 0 0 3.88.78c.7 0 1.37-.07 2-.22a1 1 0 0 1 1.2.71l.61 2.16a1 1 0 0 1-.67 1.22A12.8 12.8 0 0 1 12 22c-2.05 0-3.98-.47-5.66-1.32a1 1 0 0 1-.54-1.14l.49-2.2a1 1 0 0 1 1.44-.67 10.9 10.9 0 0 0 2.77 1.03 1 1 0 0 0 1-.2Z" />
-                              </svg>
-                            </div>
-
-                            {/* 文字內容 */}
-                            <div className="text-center sm:text-left">
-                              <p className="font-semibold text-gray-900 tracking-wide">
-                                歡迎聯繫教會了解更多資訊
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                可於主日後至服務台洽詢，或透過教會聯絡方式與我們對談。
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* 裝飾下陰影 */}
-                      <div aria-hidden className="mx-auto mt-2 h-1 w-40 rounded-full bg-gradient-to-r from-rose-200 via-amber-200 to-sky-200 blur-[2px]" />
-                    </div>
-                  </div>
+                  
+                  {/* 按鈕 */}
+                  <Link href="/about/gatherings" className="shrink-0 w-full md:w-auto">
+                    <button className="w-full md:w-auto bg-[#1E1B4B] text-white hover:bg-[#312E81] px-8 py-3 md:py-4 text-xs md:text-sm font-bold tracking-[0.15em] transition-all duration-300 uppercase shadow-lg shadow-[#1E1B4B]/20 rounded-sm">
+                      CONTACT US
+                    </button>
+                  </Link>
                 </div>
               </div>
 
-              {/* 底部柔光條 */}
-              <div aria-hidden="true" className="h-3 w-full bg-gradient-to-r from-rose-200 via-amber-200 to-sky-200" />
             </div>
-          </section>
+          </div>
+
         </div>
       </main>
 

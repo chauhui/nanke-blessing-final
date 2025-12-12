@@ -1,197 +1,219 @@
 // pages/courses/intimacy-journey.tsx
+'use client';
+
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
+import Link from 'next/link'
 
 export default function IntimacyJourneyCourse() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    // [配色] 全站統一米灰底色
+    <div className="min-h-screen flex flex-col bg-[#F7F5F2] text-[#1E1B4B] font-sans selection:bg-[#C7D2FE] selection:text-[#1E1B4B]">
       <NavBar />
 
-      {/* ============== HERO（置中＋等距＋高度縮短＋導覽列內部間隙） ============== */}
-      <header className="relative isolate overflow-hidden">
-        {/* 藍色背景只覆蓋 header 區域 */}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0f1f3a] via-[#132a4e] to-[#15406e]" />
-
-        <div className="container mx-auto px-4">
-          {/* 這個 spacer 讓「可見的藍色」從 Navbar 下緣才開始，避免被蓋到而看起來不等距 */}
-          <div aria-hidden className="h-16 md:h-20" />
-
-          {/* place-items-center 保證置中；上下 padding 對稱；藍底高度縮短 */}
-          <div className="grid min-h-[300px] md:min-h-[340px] lg:min-h-[360px] place-items-center py-12 md:py-14">
-            <div className="grid w-full gap-8 lg:grid-cols-12 items-center">
-              {/* 左：標題敘述 */}
-              <div className="lg:col-span-7 text-white">
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/15 px-3 py-1 text-xs text-white/90">
-                  情感智慧 × 自我成長
+      {/* ✅ 修正 1: 頂部間距 pt-28 (防剪裁)，底部間距 pb-12 (手機版緊緻) */}
+      <main className="flex-1 pt-28 md:pt-40 pb-12 md:pb-24">
+        
+        {/* --- Header: 雜誌風標題 --- */}
+        {/* ✅ 修正 2: 底部間距縮小 mb-8 */}
+        <div className="container mx-auto px-6 lg:px-12 mb-8 md:mb-16">
+          <div className="border-b border-[#D4C5B5] pb-8 md:pb-12">
+            <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-start lg:items-end justify-between">
+              <div className="max-w-3xl">
+                <div className="flex items-center gap-3 mb-2 md:mb-4">
+                   <div className="h-[1px] w-8 bg-[#B45309]"></div>
+                   <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-[#B45309] uppercase">
+                     Relationship Course
+                   </span>
                 </div>
-                <h1 className="mt-3 text-[34px] md:text-[44px] leading-tight font-extrabold tracking-tight">
+                {/* ✅ 修正 3: 手機版標題 text-3xl */}
+                <h1 className="text-3xl md:text-6xl font-serif font-bold text-[#1E1B4B] mb-4 md:mb-6 leading-tight">
                   親密之旅
                 </h1>
-                <p className="mt-3 text-white/85 text-[15px] md:text-base leading-relaxed">
-                  把臨床心理學化作日常行動，修復關係、擴大連結、建立安全與信任。
-                </p>
-                <p className="mt-2 text-xs md:text-sm text-white/70">
-                  課程設計：臨床心理學家 黃維仁 博士
+                {/* ✅ 修正 4: 手機版內文 text-base */}
+                <p className="text-base md:text-xl text-[#475569] leading-relaxed max-w-2xl">
+                  情感智慧 <span className="text-[#B45309]">×</span> 自我成長 <span className="text-[#B45309]">×</span> 親密關係
+                  <br/>
+                  <span className="text-sm md:text-base mt-2 block opacity-80">
+                    把臨床心理學化作日常行動，修復關係、擴大連結、建立安全與信任。
+                  </span>
                 </p>
               </div>
 
-              {/* 右：資訊卡（與標題同層，避免單邊撐高） */}
-              <div className="lg:col-span-5">
-                <div className="rounded-2xl bg-white/10 backdrop-blur ring-1 ring-white/20 p-5 md:p-6 text-white shadow-2xl">
-                  <div className="grid grid-cols-2 gap-3 text-[13px] md:text-sm">
-                    <div>
-                      <p className="text-white/60">上課方式</p>
-                      <p className="mt-1 font-semibold">8–12 人小班制｜小組研討＋演練</p>
-                    </div>
-                    <div>
-                      <p className="text-white/60">上課日期時間</p>
-                      <p className="mt-1 font-semibold">報名後通知（依梯次安排）</p>
-                    </div>
-                    <div>
-                      <p className="text-white/60">上課地點</p>
-                      <p className="mt-1 font-semibold">報名後通知（簡訊／LINE）</p>
-                    </div>
-                    <div>
-                      <p className="text-white/60">聯絡洽詢</p>
-                      <p className="mt-1 font-semibold">
-                        <a href="tel:0929327486" className="underline decoration-dotted">
-                          0929-327-486 王麗容
-                        </a>
-                      </p>
-                    </div>
+              {/* 右側：重點資訊小卡 */}
+              {/* ✅ 修正 5: 手機版內距 p-5 */}
+              <div className="bg-[#1E1B4B] text-white p-5 md:p-6 rounded-sm shadow-xl w-full lg:w-auto lg:min-w-[280px]">
+                <p className="text-xs font-bold tracking-widest text-[#94A3B8] uppercase mb-3 md:mb-4 border-b border-white/20 pb-2">
+                  Course Info
+                </p>
+                <div className="space-y-2 md:space-y-3 text-sm">
+                  <div className="flex justify-between lg:block">
+                    <span className="text-[#94A3B8] text-xs mr-4 lg:mr-0 lg:block">課程設計</span>
+                    <span className="font-medium">黃維仁 博士</span>
                   </div>
-                  <div className="mt-4 h-px bg-white/15" />
-                  <p className="mt-4 text-[11px] md:text-xs text-white/70">
-                    名額限 12 位；建議伴侶一同參與以獲最佳學習成效。
-                  </p>
+                  <div className="flex justify-between lg:block">
+                    <span className="text-[#94A3B8] text-xs mr-4 lg:mr-0 lg:block">上課方式</span>
+                    <span className="font-medium">小班制研討 ＋ 演練</span>
+                  </div>
+                  <div className="flex justify-between lg:block">
+                    <span className="text-[#94A3B8] text-xs mr-4 lg:mr-0 lg:block">適合對象</span>
+                    <span className="font-medium">伴侶、夫妻、個人成長</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 與下方白底清楚分界（不佔高度） */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-white/25" />
-      </header>
-
-      {/* =================== Main =================== */}
-      <main className="flex-1">
-        <section className="container mx-auto px-4 py-10 md:py-12">
-          <div className="grid lg:grid-cols-12 gap-8">
-            {/* Sticky 側欄 */}
-            <aside className="lg:col-span-4">
-              <div className="lg:sticky lg:top-24 space-y-6">
-                <div className="rounded-3xl border border-gray-200 shadow-sm p-6">
-                  <h3 className="text-sm font-semibold text-slate-700">課程宗旨</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-slate-800">
-                    結合理論與實作，聚焦
-                    <span className="font-semibold">「與自己親、與別人親、成熟互動」</span>
-                    ，加深安全依附與情感連結，打造可持續的親密關係。
+        {/* --- Content: 雙欄佈局 --- */}
+        <div className="container mx-auto px-6 lg:px-12">
+          {/* ✅ 修正 6: 手機版 Grid gap 縮小 */}
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* 左側：Sticky 側欄選單 */}
+            <aside className="lg:col-span-4 order-2 lg:order-1">
+              <div className="lg:sticky lg:top-32 space-y-6 md:space-y-8">
+                
+                {/* 課程宗旨 */}
+                {/* ✅ 修正 7: 手機版內距 p-6 */}
+                <div className="bg-white border border-[#D4C5B5] p-6 md:p-8 rounded-sm">
+                  <h3 className="text-lg font-serif font-bold text-[#1E1B4B] mb-3 md:mb-4 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#1E1B4B] rounded-full"></span>
+                    課程宗旨
+                  </h3>
+                  <p className="text-[#475569] leading-loose text-sm text-justify">
+                    結合理論與實作，聚焦「與自己親、與別人親、成熟互動」，加深安全依附與情感連結，打造可持續的親密關係。
                   </p>
                 </div>
 
-                <div className="rounded-3xl border border-gray-200 shadow-sm p-6">
-                  <h3 className="text-sm font-semibold text-slate-700">適用對象</h3>
-                  <ul className="mt-2 space-y-1.5 text-[15px] text-slate-800">
-                    <li>• 伴侶／婚姻關係希望升級者</li>
-                    <li>• 渴望提升情緒覺察與溝通能力者</li>
-                    <li>• 親子與職場關係需要修復者</li>
+                {/* 適用對象 */}
+                <div className="bg-white border border-[#D4C5B5] p-6 md:p-8 rounded-sm">
+                  <h3 className="text-lg font-serif font-bold text-[#1E1B4B] mb-3 md:mb-4 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#B45309] rounded-full"></span>
+                    適用對象
+                  </h3>
+                  <ul className="space-y-2 md:space-y-3 text-sm text-[#475569]">
+                    <li className="flex gap-3">
+                      <span className="text-[#B45309]">✓</span> 伴侶／婚姻關係希望升級者
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-[#B45309]">✓</span> 渴望提升情緒覺察與溝通能力者
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="text-[#B45309]">✓</span> 親子與職場關係需要修復者
+                    </li>
                   </ul>
                 </div>
 
-                <div className="rounded-3xl border border-gray-200 shadow-sm p-6">
-                  <h3 className="text-sm font-semibold text-slate-700">費用</h3>
-                  <p className="mt-2 text-slate-800">
-                    教材・學員手冊 <span className="font-semibold">240 元</span>（首次上課繳交）
+                {/* 費用與報名 */}
+                <div className="bg-[#E5E5E5] border border-[#D4D4D8] p-6 md:p-8 rounded-sm">
+                  <h3 className="text-lg font-serif font-bold text-[#1E1B4B] mb-3 md:mb-4">
+                    報名資訊
+                  </h3>
+                  <p className="text-[#475569] text-sm mb-4 md:mb-6">
+                    教材・學員手冊 <span className="font-bold text-[#1E1B4B]">240 元</span><br/>(首次上課繳交)
                   </p>
-                </div>
-
-                <div className="rounded-3xl bg-gradient-to-br from-sky-50 to-emerald-50 ring-1 ring-gray-200 p-6">
-                  <p className="text-sm font-semibold text-sky-700">想先了解完整架構？</p>
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    <a
-                      href="https://jtiint.org/course/outline"
-                      className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-emerald-500 shadow hover:opacity-90"
-                    >
+                  <div className="flex flex-col gap-3">
+                    <a href="https://jtiint.org/course/outline" target="_blank" className="text-center py-3 border border-[#1E1B4B] text-[#1E1B4B] text-xs font-bold tracking-widest uppercase hover:bg-[#1E1B4B] hover:text-white transition-colors rounded-sm">
                       查看課程大綱
                     </a>
-                    <a
-                      href="tel:0929327486"
-                      className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-sky-700 ring-1 ring-sky-300 bg-white hover:bg-white/90"
-                    >
-                      來電洽詢（0929-327-486）
+                    <a href="tel:0929327486" className="text-center py-3 bg-[#B45309] text-white text-xs font-bold tracking-widest uppercase hover:bg-[#92400e] transition-colors rounded-sm">
+                      來電洽詢
                     </a>
                   </div>
                 </div>
+
               </div>
             </aside>
 
-            {/* 主內容 */}
-            <div className="lg:col-span-8 space-y-10">
+            {/* 右側：主要內容 */}
+            <div className="lg:col-span-8 order-1 lg:order-2 space-y-10 md:space-y-16">
+              
+              {/* 痛點分析 */}
               <section>
-                <h2 className="text-2xl md:text-3xl font-extrabold text-[#132a4e]">你是否也在找答案？</h2>
-                <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#1E1B4B] mb-6 md:mb-8">
+                  你是否也在找答案？
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
                   {[
                     '衝突循環總是重演，彼此愈說愈受傷？',
                     '明明在乎，卻很難說出需要與界線？',
                     '想增進親密與安全感，卻不知從何開始？',
                     '想把理論變成行動，有系統地練與改？',
-                  ].map((t, i) => (
-                    <div key={i} className="rounded-2xl border border-gray-200 p-4 md:p-5 bg-white shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-bold">
-                          {i + 1}
-                        </span>
-                        <p className="text-slate-800">{t}</p>
-                      </div>
+                  ].map((text, i) => (
+                    <div key={i} className="flex gap-4 p-5 md:p-6 bg-white border border-[#E2E8F0] rounded-sm hover:border-[#B45309] transition-colors group">
+                      <span className="text-3xl md:text-4xl font-serif font-bold text-[#E2E8F0] group-hover:text-[#B45309]/20 transition-colors">
+                        0{i + 1}
+                      </span>
+                      <p className="text-[#475569] text-sm md:text-base font-medium leading-relaxed pt-1.5 md:pt-2">
+                        {text}
+                      </p>
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section className="overflow-hidden rounded-3xl ring-1 ring-gray-200 shadow">
-                <div className="bg-gradient-to-r from-rose-50 via-amber-50 to-sky-50 p-6 md:p-8">
-                  <h3 className="text-lg md:text-xl font-extrabold text-[#132a4e]">三大核心能力</h3>
-                  <div className="mt-5 grid md:grid-cols-3 gap-4">
-                    <Pillar color="rose" title="與自己親" points={['覺察情緒與身體訊號', '辨識需要與價值', '自我安撫與調節']} />
-                    <Pillar color="sky" title="與別人親" points={['表達脆弱與需求', '建立信任與連結', '形成安全依附']} />
-                    <Pillar color="emerald" title="成熟互動" points={['分化與界線', '衝突協商與修復', '雙贏對話']} />
-                  </div>
+              {/* 核心能力 */}
+              <section>
+                <div className="flex items-center gap-4 mb-6 md:mb-8">
+                   <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#1E1B4B]">三大核心能力</h2>
+                   <div className="h-[1px] flex-1 bg-[#D4C5B5]"></div>
+                </div>
+                
+                <div className="space-y-4 md:space-y-6">
+                  <Pillar 
+                    title="與自己親 (Self Connection)" 
+                    desc="覺察情緒與身體訊號 · 辨識需要與價值 · 自我安撫與調節"
+                  />
+                  <Pillar 
+                    title="與別人親 (Social Connection)" 
+                    desc="表達脆弱與需求 · 建立信任與連結 · 形成安全依附"
+                  />
+                  <Pillar 
+                    title="成熟互動 (Mature Interaction)" 
+                    desc="分化與界線 · 衝突協商與修復 · 雙贏對話"
+                  />
                 </div>
               </section>
 
-              <section>
-                <h3 className="text-lg md:text-xl font-extrabold text-[#132a4e]">學習方法（小組教練式）</h3>
-                <ol className="mt-5 space-y-4">
+              {/* 學習方法 */}
+              {/* ✅ 修正 8: 手機版內距 p-6 */}
+              <section className="bg-[#1E1B4B] text-white p-6 md:p-12 rounded-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                
+                <h3 className="text-lg md:text-xl font-serif font-bold mb-6 md:mb-8 relative z-10">
+                  學習方法：小組教練式
+                </h3>
+                <ol className="space-y-4 md:space-y-6 relative z-10">
                   {[
                     '短講 × 示範：以臨床框架快速建立共同語言',
                     '分組演練：把理論變成具體句型與身體動作',
                     '教練回饋：即時調整，避免錯誤練習固化',
                     '家中作業：每週微行動，持續建立新連結',
                   ].map((step, idx) => (
-                    <li key={idx} className="relative pl-9">
-                      <span className="absolute left-0 top-0 inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-bold">
+                    <li key={idx} className="flex gap-3 md:gap-4 items-start">
+                      <span className="shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full border border-[#B45309] text-[#B45309] flex items-center justify-center text-[10px] md:text-xs font-bold mt-0.5">
                         {idx + 1}
                       </span>
-                      <span className="text-slate-800">{step}</span>
+                      <span className="text-[#CBD5E1] text-sm leading-relaxed">{step}</span>
                     </li>
                   ))}
                 </ol>
               </section>
 
-              <section className="rounded-3xl border border-gray-200 shadow">
-                <div className="px-5 md:px-6 py-4 bg-slate-50/70 rounded-t-3xl">
-                  <h3 className="text-lg font-extrabold text-[#132a4e]">常見問題</h3>
-                </div>
-                <div className="divide-y divide-gray-200">
-                  <Details q="沒有伴侶可以參加嗎？">可以。單身、交往、已婚皆適合；若能與重要他人一同參與，成效更佳。</Details>
-                  <Details q="需要額外購買教材嗎？">不需要，教材與學員手冊已包含在費用內（240 元）。</Details>
-                  <Details q="缺席一次怎麼辦？">可與小組長討論補課：重點回顧、指定閱讀或短時段補練習。</Details>
+              {/* 常見問題 FAQ */}
+              <section>
+                <h3 className="text-xl font-serif font-bold text-[#1E1B4B] mb-4 md:mb-6">常見問題</h3>
+                <div className="border-t border-[#D4C5B5]">
+                  <FAQItem q="沒有伴侶可以參加嗎？" a="可以。單身、交往、已婚皆適合；若能與重要他人一同參與，成效更佳。" />
+                  <FAQItem q="需要額外購買教材嗎？" a="不需要，教材與學員手冊已包含在費用內（240 元）。" />
+                  <FAQItem q="缺席一次怎麼辦？" a="可與小組長討論補課：重點回顧、指定閱讀或短時段補練習。" />
                 </div>
               </section>
+
             </div>
           </div>
-        </section>
+        </div>
       </main>
 
       <Footer />
@@ -199,41 +221,34 @@ export default function IntimacyJourneyCourse() {
   )
 }
 
-/* ------------- helpers ------------- */
-function Pillar({
-  color,
-  title,
-  points,
-}: {
-  color: 'rose' | 'sky' | 'emerald'
-  title: string
-  points: string[]
-}) {
-  const tone =
-    color === 'rose'
-      ? { badge: 'bg-rose-600', ring: 'ring-rose-200', bg: 'bg-rose-50' }
-      : color === 'sky'
-      ? { badge: 'bg-sky-600', ring: 'ring-sky-200', bg: 'bg-sky-50' }
-      : { badge: 'bg-emerald-600', ring: 'ring-emerald-200', bg: 'bg-emerald-50' }
+/* --- Components --- */
 
+function Pillar({ title, desc }: { title: string, desc: string }) {
   return (
-    <div className={`rounded-2xl p-4 ring-1 ${tone.ring} ${tone.bg}`}>
-      <div className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${tone.badge} text-white text-xs font-bold`}>✓</div>
-      <p className="mt-2 font-bold text-slate-900">{title}</p>
-      <ul className="mt-1.5 space-y-1 text-sm text-slate-700">
-        {points.map((p, i) => (
-          <li key={i}>• {p}</li>
-        ))}
-      </ul>
+    // ✅ 修正 9: 手機版內距 p-5
+    <div className="group bg-white border border-[#D4C5B5] p-5 md:p-6 rounded-sm hover:shadow-lg hover:border-[#1E1B4B] transition-all duration-300">
+      <h4 className="text-base md:text-lg font-bold text-[#1E1B4B] mb-1.5 md:mb-2 group-hover:text-[#B45309] transition-colors">
+        {title}
+      </h4>
+      <p className="text-[#64748B] text-sm leading-relaxed">
+        {desc}
+      </p>
     </div>
   )
 }
 
-function Details({ q, children }: { q: string; children: React.ReactNode }) {
+function FAQItem({ q, a }: { q: string; a: string }) {
   return (
-    <details className="p-5">
-      <summary className="cursor-pointer font-medium text-slate-900">{q}</summary>
-      <p className="mt-2 text-[15px] text-slate-700">{children}</p>
+    <details className="group border-b border-[#D4C5B5]">
+      <summary className="flex justify-between items-center font-medium cursor-pointer list-none py-4 md:py-5 text-[#1E1B4B] hover:text-[#B45309] transition-colors text-sm md:text-base">
+        <span>{q}</span>
+        <span className="transition group-open:rotate-180">
+          <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+        </span>
+      </summary>
+      <p className="text-[#475569] text-sm leading-loose mt-0 mb-4 md:mb-6 pl-4 border-l-2 border-[#B45309]">
+        {a}
+      </p>
     </details>
   )
 }

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { GetServerSideProps } from 'next'
 import { sanityClient } from '@/lib/sanity'
 import { testimoniesQuery, type Testimony } from '@/lib/queries'
+import Link from 'next/link'
 
 type Entry = { date: string; title: string; note?: string | null }
 type MonthlyPlan = { themeTitle: string; entries: Entry[] } | null
@@ -47,7 +48,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     setShowCookieBanner(false)
   }
 
-  // === 本月所有主日（4~5 個） ===
+  // === 本月所有主日 ===
   const now = new Date()
   const year = now.getFullYear()
   const month0 = now.getMonth()
@@ -62,7 +63,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     return list
   }, [year, month0])
 
-  const themeTitle = monthlyPlan?.themeTitle || '敬請期待'
   const byDate = new Map(
     (monthlyPlan?.entries ?? [])
       .filter(e => e?.date)
@@ -89,23 +89,21 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     return (
       <div
         className="
-          w-20 h-[72px] shrink-0 text-center px-1 py-2 rounded-md
-          border border-gray-200 bg-white
-          bg-[repeating-linear-gradient(-45deg,_rgba(0,0,0,0.04)_0_2px,_transparent_2px_4px)]
+          w-20 h-[72px] shrink-0 text-center px-1 py-2 rounded-sm
+          border border-[#D4C5B5] bg-[#F7F5F2]
           flex flex-col items-center justify-center
         "
       >
-        <div className="text-3xl font-bold leading-none tracking-tight text-gray-800">{day}</div>
-        <div className="mt-1 text-[11px] leading-none text-gray-500">{monthNum}月, {yearNum}</div>
+        <div className="text-3xl font-serif font-bold leading-none tracking-tight text-[#1E1B4B]">{day}</div>
+        <div className="mt-1 text-[11px] leading-none text-[#64748B] font-medium">{monthNum}月, {yearNum}</div>
       </div>
     )
   }
 
   const title = '南科福氣教會'
-  const desc =
-    '南科福氣教會｜位於台南南科園區，為忙碌的科技人與家庭預備溫暖的信仰與陪伴；以關懷、醫治與門訓裝備，幫助你在職場與生活中更新、看見盼望，歡迎一起聚會。'
+  const desc = '南科福氣教會｜位於台南南科園區，為忙碌的科技人與家庭預備溫暖的信仰與陪伴。'
   const url = 'https://nanke-blessing.vercel.app'
-  const image = 'https://nanke-blessing.vercel.app/images/og-image-1.jpg' // 1200x630 建議
+  const image = 'https://nanke-blessing.vercel.app/images/og-image-1.jpg' 
 
   return (
     <>
@@ -113,87 +111,28 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
         <title>{title}</title>
         <meta name="description" content={desc} />
         <link rel="canonical" href={url} />
-
-        {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="南科福氣教會" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={desc} />
-        <meta property="og:url" content={url} />
         <meta property="og:image" content={image} />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={desc} />
-        <meta name="twitter:image" content={image} />
-
-        {/* WebSite 結構化資料 */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: '南科福氣教會',
-              alternateName: [
-                '南科福氣教會',
-              ],
-              url,
-            }),
-          }}
-        />
-        {/* Organization（可帶 logo） */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: '南科福氣教會',
-              url,
-              logo: `${url}/android-chrome-512x512.png`,
-            }),
-          }}
-        />
       </Head>
 
-      {/* 搜尋摘要常會抓頁面可見內容，放隱藏 H1/段落輔助 */}
-      <h1 className="sr-only">{title}</h1>
-      <p className="hidden">{desc}</p>
-
-      {/* 只調整顏色（覆蓋 MinistriesPreview 裡的 Tailwind 顏色類別），其他完全不變 */}
       <style jsx global>{`
-        .monthly-title::selection { color: #0f766e; } /* teal-700 */
-
-        /* —— 事工卡顏色依照圖片 —— 
-           時間那行(通常使用 text-orange/amber-*) → 粉紅 #EA5F98
-           地點那行(通常使用 text-emerald/green-*) → 藍色 #3B82F6
-           連結維持藍色，hover 更深 */
-        .ministry-palette [class*="text-orange-"],
-        .ministry-palette [class*="text-amber-"] {
-          color: #EA5F98 !important;
-        }
-        .ministry-palette [class*="text-emerald-"],
-        .ministry-palette [class*="text-green-"] {
-          color: #3B82F6 !important;
-        }
-        .ministry-palette a { color: #2563EB !important; }
-        .ministry-palette a:hover { color: #1D4ED8 !important; }
+        .ministry-palette a { color: #1E1B4B !important; font-weight: 600; }
+        .ministry-palette a:hover { color: #B45309 !important; text-decoration: underline; }
       `}</style>
 
-      <div className="relative">
+      <div className="relative bg-[#F7F5F2] text-[#1E1B4B] font-sans selection:bg-[#C7D2FE] selection:text-[#1E1B4B]">
         <NavBar />
 
-        {/* Cookie Consent */}
         {showCookieBanner && (
-          <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 w-[92%] md:w-auto md:min-w-[720px] rounded-2xl border border-gray-200 bg-white/95 backdrop-blur px-4 py-3 shadow-xl">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <p className="text-[13px] md:text-[14px] text-gray-600">
-                本網站使用 cookie 儲存登入狀態與個人化設定。請點選「同意」以確保功能正常運作。
+          <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 w-[92%] md:w-auto md:min-w-[720px] rounded-sm border border-[#D4C5B5] bg-[#F7F5F2]/95 backdrop-blur px-6 py-4 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <p className="text-[13px] md:text-[14px] text-[#475569]">
+                本網站使用 cookie 儲存登入狀態。請點選「同意」以確保功能正常。
               </p>
               <button
-                className="px-5 py-2 rounded-full bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white text-sm font-semibold transition"
+                className="px-6 py-2 rounded-sm bg-[#1E1B4B] hover:bg-[#312E81] text-white text-sm font-bold tracking-wide transition"
                 onClick={handleAcceptCookies}
               >
                 同意
@@ -202,19 +141,24 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           </div>
         )}
 
-        <main className="relative bg-white text-gray-700 text-[16px] md:text-[17px]">
+        <main className="relative">
           {/* Hero */}
-          <div className="pt-16 md:pt-28 border-b border-gray-200 bg-white">
+          <div className="pt-20 lg:pt-24 border-b border-[#D4C5B5] bg-white">
             <HeroCarousel />
           </div>
 
-          {/* 事工預覽（用 class 包住僅為套顏色；不改任何 DOM 結構） */}
-          <section className="bg-slate-50 border-y border-gray-200">
-            <div className="container mx-auto px-4 py-9 md:py-12">
-              <header className="mb-5 md:mb-6">
-                <h2 className="text-2xl md:text-[28px] font-semibold tracking-tight text-gray-800">聚會與事工</h2>
-                <div className="mt-2 h-[3px] w-10 bg-sky-500 rounded-full" />
-                <p className="mt-2 text-[15px] md:text-base text-gray-600">
+          {/* 事工預覽 (米灰底) */}
+          <section className="bg-[#F7F5F2] border-b border-[#D4C5B5]">
+            <div className="container mx-auto px-4 py-8 md:py-16">
+              
+              {/* ✅ 修正重點：移除 text-center, justify-center，統一改為靠左 */}
+              <header className="mb-6 md:mb-10 text-left">
+                <div className="flex items-center gap-3 mb-2 md:mb-3">
+                   <div className="h-[1px] w-8 bg-[#B45309]"></div>
+                   <span className="text-xs font-bold tracking-[0.2em] text-[#B45309] uppercase">Ministries</span>
+                </div>
+                <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">聚會與事工</h2>
+                <p className="mt-2 md:mt-4 text-sm md:text-base text-[#475569] max-w-2xl leading-relaxed">
                   認識我們固定聚會與主要事工，快速連結到你關心的內容。
                 </p>
               </header>
@@ -224,36 +168,36 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             </div>
           </section>
 
-          {/* 本月主題 & 行事曆 */}
-          <section className="bg-white">
-            <div className="container mx-auto px-4 py-10 md:py-12">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
-                {/* 左：教會行事曆列表 */}
+          {/* 行事曆 (白底) */}
+          <section className="bg-white border-b border-[#D4C5B5]">
+            <div className="container mx-auto px-4 py-8 md:py-16">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
                 <div className="flex flex-col">
-                  <header className="mb-5 md:mb-6">
-                    <h2 className="text-2xl md:text-[28px] font-semibold tracking-tight text-gray-800">教會行事曆</h2>
-                    <div className="mt-2 h-[3px] w-10 bg-sky-500 rounded-full" />
+                  {/* 這原本就是靠左的，保持不變 */}
+                  <header className="mb-6 md:mb-8">
+                    <div className="flex items-center gap-3 mb-2 md:mb-3">
+                       <div className="h-[1px] w-8 bg-[#1E1B4B]"></div>
+                       <span className="text-xs font-bold tracking-[0.2em] text-[#64748B] uppercase">Calendar</span>
+                    </div>
+                    <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">教會行事曆</h2>
                   </header>
 
-                  <div className="rounded-xl border border-gray-200 bg-[#FAF7F2] shadow-sm p-5 md:p-6 flex-1">
-                    <div className="divide-y divide-gray-100 rounded-xl border border-gray-100">
+                  <div className="rounded-sm border border-[#D4C5B5] bg-[#F7F5F2] p-4 md:p-6 flex-1">
+                    <div className="divide-y divide-[#D4C5B5]/50">
                       {uiEntries.map((e, i) => {
                         const d = e.date ? new Date(e.date) : null
                         return (
-                          <article key={`${e.date ?? i}`} className="flex gap-4 p-4 md:p-5 hover:bg-black/0 transition">
+                          <article key={`${e.date ?? i}`} className="flex gap-4 md:gap-5 py-4 md:py-5 first:pt-0 last:pb-0 hover:bg-white/50 transition px-2 -mx-2 rounded-sm">
                             {d ? leftDateBlock(d) : <div className="w-20 h-[72px]" />}
-                            <div className="min-w-0 flex-1">
-                              <h4 className="monthly-title text-[16px] md:text-[17px] font-normal tracking-tight text-gray-800 line-clamp-2">
-                                {e.title}{e.note ? <span className="monthly-title text-gray-500">（{e.note}）</span> : null}
+                            <div className="min-w-0 flex-1 flex flex-col justify-center">
+                              <h4 className="text-lg font-bold text-[#1E1B4B] line-clamp-2 mb-1">
+                                {e.title}{e.note ? <span className="text-[#64748B] font-normal text-base ml-2">（{e.note}）</span> : null}
                               </h4>
                               {d && (
-                                <div className="mt-1 flex items-center gap-3 text-[13px] text-gray-500">
-                                  <span className="inline-flex items-center gap-1">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-70">
-                                      <path fill="currentColor" d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1h3V2zm13 7H4v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9z"/>
-                                    </svg>
-                                    {weekdayNames[d.getDay()]}，{fMD.format(d)}
-                                  </span>
+                                <div className="flex items-center gap-2 text-sm text-[#B45309] font-medium tracking-wide">
+                                  <span>{weekdayNames[d.getDay()]}</span>
+                                  <span className="w-1 h-1 bg-[#B45309] rounded-full"></span>
+                                  <span>{fMD.format(d)}</span>
                                 </div>
                               )}
                             </div>
@@ -264,9 +208,8 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                   </div>
                 </div>
 
-                {/* 右：行事曆 iframe */}
-                <div className="flex flex-col h-full">
-                  <div className="mt-auto relative rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden aspect-[5/4.12]">
+                <div className="flex flex-col h-full pt-0 lg:pt-24">
+                  <div className="relative rounded-sm border border-[#D4C5B5] bg-white shadow-sm overflow-hidden aspect-[5/4] h-full">
                     <iframe
                       src="https://calendar.google.com/calendar/embed?src=info.nkbbc%40gmail.com&src=zh.taiwan%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTaipei&wkst=1"
                       style={{ border: 0 }}
@@ -284,51 +227,53 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           </section>
 
           {/* 生命見證 */}
-          <section className="bg-slate-50 border-t border-gray-200">
-            <div className="container mx-auto px-4 py-10 md:py-12">
-              <div className="mb-5 md:mb-6">
-                <h2 className="text-2xl md:text-[28px] font-semibold tracking-tight text-gray-800">生命見證</h2>
-                <div className="mt-2 h-[3px] w-10 bg-sky-500 rounded-full" />
-                <p className="mt-2 text-[15px] md:text-base text-gray-600">
-                  聽聽弟兄姊妹們分享他們的生命故事。
+          <section className="bg-[#F7F5F2]">
+            <div className="container mx-auto px-4 py-8 md:py-16">
+              {/* ✅ 修正重點：移除 text-center, justify-center，統一改為靠左 */}
+              <header className="mb-6 md:mb-10 text-left">
+                <div className="flex items-center gap-3 mb-2 md:mb-3">
+                   <div className="h-[1px] w-8 bg-[#1E1B4B]"></div>
+                   <span className="text-xs font-bold tracking-[0.2em] text-[#64748B] uppercase">Testimonies</span>
+                </div>
+                <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">生命見證</h2>
+                <p className="mt-2 md:mt-4 text-sm md:text-base text-[#475569] max-w-2xl leading-relaxed">
+                  聽聽弟兄姊妹們分享他們的生命故事，見證神的真實。
                 </p>
-              </div>
+              </header>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-7">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {(testimonies ?? []).map((t) => {
                   const vid = extractYouTubeId(t.youtubeUrl)
                   const embedSrc = vid ? `https://www.youtube.com/embed/${vid}` : t.youtubeUrl
                   return (
                     <article
                       key={t._id}
-                      className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-card transition px-5 py-5 md:px-6 md:py-6"
+                      className="group rounded-sm bg-white border border-[#D4C5B5] p-6 hover:shadow-xl hover:shadow-[#1E1B4B]/5 transition-all duration-300"
                     >
-                      <header className="mb-3 flex items-center gap-2">
+                      <header className="mb-4 flex items-center gap-3">
                         {t.tag ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-xs md:text-[12px] font-semibold">
+                          <span className="inline-flex items-center px-2 py-1 rounded-sm bg-[#1E1B4B] text-white text-xs font-bold tracking-wider uppercase">
                             {t.tag}
                           </span>
                         ) : null}
-                        <h3 className="text-[17px] md:text-[18.5px] font-semibold tracking-tight text-gray-800">
+                        <h3 className="text-lg font-bold text-[#1E1B4B] line-clamp-1">
                           {t.title}
                         </h3>
                       </header>
 
-                      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm mb-4">
-                        <div className="aspect-video">
-                          <iframe
-                            src={embedSrc}
-                            title={t.title}
-                            loading="lazy"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                            className="w-full h-full"
-                          />
-                        </div>
+                      <div className="rounded-sm overflow-hidden bg-gray-100 mb-5 relative aspect-video">
+                        <iframe
+                          src={embedSrc}
+                          title={t.title}
+                          loading="lazy"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          className="absolute inset-0 w-full h-full"
+                        />
                       </div>
 
                       {t.description ? (
-                        <p className="text-[16px] md:text-[17px] leading-[1.75] text-gray-700">
+                        <p className="text-[#475569] leading-relaxed text-sm line-clamp-3">
                           {t.description}
                         </p>
                       ) : null}
@@ -346,7 +291,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
   )
 }
 
-// ====== SSR ======
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
   const ymKey = new Intl.DateTimeFormat('en-CA', {
     year: 'numeric',

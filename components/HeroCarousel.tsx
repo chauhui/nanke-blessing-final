@@ -1,13 +1,14 @@
+// components/HeroCarousel.tsx
 'use client'
 
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, EffectFade, Pagination } from 'swiper/modules'
+import { Autoplay, EffectFade, Pagination, Navigation } from 'swiper/modules'
 import { useEffect, useMemo, useState } from 'react'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
+import 'swiper/css/navigation'
 
-// 後台（Sanity）
 import { fetchQuery, urlFor } from '@/lib/sanity'
 
 export type HeroSlide = {
@@ -19,15 +20,14 @@ export type HeroSlide = {
 type Props = { slides?: HeroSlide[] }
 
 const fallbackSlides: HeroSlide[] = [
-  { img: '/images/hero1.jpg', title: '歡迎您來到南科福氣教會！', subtitle: '耶穌愛您，上帝祝福您！' },
-  { img: '/images/hero2.jpg' },
-  { img: '/images/hero3.jpg', title: '南科福氣教會', subtitle: '在這裡經歷信仰、盼望與愛的同在' },
+  { img: '/images/hero1.jpg', title: '歡迎回家', subtitle: '經歷信仰、盼望與愛的同在' },
+  { img: '/images/hero2.jpg', title: '建造榮耀教會', subtitle: '在真理中扎根，在愛中成長' },
+  { img: '/images/hero3.jpg' },
 ]
 
 export default function HeroCarousel({ slides }: Props) {
   const [remoteSlides, setRemoteSlides] = useState<HeroSlide[] | null>(null)
 
-  // 沒傳入 slides 才抓後台：依 order、_createdAt 由小到大
   useEffect(() => {
     if (slides?.length) return
     ;(async () => {
@@ -39,7 +39,7 @@ export default function HeroCarousel({ slides }: Props) {
         )
         const mapped: HeroSlide[] =
           docs?.map((d) => ({
-            img: d?.image ? urlFor(d.image).width(1920).height(1080).quality(80).url() : '',
+            img: d?.image ? urlFor(d.image).width(1920).height(1080).quality(90).url() : '',
             title: d?.title || '',
             subtitle: d?.subtitle || '',
           }))?.filter((s) => s.img) || []
@@ -51,7 +51,6 @@ export default function HeroCarousel({ slides }: Props) {
     })()
   }, [slides])
 
-  // 使用傳入 > 後台 > 預設；載入中則暫不顯示，避免 fallback 閃一下
   const data = useMemo<HeroSlide[]>(() => {
     if (slides?.length) return slides
     if (remoteSlides === null) return []
@@ -61,154 +60,144 @@ export default function HeroCarousel({ slides }: Props) {
 
   const hasMultiple = data.length > 1
 
-  // —— 產生自然汽水泡泡（隨機尺寸、延遲、速度、水平擺動、輕微模糊/透明）——
-  const bubbles = useMemo(() => {
-    const arr: {
-      left: number
-      size: number
-      startX: number
-      delay: number
-      duration: number
-      amp: number
-      blur: number
-      opacity: number
-    }[] = []
-    const COUNT = 28
-    for (let i = 0; i < COUNT; i++) {
-      arr.push({
-        left: Math.random() * 100,               // 0~100%
-        size: 3 + Math.random() * 7,             // 3~10px
-        startX: (Math.random() - 0.5) * 12,      // 初始左右位移
-        delay: Math.random() * 6,                // 0~6s
-        duration: 9 + Math.random() * 9,         // 9~18s
-        amp: 4 + Math.random() * 10,             // 左右擺幅
-        blur: Math.random() < 0.6 ? Math.random() * 2 : 0,
-        opacity: 0.35 + Math.random() * 0.45,    // 0.35~0.8
-      })
-    }
-    return arr
-  }, [])
-
   return (
-    <div className="relative w-full h-[56.25vw] md:h-auto md:aspect-[16/9] overflow-hidden">
+    // ✅ 容器設定：
+    // 手機版 (default)：維持 aspect-video (16:9)，確保圖片完美填滿，不再有巨大留白。
+    // 電腦版 (md/lg)：維持固定高度 h-[75vh]，展現大氣感。
+    <div className="relative w-full aspect-video md:aspect-auto md:h-[75vh] lg:h-[80vh] overflow-hidden bg-[#F7F5F2]">
+      
       {data.length > 0 && (
         <Swiper
-          key={`ready-${data.length}`}
-          className="h-full w-full"
-          modules={[Autoplay, EffectFade, Pagination]}
+          key={`ready-${data.length}`} // 確保資料載入後重新渲染
+          className="h-full w-full group"
+          modules={[Autoplay, EffectFade, Pagination, Navigation]}
           slidesPerView={1}
-          effect="fade"
+          effect="fade" // 使用淡入淡出效果
           fadeEffect={{ crossFade: true }}
-          loop={false}
-          rewind={hasMultiple}
-          speed={650}
-          observer
-          observeParents
-          observeSlideChildren
+          loop={true}
+          speed={1500} // 轉場時間 1.5 秒
           autoplay={
             hasMultiple
               ? {
-                  delay: 5000,
+                  delay: 6000, // 停留 6 秒後自動換下一張
                   disableOnInteraction: false,
-                  stopOnLastSlide: false,
-                  waitForTransition: false,
                 }
               : false
           }
-          pagination={{ clickable: true }}
-          onInit={(swiper) => {
-            try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}
-          }}
-          onSlideChangeTransitionEnd={(swiper) => {
-            try { if (hasMultiple && !swiper.autoplay.running) swiper.autoplay.start() } catch {}
-          }}
+          pagination={{ clickable: true }} // 顯示下方小白點
+          navigation={hasMultiple} // 顯示左右箭頭
         >
           {data.map(({ img, title, subtitle }, idx) => (
             <SwiperSlide key={`${idx}-${img}`}>
-              <div className="relative h-full w-full">
-                <img
-                  src={img}
-                  alt=""
-                  loading="lazy"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                {/* —— 旌旗感的柔和遮罩：不洗白、只提亮 —— */}
-                <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-black/10 to-black/0" />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      'radial-gradient(45% 30% at 20% 85%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%)',
-                    mixBlendMode: 'overlay',
-                  }}
-                />
-
-                {/* —— 文字 —— */}
-                <div className="relative z-20 flex h-full items-center justify-center text-center px-6">
-                  <div className="max-w-2xl">
-                    {title ? (
-                      <h1 className="text-white text-2xl md:text-5xl font-bold mb-3 leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]">
-                        {title}
-                      </h1>
-                    ) : null}
-                    {subtitle ? (
-                      <p className="text-white/95 text-base md:text-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
-                        {subtitle}
-                      </p>
-                    ) : null}
-                  </div>
+              <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
+                
+                {/* --- [背景層：模糊濾鏡] --- */}
+                {/* 讓圖片模糊放大當作背景，增加氛圍感 */}
+                <div className="absolute inset-0 z-0">
+                  <img
+                    src={img}
+                    alt=""
+                    className="w-full h-full object-cover blur-xl scale-110 opacity-60" 
+                  />
+                  <div className="absolute inset-0 bg-[#F7F5F2]/40 mix-blend-overlay" />
+                  <div className="absolute inset-0 bg-white/10" />
                 </div>
+
+                {/* --- [主圖層] --- */}
+                {/* 手機版 p-0 (無邊距)，電腦版 p-8 (有邊距) */}
+                <div className="relative z-10 h-full w-full p-0 md:p-8 flex items-center justify-center">
+                  <img
+                    src={img}
+                    alt={title || 'Banner'}
+                    className="h-full w-auto max-w-full object-contain shadow-sm md:shadow-2xl md:rounded-sm"
+                  />
+                  
+                  {/* 文字層 (如果有標題的話) */}
+                  {(title || subtitle) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                      <div className="bg-black/20 backdrop-blur-sm p-4 md:p-10 rounded-sm max-w-[90%] md:max-w-3xl animate-fade-in-up">
+                        {title && (
+                          <h1 className="text-xl md:text-4xl lg:text-6xl font-serif font-bold text-white tracking-widest leading-tight drop-shadow-md">
+                            {title}
+                          </h1>
+                        )}
+                        {subtitle && (
+                          <p className="text-xs md:text-lg text-white/90 font-medium tracking-[0.2em] uppercase mt-2 md:mt-4 drop-shadow-md">
+                            {subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
       )}
 
-      {/* —— 氣泡動畫（自然上飄＋左右擺動） —— */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden z-30">
-        {bubbles.map((b, i) => (
-          <span
-            key={i}
-            className="absolute"
-            style={{
-              left: `${b.left}%`,
-              bottom: '-16px',
-              transform: `translateX(${b.startX}px)`,
-              animation: `bubbleWiggle ${b.duration * 0.85}s ease-in-out ${b.delay / 2}s infinite`,
-              // @ts-ignore
-              '--amp': `${b.amp}px`,
-            } as React.CSSProperties}
-          >
-            <span
-              className="block rounded-full"
-              style={{
-                width: `${b.size}px`,
-                height: `${b.size}px`,
-                background: 'rgba(255,255,255,0.55)',
-                filter: b.blur ? `blur(${b.blur}px)` : 'none',
-                opacity: b.opacity,
-                boxShadow: '0 0 0 0.5px rgba(255,255,255,0.45)',
-                animation: `floatUpVH ${b.duration}s linear ${b.delay}s infinite`,
-                willChange: 'transform, opacity',
-                display: 'block',
-              }}
-            />
-          </span>
-        ))}
-      </div>
-
-      {/* 動畫寫在元件裡，不用改 tailwind */}
+      {/* 自定義 Swiper 樣式：小白點與箭頭 */}
       <style jsx global>{`
-        @keyframes floatUpVH {
-          0%   { transform: translateY(0);       opacity: var(--op, 0.85); }
-          100% { transform: translateY(-115vh);  opacity: 0; }
+        .swiper-pagination-bullet {
+          background: white !important;
+          opacity: 0.5 !important;
+          width: 8px !important;
+          height: 8px !important;
+          margin: 0 4px !important;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        @keyframes bubbleWiggle {
-          0%   { transform: translateX(0); }
-          22%  { transform: translateX(calc(var(--amp) * -1)); }
-          50%  { transform: translateX(calc(var(--amp) * 0.7)); }
-          78%  { transform: translateX(calc(var(--amp) * -0.8)); }
-          100% { transform: translateX(0); }
+        .swiper-pagination-bullet-active {
+          opacity: 1 !important;
+          background: white !important;
+          transform: scale(1.2);
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+          color: white !important;
+          opacity: 0; /* 預設隱藏，滑鼠移過去才顯示 */
+          transition: opacity 0.3s ease;
+          width: 48px !important;
+          height: 48px !important;
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(4px);
+          border-radius: 50%;
+          z-index: 20; 
+        }
+        
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+          font-size: 20px !important;
+          font-weight: bold;
+        }
+
+        /* 電腦版 hover 時顯示箭頭 */
+        .group:hover .swiper-button-next,
+        .group:hover .swiper-button-prev {
+          opacity: 1;
+        }
+        
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+          background: #1E1B4B !important;
+        }
+
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 1s ease-out 0.3s forwards;
+        }
+        
+        /* 手機版強制隱藏左右箭頭，避免擋住圖片 */
+        @media (max-width: 768px) {
+          .swiper-button-next,
+          .swiper-button-prev {
+            display: none !important;
+          }
         }
       `}</style>
     </div>

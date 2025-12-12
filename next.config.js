@@ -35,11 +35,9 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
 
+  // ✅ 修正：移除了強制轉址到 member 的規則
   async redirects() {
-    return [
-      { source: "/event-registration", destination: "/member/event-registration", permanent: true },
-      { source: "/event-registration/:path*", destination: "/member/event-registration/:path*", permanent: true }
-    ];
+    return [];
   },
 
   images: {

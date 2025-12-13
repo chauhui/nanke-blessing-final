@@ -1,6 +1,34 @@
+/* styles/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ✨ 字體強制修正區 ✨
+  這裡利用 Tailwind 的 base layer 直接覆蓋 HTML 標籤樣式，
+  確保手機瀏覽器不會因為沒有指定字體而回退到預設黑體。
+*/
+@layer base {
+  /* 1. 全站預設：使用思源黑體 (變數由 Next.js 注入) */
+  html {
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply text-gray-800 bg-white;
+  }
+
+  /* 2. 標題強制：使用思源宋體 (變數由 Next.js 注入) */
+  /* Japandi 風格的核心：標題必須是 Serif */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif), "Times New Roman", serif;
+    font-weight: 700; /* 確保手機上字體夠粗 */
+  }
+
+  a {
+    @apply text-primary hover:underline;
+  }
+}
 
 /* 強制電腦版導航列橫向排列 */
 .nav-desktop {
@@ -12,30 +40,12 @@ ul.lg\:flex-row {
   @apply flex-row !important;
 }
 
-/* 自訂全站排版 */
-body {
-  @apply text-gray-800 bg-white font-sans;
+/* Swiper 分頁點樣式 */
+.swiper-pagination-bullet {
+  background: white !important;
+  opacity: 0.5 !important;
 }
-a {
-  @apply text-primary hover:underline;
+.swiper-pagination-bullet-active {
+  background: #B45309 !important;
+  opacity: 1 !important;
 }
-
-html {
-  scroll-behavior: smooth;
-}
-
-/* 全站字型設定：英數用 Arial，中文維持 Noto Sans TC / 系統中文字體 */
-@font-face {
-  font-family: 'ArialLatin';
-  src: local('Arial'), local('ArialMT'), local('Helvetica Neue'), local('Helvetica'), local('Liberation Sans');
-  unicode-range: U+0000-00FF; /* A–Z, a–z, 0–9 與常見西文符號 */
-  font-display: swap;
-}
-
-/* 以 CSS 變數集中管理字體順序：把英數交給 ArialLatin，其餘走中文系統字體 */
-:root {
-  --font-sans: ArialLatin, 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei',
-               system-ui, -apple-system, 'Segoe UI', Arial, Helvetica, sans-serif;
-}
-
-/*（查看文件是否存在）*/

@@ -1,6 +1,6 @@
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
-const defaultTheme = require('tailwindcss/defaultTheme')
+const { fontFamily } = require('tailwindcss/defaultTheme')
 
 module.exports = {
   content: [
@@ -33,12 +33,12 @@ module.exports = {
         },
         gray: { 750: '#23272f' },
       },
-      // === 關鍵修改 ===
-      // 直接指向 var(--font-sans) 和 var(--font-serif)
-      // 並加入常見的系統字體作為後備 (Fallback)
+      // === 關鍵修正 ===
       fontFamily: {
-        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
-        serif: ['var(--font-serif)', ...defaultTheme.fontFamily.serif],
+        // 1. 設定 Sans (黑體/內文)
+        sans: ['var(--font-sans)', ...fontFamily.sans],
+        // 2. 設定 Serif (宋體/標題) -> 這是修復手機版標題的關鍵！
+        serif: ['var(--font-serif)', ...fontFamily.serif],
       },
       backgroundImage: {
         'hero-gradient': 'linear-gradient(to bottom right, #FCA17D, #F5CBA7)',

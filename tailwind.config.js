@@ -1,6 +1,6 @@
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
-const { fontFamily } = require('tailwindcss/defaultTheme')
+const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
   content: [
@@ -10,7 +10,6 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // === 視覺語彙 ===
       colors: {
         primary: {
           50:  '#eef7fd',
@@ -27,29 +26,23 @@ module.exports = {
         },
         secondary: { DEFAULT: '#216fb4' },
         accent: { DEFAULT: '#94c4f7' },
-
         brandWarm: {
           primary: '#E96443',
           secondary: '#904E95',
           accent: '#F5C98B',
         },
-
         gray: { 750: '#23272f' },
       },
-
-      // === 關鍵修正：字體設定 ===
+      // === 關鍵修改 ===
+      // 直接指向 var(--font-sans) 和 var(--font-serif)
+      // 並加入常見的系統字體作為後備 (Fallback)
       fontFamily: {
-        // 1. 設定 Sans (黑體)：優先使用 var(--font-sans)
-        sans: ['var(--font-sans)', ...fontFamily.sans],
-        // 2. 設定 Serif (襯線體/宋體)：優先使用 var(--font-serif)
-        // 這是手機版能正確顯示思源宋體的關鍵！
-        serif: ['var(--font-serif)', ...fontFamily.serif],
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
+        serif: ['var(--font-serif)', ...defaultTheme.fontFamily.serif],
       },
-
       backgroundImage: {
         'hero-gradient': 'linear-gradient(to bottom right, #FCA17D, #F5CBA7)',
       },
-
       boxShadow: {
         card: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -12px rgba(0,0,0,0.12)',
       },
@@ -57,7 +50,6 @@ module.exports = {
         xl: '0.75rem',
         '2xl': '1rem',
       },
-
       keyframes: {
         floatUp: {
           '0%':   { transform: 'translateY(0) scale(1)', opacity: '0.8' },

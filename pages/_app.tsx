@@ -14,21 +14,18 @@ import Head from 'next/head'
 // 1. 引入 Google Fonts
 import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
 
-// 2. 設定字體參數
-// 思源宋體：用於標題
+// 2. 設定字體
+// 注意：這裡不設定 variable 參數，因為我們要手動注入
 const notoSerif = Noto_Serif_TC({
   weight: ['400', '500', '600', '700', '900'],
   subsets: ['latin'],
-  variable: '--font-serif', // 這會自動在 HTML 生成 CSS 變數 var(--font-serif)
   display: 'swap',
   preload: false,
 })
 
-// 思源黑體：用於內文
 const notoSans = Noto_Sans_TC({
   weight: ['300', '400', '500', '700'],
   subsets: ['latin'],
-  variable: '--font-sans', // 這會自動在 HTML 生成 CSS 變數 var(--font-sans)
   display: 'swap',
   preload: false,
 })
@@ -40,23 +37,20 @@ export default function MyApp({
   const router = useRouter()
   const lastPathRef = useRef<string>('')
 
-  // GA / Tracking 邏輯保持不變
+  // GA / Tracking 保持不變
   useEffect(() => {
     const getCurrentPath = () =>
       typeof window !== 'undefined'
         ? window.location.pathname + window.location.search
         : ''
-
+    // ... (保留您的追蹤程式碼) ...
     const normalizeReferrer = (raw: string) => {
       if (!raw || typeof window === 'undefined') return ''
       try {
         const u = new URL(raw)
         return u.host === window.location.host ? u.pathname + u.search : raw
-      } catch {
-        return raw || ''
-      }
+      } catch { return raw || '' }
     }
-
     const send = (page: string, referrer: string) => {
       try {
         fetch('/api/track-view', {
@@ -66,28 +60,22 @@ export default function MyApp({
           body: JSON.stringify({
             page,
             referrer: normalizeReferrer(referrer),
-            userAgent:
-              typeof navigator !== 'undefined' ? navigator.userAgent : '',
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
             site: typeof window !== 'undefined' ? window.location.host : '',
           }),
         }).catch(() => {})
       } catch {}
     }
-
     const firstPath = getCurrentPath()
     send(firstPath, typeof document !== 'undefined' ? document.referrer : '')
     lastPathRef.current = firstPath
-
     const onRouteChange = (nextUrl: string) => {
       const prev = lastPathRef.current || ''
       send(nextUrl, prev)
       lastPathRef.current = nextUrl
     }
-
     router.events.on('routeChangeComplete', onRouteChange)
-    return () => {
-      router.events.off('routeChangeComplete', onRouteChange)
-    }
+    return () => { router.events.off('routeChangeComplete', onRouteChange) }
   }, [router.events])
 
   const siteName = '南科福氣教會'
@@ -125,25 +113,39 @@ export default function MyApp({
         />
       </Head>
 
-      {/* 3. 關鍵修正：
-         - 移除不必要的 CSS 變數手動映射
-         - 直接將 Next.js 產生的 variable class 加入 main
-         - 加入 font-sans 讓全站預設黑體
+      {/* ✨ 關鍵修復 ✨ 
+         我們直接將字體名稱注入到 :root 的 CSS 變數中。
+         這樣做保證 CSS 變數在任何地方（包含手機）都讀得到正確的 Font Family。
       */}
-      <main className={`${notoSans.variable} ${notoSerif.variable} font-sans`}>
-        <style jsx global>{`
-          /* 4. 強制全站標題使用思源宋體 */
-          /* 因為在 tailwind.config.js 設定了 serif 對應 var(--font-serif)，這裡直接呼叫 */
-          h1, h2, h3, h4, h5, h6, .font-serif {
-            font-family: var(--font-serif), "Times New Roman", serif !important;
-          }
+      <style jsx global>{`
+        :root {
+          --font-sans: ${notoSans.style.fontFamily}, system-ui, -apple-system, sans-serif;
+          --font-serif: ${notoSerif.style.fontFamily}, "Times New Roman", "Songti TC", serif;
+        }
 
-          /* 確保內文使用思源黑體 */
-          body, p, .font-sans {
-            font-family: var(--font-sans), system-ui, -apple-system, sans-serif !important;
-          }
-        `}</style>
+        /* 雙重保險：強制覆蓋 Tailwind 的類別 */
+        .font-sans {
+          font-family: var(--font-sans) !important;
+        }
+        
+        .font-serif {
+          font-family: var(--font-serif) !important;
+        }
 
+        /* 讓標題預設就是宋體，不用每次都加 font-serif */
+        h1, h2, h3, h4, h5, h6 {
+          font-family: var(--font-serif) !important;
+        }
+
+        body {
+          font-family: var(--font-sans);
+        }
+      `}</style>
+
+      {/* 將 className 加在最外層，
+        有些瀏覽器需要實體 class 才能觸發字體下載 
+      */}
+      <main className={`${notoSans.className} ${notoSerif.className}`}>
         <Component {...pageProps} />
       </main>
     </SessionProvider>

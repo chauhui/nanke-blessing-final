@@ -44,7 +44,6 @@ export default function HeroCarousel({ slides }: Props) {
     })()
   }, [slides])
 
-  // 整理資料
   const originalData = useMemo<HeroSlide[]>(() => {
     if (slides?.length) return slides
     if (remoteSlides === null) return []
@@ -52,46 +51,47 @@ export default function HeroCarousel({ slides }: Props) {
     return fallbackSlides
   }, [slides, remoteSlides])
 
-  // 為了達成「無限循環」，我們需要將資料複製一份接在後面
-  // 如果圖片太少(少於4張)，建議複製更多次以填滿寬螢幕
   const marqueeData = useMemo(() => {
     if (originalData.length === 0) return []
-    // 至少複製 4 次確保夠長，形成無縫循環
     return [...originalData, ...originalData, ...originalData, ...originalData]
   }, [originalData])
 
   return (
-    // ✅ 容器高度：
-    // 手機版：h-[50vh] (一半螢幕高)
-    // 電腦版：h-[85vh] (高度撐高，讓 16:9 圖片能依比例放大)
-    <div className="relative w-full h-[50vh] md:h-[85vh] bg-[#1E1B4B] overflow-hidden flex items-center group">
+    // ✅ 容器修正 (Japandi 風格)：
+    // 1. border-y-[20px]: 上下加厚邊框。
+    // 2. border-[#F7F5F2]: 邊框顏色 = 網頁背景色 (暖米灰)。
+    //    這創造了一種「軌道嵌入牆面」的感覺，而不是畫一條黑線。
+    // 3. shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]: 加入「內陰影」，增加深度感。
+    <div className="relative w-full h-[50vh] md:h-[85vh] bg-[#1E1B4B] border-y-[20px] md:border-y-[32px] border-[#F7F5F2] shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden flex items-center group z-10 box-border">
       
       {/* 跑馬燈軌道 */}
       <div className="flex animate-marquee hover:pause-animation">
         {marqueeData.map((slide, index) => (
           <div 
             key={`${index}-${slide.img}`} 
-            className="relative h-[50vh] md:h-[85vh] shrink-0 flex items-center"
+            // 上下內距保持，讓圖片懸浮
+            className="relative h-[50vh] md:h-[85vh] shrink-0 flex items-center py-4 md:py-8"
           >
-             {/* 圖片容器 
-                aspect-video: 強制保持 16:9 比例
-                h-full: 高度跟隨父容器
-                w-auto: 寬度自動根據高度調整 (這就是不裁切的關鍵!)
+             {/* ✅ 圖片與分隔線修正：
+                1. border-r-[#F7F5F2]: 分隔線使用暖米灰，與背景融合。
+                2. shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.3)]: 
+                   陰影變得更「柔和」，像自然光下的層次，不再是生硬的黑影。
              */}
-             <div className="relative h-full aspect-video border-r-[8px] md:border-r-[12px] border-[#F7F5F2] box-content overflow-hidden">
+             <div className="relative h-full aspect-video border-r-[12px] md:border-r-[16px] border-[#F7F5F2] shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.3)] box-content overflow-hidden rounded-[2px]">
                 <img 
                   src={slide.img} 
                   alt={slide.title || 'Banner'}
-                  className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover transform transition-transform duration-[1.5s] ease-out group-hover:scale-105"
                 />
 
-                {/* 文字遮罩 (滑鼠移上去才顯示，保持畫面乾淨) */}
+                {/* 文字遮罩 */}
                 {(slide.title || slide.subtitle) && (
-                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-center p-4">
-                     <h3 className="text-xl md:text-4xl font-serif font-bold text-white mb-2 drop-shadow-md">
+                  <div className="absolute inset-0 bg-[#1E1B4B]/40 opacity-0 hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center text-center p-4 backdrop-blur-[2px]">
+                     <h3 className="text-xl md:text-4xl font-serif font-bold text-white mb-3 drop-shadow-md">
                        {slide.title}
                      </h3>
-                     <p className="text-xs md:text-lg text-white/90 tracking-widest uppercase">
+                     <div className="w-10 h-[1px] bg-[#B45309] mb-3"></div>
+                     <p className="text-xs md:text-lg text-white/90 tracking-widest uppercase font-medium">
                        {slide.subtitle}
                      </p>
                   </div>
@@ -101,29 +101,28 @@ export default function HeroCarousel({ slides }: Props) {
         ))}
       </div>
 
-      {/* CSS 動畫設定 */}
       <style jsx global>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); } /* 移動 50% 因為我們複製了數據 */
+          100% { transform: translateX(-50%); }
         }
 
         .animate-marquee {
           display: flex;
-          width: max-content; /* 讓寬度根據內容自動延伸 */
-          animation: marquee 60s linear infinite; /* 60秒跑完一輪，數值越大越慢 */
+          width: max-content;
+          animation: marquee 60s linear infinite;
         }
 
-        /* 手機版可以跑快一點 */
         @media (max-width: 768px) {
           .animate-marquee {
             animation-duration: 40s;
           }
         }
 
-        /* 滑鼠懸停時暫停 */
-        .hover\:pause-animation:hover {
-          animation-play-state: paused;
+        @media (hover: hover) {
+          .hover\:pause-animation:hover {
+            animation-play-state: paused;
+          }
         }
       `}</style>
     </div>

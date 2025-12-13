@@ -1,4 +1,7 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
+const { fontFamily } = require('tailwindcss/defaultTheme')
+
 module.exports = {
   content: [
     './pages/**/*.{js,jsx,ts,tsx}',
@@ -7,7 +10,7 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // === 視覺語彙：主色改為藍青（參考站風格）；保留原暖色為 brandWarm ===
+      // === 視覺語彙 ===
       colors: {
         primary: {
           50:  '#eef7fd',
@@ -34,17 +37,19 @@ module.exports = {
         gray: { 750: '#23272f' },
       },
 
-      /* 關鍵：把 ArialLatin 放在最前面；其後仍可透過 --font-sans 控制 */
+      // === 關鍵修正：字體設定 ===
       fontFamily: {
-        sans: ['ArialLatin', 'var(--font-sans)', 'Noto Sans TC', 'Arial', 'Helvetica', 'sans-serif'],
+        // 1. 設定 Sans (黑體)：優先使用 var(--font-sans)
+        sans: ['var(--font-sans)', ...fontFamily.sans],
+        // 2. 設定 Serif (襯線體/宋體)：優先使用 var(--font-serif)
+        // 這是手機版能正確顯示思源宋體的關鍵！
+        serif: ['var(--font-serif)', ...fontFamily.serif],
       },
 
-      // Hero 漸層保留（你說 Banner 不改動）
       backgroundImage: {
         'hero-gradient': 'linear-gradient(to bottom right, #FCA17D, #F5CBA7)',
       },
 
-      // 卡片陰影與圓角
       boxShadow: {
         card: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -12px rgba(0,0,0,0.12)',
       },
@@ -70,8 +75,5 @@ module.exports = {
       padding: '1rem',
     },
   },
-  plugins: [
-    // require('@tailwindcss/typography'),
-    // require('@tailwindcss/line-clamp'),
-  ],
+  plugins: [],
 };

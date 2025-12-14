@@ -3,6 +3,7 @@ import 'swiper/css'
 import 'swiper/css/effect-fade'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+// 確保 globals.css 在最後引入，權重才夠
 import '@/styles/globals.css'
 
 import type { AppProps } from 'next/app'
@@ -15,12 +16,13 @@ import Head from 'next/head'
 import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
 
 // 2. 設定思源宋體 (標題用)
+// 設定 variable 後，Next.js 會自動產生一個帶有 CSS 變數的 class
 const notoSerif = Noto_Serif_TC({
   weight: ['400', '500', '600', '700', '900'],
   subsets: ['latin'],
-  variable: '--font-serif',
+  variable: '--font-serif', 
   display: 'swap',
-  preload: false, // CJK 字體通常很大，設為 false 讓它按需載入
+  preload: false,
 })
 
 // 3. 設定思源黑體 (內文用)
@@ -40,46 +42,28 @@ export default function MyApp({
   // ... (保留原本的 GA/Tracking 邏輯) ...
   const lastPathRef = useRef<string>('')
   useEffect(() => {
-     // ... (請保留原本的 useEffect 內容) ...
+    // ... (保留原本的 GA/Tracking 邏輯) ...
+    // 為節省篇幅，此處省略追蹤代碼，請保留您原本的內容
   }, [router.events])
 
   const siteName = '南科福氣教會'
-  
-  // ... (保留原本的 meta 設定) ...
 
   return (
     <SessionProvider session={session}>
       <Head>
         <title>{siteName}</title>
-        {/* ... Meta tags ... */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* 4. 注入字體變數
-          使用 style 屬性直接注入變數，這是最穩定的跨瀏覽器做法
+      {/* ✨ 關鍵修正 ✨ 
+          1. 移除 style={{...}} 手動注入，改用官方標準變數注入。
+          2. className 必須包含兩個字體的 .variable 屬性。
+             - notoSans.variable: 注入 --font-sans
+             - notoSerif.variable: 注入 --font-serif (這是之前缺少的！)
+          3. font-sans: 設定預設字體為黑體。
       */}
-      <main 
-        className={`${notoSans.className} font-sans`}
-        style={{
-          ['--font-sans' as any]: notoSans.style.fontFamily,
-          ['--font-serif' as any]: notoSerif.style.fontFamily,
-        }}
-      >
-        <style jsx global>{`
-          :root {
-            --font-sans: ${notoSans.style.fontFamily};
-            --font-serif: ${notoSerif.style.fontFamily};
-          }
-          /* 強制標題使用宋體 */
-          h1, h2, h3, h4, h5, h6, .font-serif {
-            font-family: var(--font-serif), "Times New Roman", serif !important;
-          }
-          /* 強制內文使用黑體 */
-          body, p, .font-sans {
-            font-family: var(--font-sans), system-ui, sans-serif !important;
-          }
-        `}</style>
-        
+      <main className={`${notoSans.variable} ${notoSerif.variable} font-sans antialiased`}>
         <Component {...pageProps} />
       </main>
     </SessionProvider>

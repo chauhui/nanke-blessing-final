@@ -3,26 +3,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ✨ 字體強制修正區 ✨
-  這裡利用 Tailwind 的 base layer 直接覆蓋 HTML 標籤樣式，
-  確保手機瀏覽器不會因為沒有指定字體而回退到預設黑體。
-*/
 @layer base {
-  /* 1. 全站預設：使用思源黑體 (變數由 Next.js 注入) */
+  /* 1. 全站預設：使用思源黑體 */
+  /* var(--font-sans) 會由 _app.tsx 注入 */
   html {
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent; /* 手機版優化：移除點擊高亮 */
   }
 
   body {
     @apply text-gray-800 bg-white;
   }
 
-  /* 2. 標題強制：使用思源宋體 (變數由 Next.js 注入) */
-  /* Japandi 風格的核心：標題必須是 Serif */
+  /* 2. 標題強制：使用思源宋體 */
+  /* Japandi 風格的核心：所有標題 (h1-h6) 強制使用 Serif */
+  /* var(--font-serif) 會由 _app.tsx 注入 */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif), "Times New Roman", serif;
-    font-weight: 700; /* 確保手機上字體夠粗 */
+    font-family: var(--font-serif), "Times New Roman", serif !important; 
+    /* !important 確保覆蓋任何 Tailwind 預設的 font-sans */
+    font-weight: 700;
   }
 
   a {
@@ -35,7 +35,6 @@
   @apply hidden lg:flex flex-row items-center gap-8 text-white;
 }
 
-/* 強制電腦版 ul 橫向排列 */
 ul.lg\:flex-row {
   @apply flex-row !important;
 }

@@ -33,24 +33,33 @@ module.exports = {
         },
         gray: { 750: '#23272f' },
       },
-      // === 關鍵修正：使用系統字體堆疊 ===
+      // === 關鍵修正：手機版字體優化 ===
       fontFamily: {
-        // 1. 內文 (Sans): 優先用蘋果黑體、微軟正黑
+        // 1. 內文 (Sans): 針對不同手機指定最佳字體
         sans: [
-          '"Hiragino Sans"', 
-          '"PingFang TC"', 
-          '"Microsoft JhengHei"', 
-          '"Noto Sans TC"', 
+          // 系統預設 UI 字體 (讓手機自己選最順眼的)
+          'system-ui', 
+          '-apple-system', 
+          'BlinkMacSystemFont',
+          
+          // 中文專用優化順序
+          '"PingFang TC"',       // iOS/Mac 首選 (蘋方體)
+          '"Microsoft JhengHei"', // Windows 首選 (微軟正黑體)
+          '"Segoe UI"',           // Windows 英文介面
+          '"Roboto"',             // Android 首選
+          '"Helvetica Neue"',     // iOS 英文候補
+          'Arial', 
+          '"Noto Sans TC"',       // Android 舊版候補
           'sans-serif',
           ...fontFamily.sans
         ],
         
-        // 2. 標題 (Serif - Japandi): 優先用 Mac 冬青明朝、Win 游明朝
+        // 2. 標題 (Serif - Japandi): 盡量抓取手機有的宋體
         serif: [
-          '"Hiragino Mincho ProN"', // Mac 日系高質感宋體
-          '"Yu Mincho"',            // Win 內建日系宋體
-          '"YuMincho"', 
-          '"Times New Roman"', 
+          '"Hiragino Mincho ProN"', // Mac/iOS 宋體
+          '"Songti TC"',            // iOS 舊版宋體
+          '"Yu Mincho"',            // Windows 游明朝
+          '"Microsoft JhengHei"',   // Android 如果沒有宋體，用正黑體代替以免變亂碼
           'serif',
           ...fontFamily.serif
         ],

@@ -7,36 +7,14 @@ import '@/styles/globals.css'
 
 import type { AppProps } from 'next/app'
 import { SessionProvider } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import { useEffect, useRef } from 'react'
 import Head from 'next/head'
 
-// 1. 引入字體
-import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
-
-// 2. 設定字體，並定義 CSS 變數名稱
-const notoSerif = Noto_Serif_TC({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  variable: '--font-serif', // 這會產生 CSS 變數 var(--font-serif)
-  display: 'swap',
-  preload: false,
-})
-
-const notoSans = Noto_Sans_TC({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  variable: '--font-sans', // 這會產生 CSS 變數 var(--font-sans)
-  display: 'swap',
-  preload: false, 
-})
+// ❌ 移除所有 next/font/google 的引用，不再下載字體
 
 export default function MyApp({
   Component,
   pageProps: { session, ...pageProps },
 }: AppProps) {
-  // ... (保留您的其他邏輯)
-
   return (
     <SessionProvider session={session}>
       <Head>
@@ -45,11 +23,8 @@ export default function MyApp({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* 關鍵修正：
-         透過 className 注入變數。
-         這會讓 html 標籤自動帶有 --font-serif 和 --font-sans 這兩個 CSS 變數
-      */}
-      <main className={`${notoSans.variable} ${notoSerif.variable} font-sans antialiased`}>
+      {/* 移除變數注入，只保留基本的 font-sans */}
+      <main className="font-sans antialiased text-gray-800">
         <Component {...pageProps} />
       </main>
     </SessionProvider>

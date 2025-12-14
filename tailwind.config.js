@@ -33,12 +33,27 @@ module.exports = {
         },
         gray: { 750: '#23272f' },
       },
-      // === 關鍵修正 ===
+      // === 關鍵修正：使用系統字體堆疊 ===
       fontFamily: {
-        // 1. 設定 Sans (黑體/內文)
-        sans: ['var(--font-sans)', ...fontFamily.sans],
-        // 2. 設定 Serif (宋體/標題) -> 這是修復手機版標題的關鍵！
-        serif: ['var(--font-serif)', ...fontFamily.serif],
+        // 1. 內文 (Sans): 優先用蘋果黑體、微軟正黑
+        sans: [
+          '"Hiragino Sans"', 
+          '"PingFang TC"', 
+          '"Microsoft JhengHei"', 
+          '"Noto Sans TC"', 
+          'sans-serif',
+          ...fontFamily.sans
+        ],
+        
+        // 2. 標題 (Serif - Japandi): 優先用 Mac 冬青明朝、Win 游明朝
+        serif: [
+          '"Hiragino Mincho ProN"', // Mac 日系高質感宋體
+          '"Yu Mincho"',            // Win 內建日系宋體
+          '"YuMincho"', 
+          '"Times New Roman"', 
+          'serif',
+          ...fontFamily.serif
+        ],
       },
       backgroundImage: {
         'hero-gradient': 'linear-gradient(to bottom right, #FCA17D, #F5CBA7)',

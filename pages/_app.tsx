@@ -8,32 +8,71 @@ import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { SessionProvider } from 'next-auth/react'
 import Head from 'next/head'
+import { useRouter } from 'next/router' // 1. 引入路由
+import { useEffect } from 'react'     // 2. 引入副作用鉤子
 
-// 1. 重新引入 Google Fonts (這是唯一能讓手機電腦一樣的方法)
+// 字體設定 (維持原本修復好的設定)
 import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
 
-// 2. 設定 Noto Serif TC (標題用 - 經典 Japandi 宋體)
 const notoSerif = Noto_Serif_TC({
-  weight: ['700'],       // 只下載粗體給標題用，減輕負擔
+  weight: ['700'],
   subsets: ['latin'],
   variable: '--font-serif',
   display: 'swap',
-  preload: false,        // ⚠️ 關鍵修正：關閉預先載入，解決 AbortError/Timeout 報錯
+  preload: false,
 })
 
-// 3. 設定 Noto Sans TC (內文用 - 乾淨黑體)
 const notoSans = Noto_Sans_TC({
   weight: ['400', '700'],
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-  preload: false,        // ⚠️ 關鍵修正：關閉預先載入
+  preload: false, 
 })
 
 export default function MyApp({
   Component,
   pageProps: { session, ...pageProps },
 }: AppProps) {
+  const router = useRouter()
+
+  // === 關鍵修正：恢復流量統計功能 ===
+  useEffect(() => {
+    // 定義一個發送流量紀錄的函式
+    const handleRouteChange = async (url: string) => {
+      try {
+        // 發送 POST 請求給 pages/api/track-view.ts
+        await fetch('/api/track-view', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // 傳送當前的網址與時間
+          body: JSON.stringify({
+            url,
+            title: document.title,
+            timestamp: new Date().toISOString(),
+          }),
+        })
+      } catch (error) {
+        // 默默失敗，不要讓使用者看到錯誤
+        console.error('Tracking failed:', error)
+      }
+    }
+
+    // 1. 網站剛打開時，紀錄第一次 (Initial Load)
+    handleRouteChange(window.location.pathname)
+
+    // 2. 監聽路由變化，當使用者換頁時紀錄 (Navigation)
+    router.events.on('routeChangeComplete', handleRouteChange)
+
+    // 清除監聽器 (避免重複執行)
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange)
+    }
+  }, [router.events])
+  // ====================================
+
   return (
     <SessionProvider session={session}>
       <Head>
@@ -42,7 +81,6 @@ export default function MyApp({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* 4. 這裡將變數注入到全站，確保手機也能讀到 */}
       <main className={`
         ${notoSans.variable} 
         ${notoSerif.variable} 

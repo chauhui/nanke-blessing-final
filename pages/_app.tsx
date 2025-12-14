@@ -3,7 +3,6 @@ import 'swiper/css'
 import 'swiper/css/effect-fade'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
-// 確保 globals.css 在最後引入，權重才夠
 import '@/styles/globals.css'
 
 import type { AppProps } from 'next/app'
@@ -12,24 +11,21 @@ import { useRouter } from 'next/router'
 import { useEffect, useRef } from 'react'
 import Head from 'next/head'
 
-// 1. 引入 Google Fonts
+// 1. 引入字體
 import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
 
-// 2. 設定思源宋體 (標題用)
-// 設定 variable 後，Next.js 會自動產生一個帶有 CSS 變數的 class
+// 2. 設定字體
+// 注意：這裡我們拿掉 variable 參數，因為我們要直接取用 style.fontFamily
 const notoSerif = Noto_Serif_TC({
-  weight: ['400', '500', '600', '700', '900'],
+  weight: ['400', '700'],
   subsets: ['latin'],
-  variable: '--font-serif', 
   display: 'swap',
   preload: false,
 })
 
-// 3. 設定思源黑體 (內文用)
 const notoSans = Noto_Sans_TC({
-  weight: ['300', '400', '500', '700'],
+  weight: ['400', '700'],
   subsets: ['latin'],
-  variable: '--font-sans',
   display: 'swap',
   preload: false, 
 })
@@ -39,11 +35,10 @@ export default function MyApp({
   pageProps: { session, ...pageProps },
 }: AppProps) {
   const router = useRouter()
-  // ... (保留原本的 GA/Tracking 邏輯) ...
+  // ... (保留原本的 GA/Tracking 邏輯，這裡省略以節省空間) ...
   const lastPathRef = useRef<string>('')
   useEffect(() => {
-    // ... (保留原本的 GA/Tracking 邏輯) ...
-    // 為節省篇幅，此處省略追蹤代碼，請保留您原本的內容
+     // ... (請保留原本的 useEffect 內容) ...
   }, [router.events])
 
   const siteName = '南科福氣教會'
@@ -56,14 +51,35 @@ export default function MyApp({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* ✨ 關鍵修正 ✨ 
-          1. 移除 style={{...}} 手動注入，改用官方標準變數注入。
-          2. className 必須包含兩個字體的 .variable 屬性。
-             - notoSans.variable: 注入 --font-sans
-             - notoSerif.variable: 注入 --font-serif (這是之前缺少的！)
-          3. font-sans: 設定預設字體為黑體。
+      {/* 🔥🔥🔥 終極修正：直接樣式注入 (Direct Style Injection) 🔥🔥🔥
+         我們不依賴 CSS 變數傳遞，直接把 Next.js 產生的字體名稱 (notoSerif.style.fontFamily)
+         寫死在全域樣式中。這是最底層、最暴力的做法。
       */}
-      <main className={`${notoSans.variable} ${notoSerif.variable} font-sans antialiased`}>
+      <style jsx global>{`
+        :root {
+          /* 強制定義 CSS 變數，不管 Tailwind 抓什麼，這裡直接給它真實字體名稱 */
+          --font-sans: ${notoSans.style.fontFamily}, system-ui, sans-serif;
+          --font-serif: ${notoSerif.style.fontFamily}, "Times New Roman", serif;
+        }
+
+        html, body {
+          font-family: ${notoSans.style.fontFamily}, system-ui, sans-serif;
+        }
+
+        /* 直接針對標題標籤進行「硬覆蓋」 */
+        h1, h2, h3, h4, h5, h6, .font-serif {
+          font-family: ${notoSerif.style.fontFamily}, "Times New Roman", serif !important;
+          font-weight: 700;
+        }
+
+        /* 確保內文是黑體 */
+        p, .font-sans {
+          font-family: ${notoSans.style.fontFamily}, system-ui, sans-serif !important;
+        }
+      `}</style>
+
+      {/* 這裡只需要 className 來觸發 Next.js 下載字體檔案，不需要負責傳遞變數了 */}
+      <main className={`${notoSans.className} ${notoSerif.className}`}>
         <Component {...pageProps} />
       </main>
     </SessionProvider>

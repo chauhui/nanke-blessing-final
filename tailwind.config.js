@@ -33,36 +33,14 @@ module.exports = {
         },
         gray: { 750: '#23272f' },
       },
-      // === 關鍵修正：手機版字體優化 ===
+      // === 關鍵修正：恢復 Web Font 設定 ===
       fontFamily: {
-        // 1. 內文 (Sans): 針對不同手機指定最佳字體
-        sans: [
-          // 系統預設 UI 字體 (讓手機自己選最順眼的)
-          'system-ui', 
-          '-apple-system', 
-          'BlinkMacSystemFont',
-          
-          // 中文專用優化順序
-          '"PingFang TC"',       // iOS/Mac 首選 (蘋方體)
-          '"Microsoft JhengHei"', // Windows 首選 (微軟正黑體)
-          '"Segoe UI"',           // Windows 英文介面
-          '"Roboto"',             // Android 首選
-          '"Helvetica Neue"',     // iOS 英文候補
-          'Arial', 
-          '"Noto Sans TC"',       // Android 舊版候補
-          'sans-serif',
-          ...fontFamily.sans
-        ],
+        // 1. 內文 (Sans) -> 使用 --font-sans 變數
+        sans: ['var(--font-sans)', ...fontFamily.sans],
         
-        // 2. 標題 (Serif - Japandi): 盡量抓取手機有的宋體
-        serif: [
-          '"Hiragino Mincho ProN"', // Mac/iOS 宋體
-          '"Songti TC"',            // iOS 舊版宋體
-          '"Yu Mincho"',            // Windows 游明朝
-          '"Microsoft JhengHei"',   // Android 如果沒有宋體，用正黑體代替以免變亂碼
-          'serif',
-          ...fontFamily.serif
-        ],
+        // 2. 標題 (Serif) -> 使用 --font-serif 變數
+        // 這樣手機就會強制下載 Noto Serif，而不會用醜醜的預設字體
+        serif: ['var(--font-serif)', ...fontFamily.serif],
       },
       backgroundImage: {
         'hero-gradient': 'linear-gradient(to bottom right, #FCA17D, #F5CBA7)',

@@ -5,8 +5,7 @@
 
 @layer base {
   html {
-    /* 移除 var()，讓 Tailwind config 接管 */
-    font-family: ui-sans-serif, system-ui, sans-serif; 
+    font-family: var(--font-sans), system-ui, sans-serif;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
@@ -15,11 +14,12 @@
     @apply text-gray-800 bg-white;
   }
 
-  /* 標題設定：使用 Tailwind 定義的 serif */
+  /* 強制所有標題使用宋體 (Noto Serif) */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif; /* 直接套用 tailwind 的設定 */
-    font-weight: 600;  /* 稍微輕盈一點 */
-    letter-spacing: 0.05em; /* 增加空氣感 */
+    /* 這裡必須使用 var(--font-serif) */
+    font-family: var(--font-serif), serif !important;
+    font-weight: 700;
+    letter-spacing: 0.05em; /* Japandi 風格的字距 */
   }
 
   a {
@@ -27,6 +27,7 @@
   }
 }
 
+/* 保持不變的樣式... */
 .nav-desktop {
   @apply hidden lg:flex flex-row items-center gap-8 text-white;
 }

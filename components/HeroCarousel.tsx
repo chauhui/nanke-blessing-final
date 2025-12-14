@@ -57,26 +57,20 @@ export default function HeroCarousel({ slides }: Props) {
   }, [originalData])
 
   return (
-    // ✅ 容器修正 (Japandi 風格)：
-    // 1. border-y-[20px]: 上下加厚邊框。
-    // 2. border-[#F7F5F2]: 邊框顏色 = 網頁背景色 (暖米灰)。
-    //    這創造了一種「軌道嵌入牆面」的感覺，而不是畫一條黑線。
-    // 3. shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]: 加入「內陰影」，增加深度感。
+    // 容器維持 Japandi 風格設定
     <div className="relative w-full h-[50vh] md:h-[85vh] bg-[#1E1B4B] border-y-[20px] md:border-y-[32px] border-[#F7F5F2] shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden flex items-center group z-10 box-border">
       
-      {/* 跑馬燈軌道 */}
-      <div className="flex animate-marquee hover:pause-animation">
+      {/* ✅ 關鍵修正點 1：
+         移除了原本的 `hover:pause-animation`。
+         改用自定義 class `marquee-track`。
+         這樣可以完全控制暫停行為，不受 Tailwind 預設行為干擾。
+      */}
+      <div className="flex animate-marquee marquee-track">
         {marqueeData.map((slide, index) => (
           <div 
             key={`${index}-${slide.img}`} 
-            // 上下內距保持，讓圖片懸浮
             className="relative h-[50vh] md:h-[85vh] shrink-0 flex items-center py-4 md:py-8"
           >
-             {/* ✅ 圖片與分隔線修正：
-                1. border-r-[#F7F5F2]: 分隔線使用暖米灰，與背景融合。
-                2. shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.3)]: 
-                   陰影變得更「柔和」，像自然光下的層次，不再是生硬的黑影。
-             */}
              <div className="relative h-full aspect-video border-r-[12px] md:border-r-[16px] border-[#F7F5F2] shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.3)] box-content overflow-hidden rounded-[2px]">
                 <img 
                   src={slide.img} 
@@ -84,7 +78,6 @@ export default function HeroCarousel({ slides }: Props) {
                   className="w-full h-full object-cover transform transition-transform duration-[1.5s] ease-out group-hover:scale-105"
                 />
 
-                {/* 文字遮罩 */}
                 {(slide.title || slide.subtitle) && (
                   <div className="absolute inset-0 bg-[#1E1B4B]/40 opacity-0 hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center text-center p-4 backdrop-blur-[2px]">
                      <h3 className="text-xl md:text-4xl font-serif font-bold text-white mb-3 drop-shadow-md">
@@ -119,8 +112,15 @@ export default function HeroCarousel({ slides }: Props) {
           }
         }
 
-        @media (hover: hover) {
-          .hover\:pause-animation:hover {
+        /* ✅ 關鍵修正點 2：嚴格限制暫停條件
+           (hover: hover) -> 裝置支援滑鼠懸停
+           (pointer: fine) -> 裝置是指標類型（如滑鼠），而非觸控
+           
+           只有同時滿足這兩個條件（也就是電腦版），滑鼠放上去才會暫停。
+           手機版（觸控）完全忽略這條規則，所以點擊後不會卡住。
+        */
+        @media (hover: hover) and (pointer: fine) {
+          .marquee-track:hover {
             animation-play-state: paused;
           }
         }

@@ -4,24 +4,21 @@
 @tailwind utilities;
 
 @layer base {
-  /* 1. 全站預設：使用思源黑體 */
-  /* var(--font-sans) 會由 _app.tsx 注入 */
   html {
+    /* 正確寫法：使用 var() 讀取 CSS 變數 */
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
     scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent; /* 手機版優化：移除點擊高亮 */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply text-gray-800 bg-white;
   }
 
-  /* 2. 標題強制：使用思源宋體 */
-  /* Japandi 風格的核心：所有標題 (h1-h6) 強制使用 Serif */
-  /* var(--font-serif) 會由 _app.tsx 注入 */
+  /* 強制標題使用宋體 */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif), "Times New Roman", serif !important; 
-    /* !important 確保覆蓋任何 Tailwind 預設的 font-sans */
+    /* 這裡必須用 var(--font-serif)，不能用 ${notoSerif...} */
+    font-family: var(--font-serif), "Times New Roman", serif !important;
     font-weight: 700;
   }
 
@@ -30,7 +27,7 @@
   }
 }
 
-/* 強制電腦版導航列橫向排列 */
+/* 其他樣式保持不變 */
 .nav-desktop {
   @apply hidden lg:flex flex-row items-center gap-8 text-white;
 }
@@ -39,7 +36,6 @@ ul.lg\:flex-row {
   @apply flex-row !important;
 }
 
-/* Swiper 分頁點樣式 */
 .swiper-pagination-bullet {
   background: white !important;
   opacity: 0.5 !important;

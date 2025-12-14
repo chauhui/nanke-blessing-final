@@ -8,10 +8,10 @@ import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { SessionProvider } from 'next-auth/react'
 import Head from 'next/head'
-import { useRouter } from 'next/router' // 1. 引入路由
-import { useEffect } from 'react'     // 2. 引入副作用鉤子
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
-// 字體設定 (維持原本修復好的設定)
+// 字體設定
 import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
 
 const notoSerif = Noto_Serif_TC({
@@ -36,7 +36,7 @@ export default function MyApp({
 }: AppProps) {
   const router = useRouter()
 
-  // === 關鍵修正：恢復流量統計功能 ===
+  // === 關鍵修正：流量統計邏輯 ===
   useEffect(() => {
     // 定義一個發送流量紀錄的函式
     const handleRouteChange = async (url: string) => {
@@ -47,9 +47,9 @@ export default function MyApp({
           headers: {
             'Content-Type': 'application/json',
           },
-          // 傳送當前的網址與時間
+          // 修正點：將 url 改名為 page，配合 API 的要求
           body: JSON.stringify({
-            url,
+            page: url, 
             title: document.title,
             timestamp: new Date().toISOString(),
           }),

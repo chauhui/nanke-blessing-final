@@ -27,15 +27,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { page = '', referrer = '', referer = '', userAgent = '', site = '' } = (req.body || {}) as {
+    // 這裡新增 title 的讀取
+    const { page = '', referrer = '', referer = '', userAgent = '', site = '', title = '' } = (req.body || {}) as {
       page?: string
       referrer?: string
       referer?: string
       userAgent?: string
       site?: string
+      title?: string // <--- 新增
     }
 
-    // 從 Vercel 提供的標頭拿國別 (如: "TW", "US")
     const countryHeader =
       (req.headers['x-vercel-ip-country'] as string) ||
       (req.headers['x-vercel-ip-country-region'] as string) ||
@@ -50,13 +51,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       site?.toLowerCase() ||
       ''
 
-    // YYYY-MM-DD（便於後台統計）
     const date = new Date().toISOString().slice(0, 10)
 
     await client.create({
       _type: 'pageViewLog',
       date,
       page,
+      title, // <--- 寫入資料庫
       referer: referrer || referer || '',
       userAgent: ua,
       country,

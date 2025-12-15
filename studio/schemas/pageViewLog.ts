@@ -10,15 +10,23 @@ export default defineType({
       name: 'site',
       type: 'string',
       title: '來源網域',
-      description: '例如：nanke-blessing.vercel.app（用來區分正式站/測試站）',
+      description: '例如：nanke-blessing.vercel.app',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'page',
       type: 'string',
       title: '頁面路徑',
-      description: '例如：/、/about、/courses?tag=adult',
+      description: '例如：/、/about',
     }),
+    // === 新增：頁面標題 ===
+    defineField({
+      name: 'title',
+      type: 'string',
+      title: '頁面標題',
+      description: '紀錄當下的中文網頁標題',
+    }),
+    // ====================
     defineField({
       name: 'date',
       type: 'date',
@@ -42,14 +50,14 @@ export default defineType({
   }),
   preview: {
     select: {
-      title: 'page',
-      subtitle: 'site',
+      title: 'title', // 優先顯示中文標題
+      subtitle: 'page',
       date: 'date',
       country: 'country',
     },
     prepare({title, subtitle, date, country}) {
       const sub = [subtitle, date, country].filter(Boolean).join(' · ')
-      return {title: title || '(未指定頁面)', subtitle: sub}
+      return {title: title || '(未指定標題)', subtitle: sub}
     },
   },
 })

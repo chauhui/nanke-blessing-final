@@ -1,7 +1,7 @@
 import React, { useEffect, useState, forwardRef } from "react"
 import type { Ref } from "react"
 import { useClient } from "sanity"
-import { Card, Heading, Box, Select, Text } from "@sanity/ui"
+import { Card, Heading, Box, Select, Text, Stack, Label } from "@sanity/ui"
 import {
   ResponsiveContainer,
   LineChart,
@@ -12,8 +12,10 @@ import {
   CartesianGrid,
 } from "recharts"
 
+// 新增 title 欄位
 type PageViewLog = {
   page: string
+  title?: string // <--- 新增
   date: string
   country?: string
   referer?: string
@@ -23,7 +25,7 @@ type PageViewLog = {
 
 const PROD_HOST = "nanke-blessing.vercel.app"
 
-/** 站內路由 → 中文名稱（可自由擴充） */
+/** 站內路由 → 中文名稱（舊資料或無標題時的備案） */
 const ROUTE_NAME_MAP: Array<[RegExp, string]> = [
   [/^\/$/, "首頁"],
   [/^\/about(?:\/)?$/, "關於我們"],
@@ -43,10 +45,9 @@ const ROUTE_NAME_MAP: Array<[RegExp, string]> = [
   [/^\/member(?:\/)?$/, "會友專區"],
   [/^\/member\/meal\/?$/, "愛宴報名"],
   [/^\/member\/group-report\/?$/, "小組回報"],
-  [/^\/auth\/login(?:.*)?$/, "登入頁"], // 含 callbackUrl
+  [/^\/auth\/login(?:.*)?$/, "登入頁"],
 ]
 
-/** 國家代碼 → 繁體中文名稱 */
 const COUNTRY_LABEL_MAP: Record<string, string> = {
   TW: "台灣",
   NZ: "紐西蘭",
@@ -59,42 +60,45 @@ const COUNTRY_LABEL_MAP: Record<string, string> = {
   未知: "未知",
 }
 
-/** 裝置英文 → 繁體 */
 const DEVICE_LABEL_MAP: Record<string, string> = {
   Mobile: "手機",
   Desktop: "桌機",
 }
 
-/** 取站內路徑（把同站完整網址轉為 pathname+search；否則回傳原字串） */
 function getInternalPathOrKeep(raw: string, host = PROD_HOST) {
   if (!raw) return ""
   try {
     const u = new URL(raw)
     return u.host === host ? u.pathname + u.search : raw
   } catch {
-    // raw 不是完整 URL，可能已經是路徑
     return raw
   }
 }
 
-/** 將路徑/網址轉為中文名稱（站外來源維持原字串） */
-function toDisplayName(raw: string, host = PROD_HOST) {
-  const s = getInternalPathOrKeep(raw, host)
-  // 站外：不是以 / 開頭，又不是本站網址 ⇒ 直接回傳原字串
-  if (!s.startsWith("/")) return raw || "-"
+/** * 智慧顯示名稱：
+ * 1. 如果 log 裡有存 title，優先用 title
+ * 2. 如果沒有，則用 ROUTE_NAME_MAP 猜
+ * 3. 最後才顯示網址
+ */
+function getSmartDisplayName(page: string, title: string | undefined, host = PROD_HOST) {
+  // 如果有存下來的中文標題，直接回傳（去掉後面的 "- 南科福氣教會" 讓畫面乾淨點）
+  if (title && title !== 'undefined') {
+    return title.replace(' - 南科福氣教會', '').replace(' | 南科福氣教會', '')
+  }
 
-  // 站內：用 map 找到第一個符合的中文名稱
+  const s = getInternalPathOrKeep(page, host)
+  if (!s.startsWith("/")) return page || "-"
+
   for (const [re, name] of ROUTE_NAME_MAP) {
     if (re.test(s)) return name
   }
-  // 找不到就回傳路徑本身（至少不是一長串網址）
   return s
 }
 
 function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
   const client = useClient({ apiVersion: "2024-01-01" })
   const [data, setData] = useState<PageViewLog[]>([])
-  const [page, setPage] = useState("all")
+  const [pageFilter, setPageFilter] = useState("all")
 
   // 日期範圍（預設看最近 7 天）
   const todayStr = new Date().toISOString().slice(0, 10)
@@ -104,7 +108,6 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
   const [startDate, setStartDate] = useState(defaultStart)
   const [endDate, setEndDate] = useState(todayStr)
 
-  // 手機判定
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
     const upd = () => setIsMobile(window.innerWidth <= 600)
@@ -113,9 +116,9 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
     return () => window.removeEventListener("resize", upd)
   }, [])
 
-  // 只抓正式站資料（兼容舊資料：referer 前綴判斷）
   useEffect(() => {
     const hostPrefix = `https://${PROD_HOST}*`
+    // 查詢語法中加入 title
     client
       .fetch<PageViewLog[]>(
         `*[_type=="pageViewLog" 
@@ -125,189 +128,229 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
                 || (!defined(host) && defined(referer) && referer match $hostPrefix)
               )
           ]{
-            page,date,country,referer,userAgent,host
+            page, title, date, country, referer, userAgent, host
           } | order(date asc)`,
         { start: startDate, end: endDate, host: PROD_HOST, hostPrefix }
       )
       .then(setData)
   }, [client, startDate, endDate])
 
-  // ==== 統計資料 ====
-  const pages = Array.from(new Set(data.map((d) => d.page)))
-
-  // 每日 views（依 page 篩選）
-  const viewCount: Record<string, number> = {}
-  data.forEach((d) => {
-    if (page !== "all" && d.page !== page) return
-    const key = `${d.date}-${d.page}`
-    viewCount[key] = (viewCount[key] || 0) + 1
+  // ==== 統計計算 ====
+  // 1. 整理所有出現過的頁面，並記錄該頁面最新的標題 (給下拉選單和列表用)
+  const pageMeta: Record<string, string> = {}
+  data.forEach(d => {
+    if (d.title) pageMeta[d.page] = d.title
   })
+  
+  const uniquePages = Array.from(new Set(data.map((d) => d.page)))
 
-  // 產生日期序列
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  const days = Math.ceil((end.getTime() - start.getTime()) / 864e5) + 1
-  const chartData: { date: string; views: number }[] = []
-  for (let i = 0; i < days; i++) {
-    const d = new Date(start.getTime() + i * 864e5)
-    const dateKey = d.toISOString().slice(0, 10)
-    let views = 0
-    if (page === "all") {
-      views = pages.reduce(
-        (sum, p) => sum + (viewCount[`${dateKey}-${p}`] || 0),
-        0
-      )
-    } else {
-      views = viewCount[`${dateKey}-${page}`] || 0
-    }
-    chartData.push({ date: dateKey, views })
-  }
+  // 2. 每日流量 & 總流量統計
+  const viewCountByDate: Record<string, number> = {}
+  const viewCountByPage: Record<string, number> = {} // 頁面排行榜用
 
-  // X 軸密度：手機與桌機都盡量顯示約 7 個日期
-  const interval =
-    chartData.length > 0
-      ? Math.max(0, Math.ceil(chartData.length / 7) - 1)
-      : 0
-
-  // 國家 / 來源 / 裝置 統計（顯示名稱轉換放在 render）
   const countryStat: Record<string, number> = {}
   const refererStat: Record<string, number> = {}
   const deviceStat: Record<string, number> = {}
+
   data.forEach((d) => {
-    if (page !== "all" && d.page !== page) return
+    // 全域過濾器
+    if (pageFilter !== "all" && d.page !== pageFilter) return
+
+    // 圖表數據
+    const dateKey = d.date // YYYY-MM-DD
+    viewCountByDate[dateKey] = (viewCountByDate[dateKey] || 0) + 1
+
+    // 排行榜數據 (只在沒有選特定頁面時統計排行，或者單頁統計)
+    viewCountByPage[d.page] = (viewCountByPage[d.page] || 0) + 1
+
+    // 詳細統計
     const c = d.country || "未知"
-    // 來源保留原始字串，render 再轉中文
     const r = d.referer || "直接"
     const dv = d.userAgent?.includes("Mobile") ? "Mobile" : "Desktop"
+    
     countryStat[c] = (countryStat[c] || 0) + 1
     refererStat[r] = (refererStat[r] || 0) + 1
     deviceStat[dv] = (deviceStat[dv] || 0) + 1
   })
 
+  // 3. 準備圖表資料
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const days = Math.ceil((end.getTime() - start.getTime()) / 864e5) + 1
+  const chartData: { date: string; views: number }[] = []
+  
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start.getTime() + i * 864e5)
+    const dateKey = d.toISOString().slice(0, 10)
+    chartData.push({ date: dateKey, views: viewCountByDate[dateKey] || 0 })
+  }
+
+  // 4. 準備頁面排行資料 (排序：瀏覽量高 -> 低)
+  const sortedPageStats = Object.entries(viewCountByPage)
+    .sort(([, a], [, b]) => b - a)
+    .map(([pageUrl, count]) => ({
+      url: pageUrl,
+      name: getSmartDisplayName(pageUrl, pageMeta[pageUrl]),
+      count
+    }))
+
+  const interval = chartData.length > 0 ? Math.max(0, Math.ceil(chartData.length / 7) - 1) : 0
+
   return (
-    <Card padding={4} radius={4} ref={ref}>
-      <Heading>網站瀏覽統計 Dashboard（{PROD_HOST}）</Heading>
+    <Card padding={4} radius={4} ref={ref} tone="transparent">
+      <Heading size={2}>網站瀏覽統計 ({PROD_HOST})</Heading>
 
-      {/* 篩選區 */}
-      <Box marginY={3} style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+      {/* 篩選控制器 */}
+      <Box marginY={4} style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
         <Box>
-          <label>起始：</label>
-          <input
-            type="date"
-            value={startDate}
-            max={endDate}
-            onChange={(e) => setStartDate(e.currentTarget.value)}
-          />
-        </Box>
-        <Box>
-          <label>結束：</label>
-          <input
-            type="date"
-            value={endDate}
-            min={startDate}
-            max={todayStr}
-            onChange={(e) => setEndDate(e.currentTarget.value)}
-          />
-        </Box>
-        <Box>
-          <label>頁面：</label>
-          <Select
-            value={page}
-            onChange={(e) => setPage(e.currentTarget.value)}
-            style={{ minWidth: 180 }}
-          >
-            <option value="all">全部</option>
-            {pages.map((p) => (
-              <option key={p} value={p}>
-                {toDisplayName(p, PROD_HOST)}（
-                {getInternalPathOrKeep(p, PROD_HOST) || p}）
-              </option>
-            ))}
-          </Select>
-        </Box>
-      </Box>
-
-      {/* 圖表 */}
-      <Box style={{ width: "100%", height: isMobile ? 240 : 360 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 20, right: 20, bottom: isMobile ? 30 : 60, left: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              interval={interval}
-              height={isMobile ? 40 : 60}
-              tickFormatter={(dateStr) => {
-                const d = new Date(dateStr)
-                return `${d.getMonth() + 1}/${d.getDate()}`
-              }}
-              tick={{ fontSize: isMobile ? 10 : 12 }}
-              minTickGap={isMobile ? 20 : 0}
-              textAnchor={isMobile ? "middle" : "end"}
+          <Label size={1}>起始日期</Label>
+          <Box marginTop={2}>
+            <input
+              type="date"
+              value={startDate}
+              max={endDate}
+              onChange={(e) => setStartDate(e.currentTarget.value)}
+              style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
             />
-            <YAxis allowDecimals={false} />
-            <Tooltip wrapperStyle={{ fontSize: isMobile ? 12 : 14 }} cursor={false} />
-            <Line
-              type="monotone"
-              dataKey="views"
-              stroke="#8884d8"
-              dot={false}
-              strokeWidth={2}
+          </Box>
+        </Box>
+        <Box>
+          <Label size={1}>結束日期</Label>
+          <Box marginTop={2}>
+            <input
+              type="date"
+              value={endDate}
+              min={startDate}
+              max={todayStr}
+              onChange={(e) => setEndDate(e.currentTarget.value)}
+              style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ccc' }}
             />
-          </LineChart>
-        </ResponsiveContainer>
+          </Box>
+        </Box>
+        <Box>
+          <Label size={1}>篩選單一頁面</Label>
+          <Box marginTop={2}>
+            <Select
+              value={pageFilter}
+              onChange={(e) => setPageFilter(e.currentTarget.value)}
+              style={{ minWidth: 200 }}
+            >
+              <option value="all">全部頁面</option>
+              {uniquePages.map((p) => (
+                <option key={p} value={p}>
+                  {getSmartDisplayName(p, pageMeta[p])}
+                </option>
+              ))}
+            </Select>
+          </Box>
+        </Box>
       </Box>
 
-      {/* 統計列表 */}
-      <Box
-        marginY={isMobile ? 2 : 4}
-        style={{ display: "flex", gap: 32, flexWrap: "wrap" }}
-      >
-        <Box>
-          <Text weight="bold">國家：</Text>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {Object.entries(countryStat).map(([k, v]) => {
-              const label = COUNTRY_LABEL_MAP[k] || k
-              return (
-                <li key={k}>
-                  <Text>
-                    {label}: {v}
-                  </Text>
-                </li>
-              )
-            })}
-          </ul>
+      {/* 流量折線圖 */}
+      <Card border padding={3} radius={3} style={{ background: 'white' }}>
+        <Label size={1} muted>每日瀏覽趨勢</Label>
+        <Box style={{ width: "100%", height: isMobile ? 220 : 320, marginTop: 16 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+              <XAxis
+                dataKey="date"
+                interval={interval}
+                tickFormatter={(d) => d.slice(5).replace('-', '/')}
+                tick={{ fontSize: 11, fill: '#666' }}
+                tickLine={false}
+                axisLine={false}
+                dy={10}
+              />
+              <YAxis 
+                allowDecimals={false} 
+                tick={{ fontSize: 11, fill: '#666' }} 
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: 4, border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                labelStyle={{ color: '#666', marginBottom: 4 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="views"
+                stroke="#2276FC"
+                strokeWidth={3}
+                dot={{ r: 3, fill: '#2276FC', strokeWidth: 0 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </Box>
-        <Box>
-          <Text weight="bold">來源：</Text>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {Object.entries(refererStat).map(([raw, v]) => (
-              <li key={raw}>
-                <Text title={raw}>
-                  {toDisplayName(raw, PROD_HOST)}: {v}
-                </Text>
-              </li>
-            ))}
-          </ul>
-        </Box>
-        <Box>
-          <Text weight="bold">裝置：</Text>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {Object.entries(deviceStat).map(([k, v]) => {
-              const label = DEVICE_LABEL_MAP[k] || k
-              return (
-                <li key={k}>
-                  <Text>
-                    {label}: {v}
-                  </Text>
-                </li>
-              )
-            })}
-          </ul>
-        </Box>
+      </Card>
+
+      {/* 詳細資料區塊 */}
+      <Box marginY={4} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: 24 }}>
+        
+        {/* 左側：熱門頁面排行 (新功能) */}
+        <Card border radius={3} padding={3}>
+          <Label size={1} muted>熱門頁面排行 (Top Pages)</Label>
+          <Box marginTop={3} style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 300 }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #eee', textAlign: 'left' }}>
+                  <th style={{ padding: 8, fontSize: 12 }}>頁面名稱</th>
+                  <th style={{ padding: 8, fontSize: 12 }}>瀏覽次數</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPageStats.slice(0, 20).map((row, idx) => (
+                  <tr key={row.url} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                    <td style={{ padding: 8 }}>
+                      <Text size={1} weight="semibold" style={{ color: '#2276FC' }}>
+                        {row.name}
+                      </Text>
+                      <Text size={0} muted style={{ marginTop: 2 }}>
+                        {getInternalPathOrKeep(row.url)}
+                      </Text>
+                    </td>
+                    <td style={{ padding: 8 }}>
+                      <Text weight="bold">{row.count}</Text>
+                    </td>
+                  </tr>
+                ))}
+                {sortedPageStats.length === 0 && (
+                  <tr><td colSpan={2} style={{ padding: 20, textAlign: 'center', color: '#999' }}>尚無資料</td></tr>
+                )}
+              </tbody>
+            </table>
+          </Box>
+        </Card>
+
+        {/* 右側：其他統計 (國家/來源/裝置) */}
+        <Stack space={4}>
+          <Card border radius={3} padding={3}>
+            <Label size={1} muted>裝置分佈</Label>
+            <Box marginTop={3}>
+              {Object.entries(deviceStat).map(([k, v]) => (
+                <Box key={k} marginBottom={2} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text size={1}>{DEVICE_LABEL_MAP[k] || k}</Text>
+                  <Text size={1} weight="bold">{v}</Text>
+                </Box>
+              ))}
+            </Box>
+          </Card>
+
+          <Card border radius={3} padding={3}>
+            <Label size={1} muted>訪客國家</Label>
+            <Box marginTop={3}>
+              {Object.entries(countryStat).map(([k, v]) => (
+                <Box key={k} marginBottom={2} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text size={1}>{COUNTRY_LABEL_MAP[k] || k}</Text>
+                  <Text size={1} weight="bold">{v}</Text>
+                </Box>
+              ))}
+            </Box>
+          </Card>
+        </Stack>
       </Box>
+
     </Card>
   )
 }

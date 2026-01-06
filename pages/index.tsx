@@ -10,7 +10,8 @@ import { sanityClient } from '@/lib/sanity'
 import { testimoniesQuery, type Testimony } from '@/lib/queries'
 import Link from 'next/link'
 
-type Entry = { date: string; title: string; note?: string | null }
+// 1. 修改 Type 定義，加入 pptUrl (字串或 null)
+type Entry = { date: string; title: string; note?: string | null; pptUrl?: string | null }
 type MonthlyPlan = { themeTitle: string; entries: Entry[] } | null
 
 type HomeProps = {
@@ -151,7 +152,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           <section className="bg-[#F7F5F2] border-b border-[#D4C5B5]">
             <div className="container mx-auto px-4 py-8 md:py-16">
               
-              {/* ✅ 修正重點：移除 text-center, justify-center，統一改為靠左 */}
               <header className="mb-6 md:mb-10 text-left">
                 <div className="flex items-center gap-3 mb-2 md:mb-3">
                    <div className="h-[1px] w-8 bg-[#B45309]"></div>
@@ -173,7 +173,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             <div className="container mx-auto px-4 py-8 md:py-16">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
                 <div className="flex flex-col">
-                  {/* 這原本就是靠左的，保持不變 */}
                   <header className="mb-6 md:mb-8">
                     <div className="flex items-center gap-3 mb-2 md:mb-3">
                        <div className="h-[1px] w-8 bg-[#1E1B4B]"></div>
@@ -191,15 +190,34 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                             {d ? leftDateBlock(d) : <div className="w-20 h-[72px]" />}
                             <div className="min-w-0 flex-1 flex flex-col justify-center">
                               <h4 className="text-lg font-bold text-[#1E1B4B] line-clamp-2 mb-1">
-                                {e.title}{e.note ? <span className="text-[#64748B] font-normal text-base ml-2">（{e.note}）</span> : null}
+                                {e.title}
+                                {e.note ? <span className="text-[#64748B] font-normal text-base ml-2">（{e.note}）</span> : null}
                               </h4>
-                              {d && (
-                                <div className="flex items-center gap-2 text-sm text-[#B45309] font-medium tracking-wide">
-                                  <span>{weekdayNames[d.getDay()]}</span>
-                                  <span className="w-1 h-1 bg-[#B45309] rounded-full"></span>
-                                  <span>{fMD.format(d)}</span>
-                                </div>
-                              )}
+                              
+                              <div className="flex flex-wrap items-center gap-3 text-sm text-[#B45309] font-medium tracking-wide mt-1">
+                                {d && (
+                                  <div className="flex items-center gap-2">
+                                    <span>{weekdayNames[d.getDay()]}</span>
+                                    <span className="w-1 h-1 bg-[#B45309] rounded-full"></span>
+                                    <span>{fMD.format(d)}</span>
+                                  </div>
+                                )}
+                                
+                                {/* 3. 新增下載按鈕：如果有 pptUrl 才顯示 */}
+                                {e.pptUrl && (
+                                  <a 
+                                    href={e.pptUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-[#B45309]/10 text-[#B45309] text-xs font-bold hover:bg-[#B45309] hover:text-white transition-colors border border-[#B45309]/20"
+                                    title="下載本週簡報"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                    下載簡報
+                                  </a>
+                                )}
+                              </div>
+
                             </div>
                           </article>
                         )
@@ -229,7 +247,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           {/* 生命見證 */}
           <section className="bg-[#F7F5F2]">
             <div className="container mx-auto px-4 py-8 md:py-16">
-              {/* ✅ 修正重點：移除 text-center, justify-center，統一改為靠左 */}
               <header className="mb-6 md:mb-10 text-left">
                 <div className="flex items-center gap-3 mb-2 md:mb-3">
                    <div className="h-[1px] w-8 bg-[#1E1B4B]"></div>
@@ -298,6 +315,7 @@ export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
     timeZone: 'Asia/Taipei'
   }).format(new Date())
 
+  // 2. 更新 Query: 使用 asset->url 來取得真實檔案連結
   const monthlyPlanQuery = `
     *[_type == "monthlyPlan" && (month == $ymKey || ym == $ymKey || monthSlug == $ymKey)][0]{
       "themeTitle": coalesce(themeTitle, title, bookTitle, ""),
@@ -305,7 +323,8 @@ export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
         | order(date asc)[] {
           "date": date,
           title,
-          note
+          note,
+          "pptUrl": pptFile.asset->url
         }
     }
   `

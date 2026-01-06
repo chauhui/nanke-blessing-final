@@ -9,7 +9,9 @@ import member from './member'
 import userRegistration from './userRegistration'
 import donation from './donation'
 import heroSlide from './heroSlide'
-import testimony from './testimony'   // ← 新增生命見證 schema
+import testimony from './testimony'
+// 👇 重點：引入 pageViewLog
+import pageViewLog from './pageViewLog'
 
 export const schemaTypes = [
   event,
@@ -22,5 +24,7 @@ export const schemaTypes = [
   userRegistration,
   donation,
   heroSlide,
-  testimony,        // ← 加入生命見證
+  testimony,
+  // 👇 重點：加入 pageViewLog 到列表
+  pageViewLog,
 ]

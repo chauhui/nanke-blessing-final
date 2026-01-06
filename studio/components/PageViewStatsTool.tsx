@@ -1,7 +1,7 @@
 import React, { useEffect, useState, forwardRef } from "react"
 import type { Ref } from "react"
 import { useClient } from "sanity"
-import { Card, Heading, Box, Select, Text, Stack, Label } from "@sanity/ui"
+import { Card, Heading, Box, Select, Text, Stack, Label, Spinner, Flex } from "@sanity/ui"
 import {
   ResponsiveContainer,
   LineChart,
@@ -18,6 +18,8 @@ type PageViewLog = {
   title?: string
   date: string
   country?: string
+  region?: string
+  city?: string
   referer?: string
   userAgent?: string
   host?: string
@@ -25,11 +27,32 @@ type PageViewLog = {
 
 const PROD_HOST = "nanke-blessing.vercel.app"
 
-/** * 站內路由 → 中文名稱對照表 (依照你提供的清單更新)
- * 正則表達式說明： \/?$ 表示網址最後有沒有斜線都可以 (例如 /meal 和 /meal/ 都算)
- */
+// 台灣城市中文化對照表
+const CITY_NAME_MAP: Record<string, string> = {
+  'Taipei': '台北',
+  'New Taipei': '新北',
+  'Taoyuan': '桃園',
+  'Taichung': '台中',
+  'Tainan': '台南',
+  'Kaohsiung': '高雄',
+  'Hsinchu': '新竹',
+  'Keelung': '基隆',
+  'Chiayi': '嘉義',
+  'Miaoli': '苗栗',
+  'Changhua': '彰化',
+  'Nantou': '南投',
+  'Yunlin': '雲林',
+  'Pingtung': '屏東',
+  'Yilan': '宜蘭',
+  'Hualien': '花蓮',
+  'Taitung': '台東',
+  'Penghu': '澎湖',
+  'Kinmen': '金門',
+  'Lienchiang': '連江'
+}
+
 const ROUTE_NAME_MAP: Array<[RegExp, string]> = [
-  [/^\/$/, "首頁"], // 你清單未列出，但我幫你補上，通常 / 就是首頁
+  [/^\/$/, "首頁"],
   [/^\/about\/vision-mission\/?$/, "異象與使命"],
   [/^\/about\/implementation\/?$/, "實行之路"],
   [/^\/about\/strategy\/?$/, "教會策略"],
@@ -46,7 +69,6 @@ const ROUTE_NAME_MAP: Array<[RegExp, string]> = [
   [/^\/meal\/?$/, "愛宴系統"],
   [/^\/member\/group-report\/?$/, "小組長回報系統"],
   [/^\/donate\/?$/, "線上奉獻"],
-  // --- 以下為系統保留或備用路由 ---
   [/^\/auth\/login(?:.*)?$/, "登入頁"],
   [/^\/member(?:\/)?$/, "會友專區"], 
 ]
@@ -59,6 +81,7 @@ const COUNTRY_LABEL_MAP: Record<string, string> = {
   CN: "中國",
   HK: "香港",
   SG: "新加坡",
+  MY: "馬來西亞",
   unknown: "未知",
   未知: "未知",
 }
@@ -78,39 +101,56 @@ function getInternalPathOrKeep(raw: string, host = PROD_HOST) {
   }
 }
 
-/** * 智慧顯示名稱：
- * 1. 優先查表 (ROUTE_NAME_MAP) -> 解決舊資料顯示 Generic Title 的問題
- * 2. 其次看 DB 存的 Title (但過濾掉 "南科福氣教會")
- * 3. 最後顯示網址
- */
 function getSmartDisplayName(page: string, title: string | undefined, host = PROD_HOST) {
   const s = getInternalPathOrKeep(page, host)
-
-  // 1. 優先比對人工翻譯表 (最強制)
   for (const [re, name] of ROUTE_NAME_MAP) {
     if (re.test(s)) return name
   }
-
-  // 2. 如果表裡沒有，才看資料庫存的 Title
-  // 關鍵修正：如果標題只是 "南科福氣教會"，視為無效資訊，不顯示
   if (title && title !== 'undefined') {
     const cleanTitle = title.replace(' - 南科福氣教會', '').replace(' | 南科福氣教會', '').trim()
-    // 如果清乾淨後跟 "南科福氣教會" 一模一樣，或是空的，就跳過
     if (cleanTitle && cleanTitle !== '南科福氣教會') {
       return cleanTitle
     }
   }
-
-  // 3. 真的沒輒了，顯示網址路徑
   return s
+}
+
+// 優化後的城市名稱處理：支援從 Region 候補
+function formatCityLabel(d: PageViewLog): string {
+  let name = d.city
+
+  // 1. 如果沒有城市，嘗試用地區 (Region)
+  if (!name || name === '(無城市資料)' || name === 'undefined') {
+    if (d.region && d.region !== 'undefined') {
+      name = d.region
+    } else {
+      return '未知'
+    }
+  }
+
+  // 2. 清理名稱 (移除 City/County 後綴)
+  const cleanName = name.replace(/ City$/i, '').replace(/ County$/i, '')
+  
+  // 3. 嘗試翻譯 (針對台灣城市)
+  let label = CITY_NAME_MAP[cleanName] || CITY_NAME_MAP[name] || cleanName
+
+  // 4. 如果是國外城市 (非 TW 且非未知)，加上國家代碼以便識別
+  // 例如：Osaka (JP), California (US)
+  const country = d.country
+  if (country && country !== 'TW' && country !== '未知' && country !== 'unknown') {
+    label = `${label} (${country})`
+  }
+
+  return label
 }
 
 function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
   const client = useClient({ apiVersion: "2024-01-01" })
   const [data, setData] = useState<PageViewLog[]>([])
+  const [loading, setLoading] = useState(true)
   const [pageFilter, setPageFilter] = useState("all")
 
-  // 日期範圍（預設看最近 7 天）
+  // 日期範圍設定
   const todayStr = new Date().toISOString().slice(0, 10)
   const defaultStart = new Date(Date.now() - 6 * 24 * 3600 * 1000)
     .toISOString()
@@ -127,7 +167,10 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
   }, [])
 
   useEffect(() => {
+    setLoading(true)
     const hostPrefix = `https://${PROD_HOST}*`
+    
+    // 嚴格過濾 host，只抓取正式網域
     client
       .fetch<PageViewLog[]>(
         `*[_type=="pageViewLog" 
@@ -137,11 +180,18 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
                 || (!defined(host) && defined(referer) && referer match $hostPrefix)
               )
           ]{
-            page, title, date, country, referer, userAgent, host
+            page, title, date, country, region, city, referer, userAgent, host
           } | order(date asc)`,
         { start: startDate, end: endDate, host: PROD_HOST, hostPrefix }
       )
-      .then(setData)
+      .then((res) => {
+        setData(res)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error(err)
+        setLoading(false)
+      })
   }, [client, startDate, endDate])
 
   // ==== 統計計算 ====
@@ -156,6 +206,7 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
   const viewCountByPage: Record<string, number> = {} 
 
   const countryStat: Record<string, number> = {}
+  const cityStat: Record<string, number> = {}
   const refererStat: Record<string, number> = {}
   const deviceStat: Record<string, number> = {}
 
@@ -170,10 +221,20 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
     const r = d.referer || "直接"
     const dv = d.userAgent?.includes("Mobile") ? "Mobile" : "Desktop"
     
+    // 使用新的格式化邏輯：支援國外城市顯示與地區候補
+    const cityLabel = formatCityLabel(d)
+    
     countryStat[c] = (countryStat[c] || 0) + 1
+    cityStat[cityLabel] = (cityStat[cityLabel] || 0) + 1
     refererStat[r] = (refererStat[r] || 0) + 1
     deviceStat[dv] = (deviceStat[dv] || 0) + 1
   })
+
+  // 排序城市數據 (過濾未知)
+  const sortedCityStats = Object.entries(cityStat)
+    .filter(([name]) => name !== '未知' && name !== 'unknown' && name !== '(無城市資料)')
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10)
 
   const start = new Date(startDate)
   const end = new Date(endDate)
@@ -196,9 +257,20 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
 
   const interval = chartData.length > 0 ? Math.max(0, Math.ceil(chartData.length / 7) - 1) : 0
 
+  if (loading) {
+    return (
+      <Card padding={4} radius={4} ref={ref} tone="transparent">
+        <Flex align="center" justify="center" direction="column" gap={3} style={{ height: 300 }}>
+          <Spinner size={3} />
+          <Text muted>載入數據中...</Text>
+        </Flex>
+      </Card>
+    )
+  }
+
   return (
     <Card padding={4} radius={4} ref={ref} tone="transparent">
-      <Heading size={2}>網站瀏覽統計 ({PROD_HOST})</Heading>
+      <Heading size={2}>網站瀏覽統計</Heading>
 
       <Box marginY={4} style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-end" }}>
         <Box>
@@ -343,6 +415,22 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
                   <Text size={1} weight="bold">{v}</Text>
                 </Box>
               ))}
+            </Box>
+          </Card>
+
+          {/* 訪客城市 */}
+          <Card border radius={3} padding={3}>
+            <Label size={1} muted>熱門城市 (Top 10)</Label>
+            <Box marginTop={3}>
+              {sortedCityStats.map(([k, v]) => (
+                <Box key={k} marginBottom={2} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text size={1}>{k}</Text>
+                  <Text size={1} weight="bold">{v}</Text>
+                </Box>
+              ))}
+              {sortedCityStats.length === 0 && (
+                <Text size={1} muted>尚無資料</Text>
+              )}
             </Box>
           </Card>
         </Stack>

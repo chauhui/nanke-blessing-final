@@ -47,6 +47,16 @@ export default defineType({
               title: '備註（可選）',
               type: 'string',
             }),
+            // --- 新增的功能：簡報上傳欄位 ---
+            defineField({
+              name: 'pptFile',
+              title: '信息簡報檔案 (PDF/PPT)',
+              type: 'file',
+              options: {
+                accept: '.pdf,.ppt,.pptx' // 限制檔案類型，避免傳錯
+              }
+            }),
+            // -----------------------------
           ],
           preview: {
             select: {title: 'title', date: 'date'},

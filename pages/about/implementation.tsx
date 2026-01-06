@@ -169,11 +169,16 @@ export default function ImplementationPage() {
                 讓我們一起經歷真理的大能。
               </p>
               
-              <Link href="/about/gatherings/">
+              {/* ✅ 修改重點：連結改為 Line 官方帳號連結 */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 <button className="border border-[#F7F5F2] text-[#F7F5F2] hover:bg-[#F7F5F2] hover:text-[#292524] px-8 py-3 text-xs md:text-sm font-bold tracking-widest transition-colors duration-300 uppercase">
                   JOIN US TODAY
                 </button>
-              </Link>
+              </a>
            </div>
         </section>
 

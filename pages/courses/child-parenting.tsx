@@ -109,11 +109,17 @@ export default function ChildParentingCourse() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/about/gatherings">
-                  <button className="w-full sm:w-auto px-8 py-3 bg-[#FBBF24] text-[#1E1B4B] font-bold tracking-widest text-sm rounded-sm hover:bg-white transition-colors">
+                {/* ✅ 修改重點：連結改為 Line 官方帳號連結 */}
+                <a 
+                  href="https://lin.ee/nQ7s6dC" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto"
+                >
+                  <button className="w-full px-8 py-3 bg-[#FBBF24] text-[#1E1B4B] font-bold tracking-widest text-sm rounded-sm hover:bg-white transition-colors">
                     了解聚會資訊
                   </button>
-                </Link>
+                </a>
                 <div className="w-full sm:w-auto px-8 py-3 border border-[#94A3B8] text-[#94A3B8] text-sm tracking-widest rounded-sm">
                   洽詢電話：06-5834626
                 </div>

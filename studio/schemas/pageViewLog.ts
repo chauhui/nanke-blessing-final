@@ -19,7 +19,7 @@ export default defineType({
       title: '頁面路徑',
       description: '例如：/、/about',
     }),
-    // === 新增：頁面標題 ===
+    // === 頁面標題 ===
     defineField({
       name: 'title',
       type: 'string',
@@ -36,7 +36,13 @@ export default defineType({
     defineField({ name: 'ip', type: 'string', title: 'IP' }),
     defineField({ name: 'userAgent', type: 'string', title: '裝置資訊' }),
     defineField({ name: 'referer', type: 'string', title: '來源（Referer）' }),
+    
+    // === 修改重點：新增地理位置欄位 ===
     defineField({ name: 'country', type: 'string', title: '國家' }),
+    defineField({ name: 'region', type: 'string', title: '地區/省份' }), 
+    defineField({ name: 'city', type: 'string', title: '城市' }),
+    // =================================
+    
     defineField({
       name: 'createdAt',
       type: 'datetime',
@@ -54,9 +60,13 @@ export default defineType({
       subtitle: 'page',
       date: 'date',
       country: 'country',
+      city: 'city', // 新增：預覽時抓取城市
     },
-    prepare({title, subtitle, date, country}) {
-      const sub = [subtitle, date, country].filter(Boolean).join(' · ')
+    prepare({title, subtitle, date, country, city}) {
+      // 組合顯示文字，例如：台灣 · 台北
+      const location = [country, city].filter(Boolean).join(' · ')
+      const sub = [subtitle, date, location].filter(Boolean).join(' | ')
+      
       return {title: title || '(未指定標題)', subtitle: sub}
     },
   },

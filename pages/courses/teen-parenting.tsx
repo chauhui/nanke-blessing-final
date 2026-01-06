@@ -130,7 +130,7 @@ export default function TeenParentingCourse() {
                   </div>
                   
                   {/* 按鈕 */}
-                  <Link href="/about/gatherings" className="shrink-0 w-full md:w-auto">
+                  <Link href="https://lin.ee/nQ7s6dC" className="shrink-0 w-full md:w-auto">
                     <button className="w-full md:w-auto bg-[#1E1B4B] text-white hover:bg-[#312E81] px-8 py-3 md:py-4 text-xs md:text-sm font-bold tracking-[0.15em] transition-all duration-300 uppercase shadow-lg shadow-[#1E1B4B]/20 rounded-sm">
                       CONTACT US
                     </button>

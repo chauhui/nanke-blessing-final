@@ -119,12 +119,18 @@ export default function ChildrenCharacterCourse() {
             </div>
             
             <div className="flex gap-4 w-full md:w-auto">
-              <Link href="/about/gatherings" className="group w-full md:w-auto">
+              {/* ✅ 修改重點：按鈕改成「課程諮詢」，連結改為 Line */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group w-full md:w-auto"
+              >
                 <button className="w-full md:w-auto flex justify-center items-center gap-3 px-6 py-3 border border-[#1E1B4B] text-[#1E1B4B] font-bold text-xs md:text-sm tracking-widest rounded-sm group-hover:bg-[#1E1B4B] group-hover:text-white transition-all">
                   課程諮詢
                   <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                 </button>
-              </Link>
+              </a>
             </div>
           </div>
 

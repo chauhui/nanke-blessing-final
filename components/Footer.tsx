@@ -28,18 +28,11 @@ export default function Footer({ className = '' }: FooterProps) {
       <div className="w-full pt-10 pb-8 lg:pt-16 lg:pb-8">
         <div className="container mx-auto px-6 lg:px-12">
           
-          {/* [修改重點] Grid 佈局：
-             1. 手機版改為 grid-cols-2 (兩欄)，這樣連結區可以並排。
-             2. 電腦版維持 lg:grid-cols-12。
-             3. 間距調整為 gap-y-8 gap-x-4。
-          */}
+          {/* [修改重點] Grid 佈局 */}
           <div className="grid grid-cols-2 lg:grid-cols-12 gap-x-4 gap-y-8 lg:gap-8 mb-8 lg:mb-12">
             
             {/* 1. 品牌區塊 */}
-            {/* 手機版佔滿兩欄 (col-span-2)，電腦版佔 4 欄 */}
             <div className="col-span-2 lg:col-span-4 space-y-4 lg:space-y-6">
-              {/* 手機版：Logo 與 社群 icon 左右並排 (flex-row)，節省空間 */}
-              {/* 電腦版：回復原本的垂直排列 (lg:flex-col) */}
               <div className="flex flex-row lg:flex-col justify-between items-center lg:items-start">
                 <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
                   <img 
@@ -49,7 +42,7 @@ export default function Footer({ className = '' }: FooterProps) {
                   />
                 </Link>
 
-                {/* 社群 Icon (手機版顯示在 Logo 右側，電腦版會在下方) */}
+                {/* 社群 Icon */}
                 <div className="flex space-x-4 lg:space-x-6 lg:pt-2">
                   <a href="https://lin.ee/nQ7s6dC" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform duration-300 hover:opacity-80">
                     <Image src="/images/social/line.png" alt="Line" width={32} height={32} className="w-7 h-7 lg:w-8 lg:h-8" />
@@ -63,8 +56,6 @@ export default function Footer({ className = '' }: FooterProps) {
                 </div>
               </div>
 
-              {/* [修改重點] 描述文字：手機版隱藏 (hidden)，電腦版顯示 (lg:block) */}
-              {/* 這樣可以大幅減少手機版 Footer 的長度 */}
               <p className="hidden lg:block text-[#525252] text-sm leading-loose max-w-sm font-medium">
                 我們是一群追隨耶穌的門徒，致力於建立一個充滿愛與盼望的信仰群體，
                 透過真理的教導和生命的見證，將福音帶給每一個人。
@@ -72,7 +63,6 @@ export default function Footer({ className = '' }: FooterProps) {
             </div>
 
             {/* 2. 快速連結 */}
-            {/* 手機版佔 1 欄 (col-span-1)，與右邊的探索更多並排 */}
             <div className="col-span-1 lg:col-span-2 lg:pl-8">
               <h3 className="text-[#171717] font-serif font-bold tracking-widest uppercase mb-4 lg:mb-6 text-sm border-b-2 border-[#1E1B4B] inline-block pb-1">
                 快速連結
@@ -96,7 +86,6 @@ export default function Footer({ className = '' }: FooterProps) {
             </div>
 
             {/* 3. 探索更多 */}
-            {/* 手機版佔 1 欄 (col-span-1)，並排顯示 */}
             <div className="col-span-1 lg:col-span-2">
               <h3 className="text-[#171717] font-serif font-bold tracking-widest uppercase mb-4 lg:mb-6 text-sm border-b-2 border-[#1E1B4B] inline-block pb-1">
                 探索更多
@@ -120,7 +109,6 @@ export default function Footer({ className = '' }: FooterProps) {
             </div>
 
             {/* 4. 聯絡資訊 */}
-            {/* 手機版佔滿兩欄 (col-span-2)，維持在最下方 */}
             <div className="col-span-2 lg:col-span-4 lg:pl-8 border-t lg:border-t-0 lg:border-l border-[#D4D4D8] pt-6 lg:pt-0">
               <h3 className="text-[#171717] font-serif font-bold tracking-widest uppercase mb-4 lg:mb-6 text-sm border-b-2 border-[#1E1B4B] inline-block pb-1">
                 Contact Us
@@ -148,8 +136,7 @@ export default function Footer({ className = '' }: FooterProps) {
                   <div className="ml-4">
                     <span className="block text-xs text-[#737373] uppercase tracking-wider mb-1 font-bold">Phone</span>
                     <div className="flex gap-3 text-[#404040] text-sm font-medium">
-                      <a href="tel:+886929327486" className="hover:text-[#B45309] transition-colors">0929-327-486</a>
-                      <span className="text-[#A3A3A3]">/</span>
+                      {/* ✅ 修正重點：只保留市內電話 */}
                       <a href="tel:+8865834626" className="hover:text-[#B45309] transition-colors">06-5834626</a>
                     </div>
                   </div>

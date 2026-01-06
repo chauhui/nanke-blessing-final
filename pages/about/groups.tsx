@@ -37,16 +37,17 @@ export default function GroupsPage() {
 
   // 3. 小組時間表資料 (目前共 10 組)
   const groupSchedules = [
-    { id: 1, name: "尤君小組", day: "週五", time: "18:30 - 20:30", location: "牧師家" },
+    { id: 1, name: "Lily小組", day: "週一", time: "19:30 - 21:30", location: "英菁家" },
     { id: 2, name: "朝暉小組", day: "週五", time: "19:30 - 21:30", location: "朝暉家" },
     { id: 3, name: "榮杰小組", day: "週五", time: "19:30 - 21:30", location: "榮杰家" },
     { id: 4, name: "淑麗小組", day: "週六", time: "08:00 - 09:45", location: "美善農場" },
     { id: 5, name: "俊男小組", day: "週六", time: "14:30 - 16:30", location: "美善農場" },
     { id: 6, name: "青少年團契", day: "週日", time: "14:00 - 16:00", location: "牧師家" },
     { id: 7, name: "黃晨小組", day: "週一", time: "19:30 - 21:00", location: "牧師家 (1、2樓)" },
-    { id: 8, name: "勝騰小組", day: "週一", time: "19:30 - 21:30", location: "英菁家" },
+    { id: 8, name: "勝騰小組", day: "週一", time: "19:30 - 21:30", location: "勝騰家" },
     { id: 9, name: "玉真小組", day: "週一", time: "10:00 - 12:00", location: "玉真家" },
-    { id: 10, name: "麗容線上小組", day: "週四", time: "20:30 - 21:30", location: "zoom 會議室" }
+    { id: 10, name: "國信小組", day: "週五", time: "19:00 - 21:00", location: "國信家" },
+    { id: 11, name: "麗容線上小組", day: "週四", time: "20:30 - 21:30", location: "zoom 會議室" }
   ];
 
   return (
@@ -208,11 +209,16 @@ export default function GroupsPage() {
                 歡迎與教會辦公室聯繫。
               </p>
               
-              <Link href="/contact">
+              {/* ✅ 修改重點：連結改為 Line 官方帳號連結 */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 <button className="bg-[#B95C50] text-white hover:bg-[#9A4A40] px-8 py-3 md:px-10 md:py-4 text-xs md:text-sm font-bold tracking-widest transition-colors duration-300 uppercase shadow-lg shadow-[#B95C50]/20">
                   聯絡我們
                 </button>
-              </Link>
+              </a>
            </div>
         </section>
 

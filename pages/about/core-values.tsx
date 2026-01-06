@@ -166,11 +166,16 @@ export default function CoreValuesPage() {
                 在這裡，我們一起經歷生命的更新。
               </p>
               
-              <Link href="/about/gatherings/">
+              {/* ✅ 修改重點：連結改為 Line 官方帳號連結 */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 <button className="bg-[#1E293B] text-white hover:bg-[#334155] px-8 py-3 md:px-10 md:py-4 text-xs md:text-sm font-bold tracking-widest transition-colors duration-300 uppercase shadow-lg shadow-[#1E293B]/20">
                   JOIN US TODAY
                 </button>
-              </Link>
+              </a>
            </div>
         </section>
 

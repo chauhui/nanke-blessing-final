@@ -169,9 +169,15 @@ export default function FinancialWisdomCourse() {
                 </div>
 
                 <div className="mt-6 md:mt-8">
-                  <Link href="/about/gatherings" className="block w-full text-center py-3 md:py-4 bg-[#1E1B4B] text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase rounded-sm hover:bg-[#0F766E] transition-colors shadow-lg">
-                    立即詢問
-                  </Link>
+                  {/* ✅ 修改重點：按鈕改成「聯絡我們」，連結改為 Line */}
+                  <a 
+                    href="https://lin.ee/nQ7s6dC" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block w-full text-center py-3 md:py-4 bg-[#1E1B4B] text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase rounded-sm hover:bg-[#0F766E] transition-colors shadow-lg"
+                  >
+                    聯絡我們
+                  </a>
                 </div>
               </div>
 

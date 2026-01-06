@@ -157,11 +157,17 @@ export default function VisionMissionPage() {
                 邀請你加入這個榮耀的行列。
               </p>
               
-              <Link href="/about/gatherings/">
+              {/* ✅ 修改重點：連結改為 Footer 中的 Line 官方帳號連結 */}
+              {/* 因為是外部連結，改用 <a> 標籤，並加入 target="_blank" 在新分頁開啟 */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 <button className="bg-[#1e1b4b] text-[#fbbf24] hover:bg-[#312e81] px-8 py-3 md:px-10 md:py-4 text-xs md:text-sm font-bold tracking-widest transition-colors duration-300 uppercase shadow-lg shadow-[#1e1b4b]/20">
                   JOIN US TODAY
                 </button>
-              </Link>
+              </a>
            </div>
         </section>
 

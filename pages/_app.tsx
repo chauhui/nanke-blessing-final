@@ -3,7 +3,7 @@ import 'swiper/css'
 import 'swiper/css/effect-fade'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
-import '@/styles/globals.css'
+import '../styles/globals.css' // ✅ 路徑正確，保持不動
 
 import type { AppProps } from 'next/app'
 import { SessionProvider } from 'next-auth/react'
@@ -11,24 +11,8 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
-// 字體設定
-import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
-
-const notoSerif = Noto_Serif_TC({
-  weight: ['700'],
-  subsets: ['latin'],
-  variable: '--font-serif',
-  display: 'swap',
-  preload: false,
-})
-
-const notoSans = Noto_Sans_TC({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-  preload: false, 
-})
+// ❌ 移除：原本會導致 Timeout 的 next/font 引用
+// import { Noto_Serif_TC, Noto_Sans_TC } from 'next/font/google'
 
 export default function MyApp({
   Component,
@@ -36,18 +20,15 @@ export default function MyApp({
 }: AppProps) {
   const router = useRouter()
 
-  // === 關鍵修正：流量統計邏輯 ===
+  // === 流量統計邏輯 (保持原樣) ===
   useEffect(() => {
-    // 定義一個發送流量紀錄的函式
     const handleRouteChange = async (url: string) => {
       try {
-        // 發送 POST 請求給 pages/api/track-view.ts
         await fetch('/api/track-view', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          // 修正點：將 url 改名為 page，配合 API 的要求
           body: JSON.stringify({
             page: url, 
             title: document.title,
@@ -55,18 +36,12 @@ export default function MyApp({
           }),
         })
       } catch (error) {
-        // 默默失敗，不要讓使用者看到錯誤
         console.error('Tracking failed:', error)
       }
     }
 
-    // 1. 網站剛打開時，紀錄第一次 (Initial Load)
     handleRouteChange(window.location.pathname)
-
-    // 2. 監聽路由變化，當使用者換頁時紀錄 (Navigation)
     router.events.on('routeChangeComplete', handleRouteChange)
-
-    // 清除監聽器 (避免重複執行)
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange)
     }
@@ -79,13 +54,29 @@ export default function MyApp({
         <title>南科福氣教會</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <link rel="icon" href="/favicon.ico" />
+
+        {/* ✅ 新增：改用傳統 CDN 方式載入字體，避開 Next.js 後端下載卡住的問題 */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@700&display=swap" 
+          rel="stylesheet" 
+        />
       </Head>
 
-      <main className={`
-        ${notoSans.variable} 
-        ${notoSerif.variable} 
-        font-sans antialiased text-gray-800
-      `}>
+      {/* ✅ 手動設定 CSS 變數
+         原本 next/font 會自動生成 class，現在我們手動把變數灌進去，
+         這樣 Tailwind 設定檔裡面的 'var(--font-sans)' 就能繼續運作，樣式完全不變。
+      */}
+      <main 
+        className="font-sans antialiased text-gray-800"
+        style={{
+          // @ts-ignore
+          '--font-sans': "'Noto Sans TC', sans-serif",
+          // @ts-ignore
+          '--font-serif': "'Noto Serif TC', serif",
+        }}
+      >
         <Component {...pageProps} />
       </main>
     </SessionProvider>

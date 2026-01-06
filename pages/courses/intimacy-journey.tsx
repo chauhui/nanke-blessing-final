@@ -117,8 +117,14 @@ export default function IntimacyJourneyCourse() {
                     <a href="https://jtiint.org/course/outline" target="_blank" className="text-center py-3 border border-[#1E1B4B] text-[#1E1B4B] text-xs font-bold tracking-widest uppercase hover:bg-[#1E1B4B] hover:text-white transition-colors rounded-sm">
                       查看課程大綱
                     </a>
-                    <a href="tel:0929327486" className="text-center py-3 bg-[#B45309] text-white text-xs font-bold tracking-widest uppercase hover:bg-[#92400e] transition-colors rounded-sm">
-                      來電洽詢
+                    {/* ✅ 修改重點：按鈕改成「聯絡我們」，連結改為 Line */}
+                    <a 
+                      href="https://lin.ee/nQ7s6dC" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-center py-3 bg-[#B45309] text-white text-xs font-bold tracking-widest uppercase hover:bg-[#92400e] transition-colors rounded-sm"
+                    >
+                      聯絡我們
                     </a>
                   </div>
                 </div>

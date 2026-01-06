@@ -194,11 +194,16 @@ export default function GatheringsPage() {
                 期待在聚會中見到你。
               </p>
               
-              <Link href="/contact">
+              {/* ✅ 修改重點：連結改為 Line 官方帳號連結 */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 <button className="bg-[#9C826B] text-white hover:bg-[#856D58] px-8 py-3 md:px-10 md:py-4 text-xs md:text-sm font-bold tracking-widest transition-colors duration-300 uppercase shadow-lg shadow-[#9C826B]/20">
                   聯絡我們
                 </button>
-              </Link>
+              </a>
            </div>
         </section>
 

@@ -139,11 +139,16 @@ export default function StrategyPage() {
                 邀請您加入這個被神使用的器皿。
               </p>
               
-              <Link href="/about/gatherings/">
+              {/* ✅ 修改重點：連結改為 Line 官方帳號連結 */}
+              <a 
+                href="https://lin.ee/nQ7s6dC" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 <button className="bg-[#2C3E36] text-[#F4F6F4] hover:bg-[#435C50] px-8 py-3 md:px-10 md:py-4 text-xs md:text-sm font-bold tracking-widest transition-colors duration-300 uppercase shadow-lg shadow-[#2C3E36]/20">
                   JOIN US TODAY
                 </button>
-              </Link>
+              </a>
            </div>
         </section>
 

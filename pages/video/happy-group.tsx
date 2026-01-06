@@ -156,11 +156,16 @@ export default function HappyGroup() {
             <p className="text-[#475569] mb-6 md:mb-8 text-sm md:text-base">
               無論你正處於人生的哪個階段，這裡都有屬於你的位置。
             </p>
-            <Link href="/about/gatherings">
+            {/* ✅ 修改重點：按鈕改成「加入我們 Join Us」，連結改為 Line */}
+            <a 
+              href="https://lin.ee/nQ7s6dC" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
               <button className="px-8 py-3 md:px-10 md:py-4 bg-[#1E1B4B] text-white font-bold tracking-widest uppercase rounded-sm hover:bg-[#F59E0B] hover:text-[#1E1B4B] transition-colors duration-300 shadow-lg text-sm md:text-base">
                 加入我們 Join Us
               </button>
-            </Link>
+            </a>
           </div>
         </div>
 

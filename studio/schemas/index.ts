@@ -10,8 +10,10 @@ import userRegistration from './userRegistration'
 import donation from './donation'
 import heroSlide from './heroSlide'
 import testimony from './testimony'
-// 👇 重點：引入 pageViewLog
 import pageViewLog from './pageViewLog'
+
+// ✅ 新增：引入主日信息的 schema
+import sundayService from './sundayService'
 
 export const schemaTypes = [
   event,
@@ -25,6 +27,8 @@ export const schemaTypes = [
   donation,
   heroSlide,
   testimony,
-  // 👇 重點：加入 pageViewLog 到列表
   pageViewLog,
+  
+  // ✅ 新增：加入到列表
+  sundayService,
 ]

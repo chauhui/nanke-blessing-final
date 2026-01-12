@@ -1,4 +1,3 @@
-// studio/structure/index.ts
 import GroupReportStatsTool from './components/GroupReportStatsTool'
 import RegistrationBulkDeleteTool from './components/RegistrationBulkDeleteTool'
 import GroupedRegistrations from './components/GroupedRegistrations'
@@ -72,7 +71,7 @@ export const structure = (S: any) => {
         .defaultOrdering([{ field: 'date', direction: 'desc' }])
     )
 
-  // 👉 新增：本月主題（月別）為獨立頂層項，不隸屬「教會行事曆」
+  // 👉 本月主題（月別）
   const monthlyPlanListItem = S.listItem()
     .title('本月主題')
     .id('monthly-plan')
@@ -82,8 +81,19 @@ export const structure = (S: any) => {
         .title('本月主題（月別）')
         .defaultOrdering([{ field: 'month', direction: 'desc' }])
     )
+  
+  // ✅ 新增：主日信息 (Sunday Service)
+  const sundayServiceListItem = S.listItem()
+    .title('主日信息')
+    .id('sunday-service-list')
+    .child(
+      S.documentTypeList('sundayService')
+        .id('sunday-service-type-list')
+        .title('主日信息')
+        .defaultOrdering([{ field: 'date', direction: 'desc' }])
+    )
 
-  // ★ 新增：生命見證
+  // ★ 生命見證
   const testimonyListItem = S.listItem()
     .title('生命見證')
     .id('testimony-list')
@@ -192,9 +202,11 @@ export const structure = (S: any) => {
       registrationListItem,
       S.divider(),
       eventListItem,
-      // 👉 把「本月主題」放在活動後面，與行事曆平級
+      // 👉 本月主題
       monthlyPlanListItem,
-      // ★ 生命見證放在本月主題之後
+      // ✅ 這裡把主日信息加進去
+      sundayServiceListItem,
+      // ★ 生命見證
       testimonyListItem,
       S.divider(),
       memberListItem,

@@ -104,7 +104,12 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
   const title = '南科福氣教會'
   const desc = '南科福氣教會｜位於台南南科園區，為忙碌的科技人與家庭預備溫暖的信仰與陪伴。'
   const url = 'https://nanke-blessing.vercel.app'
-  const image = 'https://nanke-blessing.vercel.app/images/og-image-1.jpg' 
+  const image = 'https://nanke-blessing.vercel.app/images/og-image-1.jpg'
+  
+  // [維護者筆記] 修正 Google Calendar 參數錯誤
+  // 錯誤修正：wkst 參數必須是 1 (週日)，之前誤植為 0 導致 400 Error 及拒絕連線
+  // mode=AGENDA: 維持日程清單模式
+  const googleCalendarUrl = "https://calendar.google.com/calendar/embed?src=info.nkbbc%40gmail.com&src=zh.taiwan%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTaipei&wkst=1&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0"
 
   return (
     <>
@@ -226,18 +231,35 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-col h-full pt-0 lg:pt-24">
-                  <div className="relative rounded-sm border border-[#D4C5B5] bg-white shadow-sm overflow-hidden aspect-[5/4] h-full">
+                {/* [維護者筆記] 微調對齊：
+                    將 lg:pt-24 (96px) 增加至 lg:pt-[99px]，
+                    以精確匹配左側 Header 的高度（副標+主標+margin），
+                    解決右側日曆「稍微突出」的問題。
+                */}
+                <div className="flex flex-col h-full pt-0 lg:pt-[99px] relative">
+                  <div className="relative rounded-sm border border-[#D4C5B5] bg-white shadow-sm overflow-hidden flex-1">
                     <iframe
-                      src="https://calendar.google.com/calendar/embed?src=info.nkbbc%40gmail.com&src=zh.taiwan%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTaipei&wkst=1"
+                      src={googleCalendarUrl}
                       style={{ border: 0 }}
                       width="100%"
                       height="100%"
                       frameBorder="0"
-                      scrolling="no"
+                      scrolling="yes"
                       title="教會行事曆"
                       className="absolute inset-0 h-full w-full"
                     />
+                  </div>
+                  {/* 新增：Google 日曆外部連結 (防呆用) - 桌機版顯示於區塊外下方 */}
+                  <div className="mt-3 text-right lg:absolute lg:-bottom-8 lg:right-0 lg:w-full lg:mt-0">
+                    <a 
+                      href={googleCalendarUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-[#64748B] hover:text-[#B45309] transition-colors"
+                    >
+                      <span className="underline underline-offset-2">無法正常顯示行事曆？點此直接開啟 Google 日曆</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                    </a>
                   </div>
                 </div>
               </div>

@@ -152,7 +152,7 @@ function PageViewStatsTool(_props: any, ref: Ref<HTMLDivElement>) {
 
   // 日期範圍設定
   const todayStr = new Date().toISOString().slice(0, 10)
-  const defaultStart = new Date(Date.now() - 6 * 24 * 3600 * 1000)
+  const defaultStart = new Date(Date.now() - 2 * 24 * 3600 * 1000)
     .toISOString()
     .slice(0, 10)
   const [startDate, setStartDate] = useState(defaultStart)

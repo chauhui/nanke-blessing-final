@@ -71,15 +71,15 @@ export const structure = (S: any) => {
         .defaultOrdering([{ field: 'date', direction: 'desc' }])
     )
 
-  // 👉 本月主題（月別）
+  // 👉 近期重點事工 (原本的本月主題)
   const monthlyPlanListItem = S.listItem()
-    .title('本月主題')
+    .title('近期重點事工')
     .id('monthly-plan')
     .child(
       S.documentTypeList('monthlyPlan')
         .id('monthly-plan-type-list')
-        .title('本月主題（月別）')
-        .defaultOrdering([{ field: 'month', direction: 'desc' }])
+        .title('近期重點事工')
+        .defaultOrdering([{ field: '_createdAt', direction: 'desc' }])
     )
   
   // ✅ 新增：主日信息 (Sunday Service)
@@ -202,7 +202,7 @@ export const structure = (S: any) => {
       registrationListItem,
       S.divider(),
       eventListItem,
-      // 👉 本月主題
+      // 👉 近期重點事工
       monthlyPlanListItem,
       // ✅ 這裡把主日信息加進去
       sundayServiceListItem,

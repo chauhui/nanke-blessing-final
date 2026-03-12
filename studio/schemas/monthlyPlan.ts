@@ -1,82 +1,52 @@
 import {defineType, defineField} from 'sanity'
 
 export default defineType({
-  name: 'monthlyPlan',
-  title: '本月主題（月別）',
+  name: 'monthlyPlan', 
+  title: '近期重點事工', 
   type: 'document',
   fields: [
     defineField({
-      name: 'month',
-      title: '月份 (YYYY-MM)',
-      type: 'string',
-      validation: (Rule) =>
-        Rule.required()
-          .regex(/^\d{4}-(0[1-9]|1[0-2])$/, {name: 'YYYY-MM'})
-          .error('請輸入 YYYY-MM，例如 2025-08'),
-    }),
-    defineField({
-      name: 'themeTitle',
-      title: '主題 / 書名',
+      name: 'title',
+      title: '事工標題 (例如：幸福小組熱烈招募中)',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'entries',
-      title: '每週進度',
-      type: 'array',
-      of: [
-        defineField({
-          name: 'entry',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'date',
-              title: '日期 (YYYY-MM-DD)',
-              type: 'date',
-              options: {dateFormat: 'YYYY-MM-DD'},
-              validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'title',
-              title: '進度標題',
-              type: 'string',
-              validation: (Rule) => Rule.required(),
-            }),
-            defineField({
-              name: 'note',
-              title: '備註（可選）',
-              type: 'string',
-            }),
-            // --- 新增的功能：簡報上傳欄位 ---
-            defineField({
-              name: 'pptFile',
-              title: '信息簡報檔案 (PDF/PPT)',
-              type: 'file',
-              options: {
-                accept: '.pdf,.ppt,.pptx' // 限制檔案類型，避免傳錯
-              }
-            }),
-            // -----------------------------
-          ],
-          preview: {
-            select: {title: 'title', date: 'date'},
-            prepare({title, date}) {
-              return {title, subtitle: date}
-            },
-          },
-        }),
-      ],
-      validation: (Rule) => Rule.min(1),
+      name: 'poster',
+      title: '事工海報 / 圖片',
+      type: 'image',
+      options: {
+        hotspot: true, 
+      },
+      validation: (Rule) => Rule.required().error('請務必上傳一張事工圖片'),
+    }),
+    defineField({
+      name: 'description',
+      title: '簡短說明或行動呼籲 (選填)',
+      type: 'text',
+      rows: 3,
+      description: '例如：歡迎向各小組長報名，或掃描右方 QR Code。',
+    }),
+    defineField({
+      name: 'isActive',
+      title: '是否顯示於前台？',
+      type: 'boolean',
+      description: '如果活動結束，可以把這裡關閉，前台就不會顯示這張海報了。',
+      initialValue: true,
     }),
   ],
   preview: {
-    select: {title: 'month', subtitle: 'themeTitle'},
+    select: {
+      title: 'title',
+      media: 'poster', 
+    },
   },
+  // 🐛 修復區塊：我們把舊的 month 排序刪掉，改成用系統內建的建立時間 (_createdAt) 來排序
   orderings: [
     {
-      title: '月份（新→舊）',
-      name: 'monthDesc',
-      by: [{field: 'month', direction: 'desc'}],
+      title: '最新建立',
+      name: 'createdAtDesc',
+      by: [{field: '_createdAt', direction: 'desc'}],
     },
   ],
 })

@@ -4,15 +4,17 @@ import NavBar from '@/components/NavBar'
 import HeroCarousel from '@/components/HeroCarousel'
 import MinistriesPreview from '@/components/MinistriesPreview'
 import Footer from '@/components/Footer'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GetServerSideProps } from 'next'
 import { sanityClient } from '@/lib/sanity'
 import { testimoniesQuery, type Testimony } from '@/lib/queries'
 import Link from 'next/link'
 
-// 1. 修改 Type 定義，加入 pptUrl (字串或 null)
-type Entry = { date: string; title: string; note?: string | null; pptUrl?: string | null }
-type MonthlyPlan = { themeTitle: string; entries: Entry[] } | null
+type MonthlyPlan = { 
+  title: string; 
+  imageUrl: string | null; 
+  description: string | null;
+} | null
 
 type HomeProps = {
   monthlyPlan: MonthlyPlan
@@ -49,66 +51,11 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
     setShowCookieBanner(false)
   }
 
-  // === 本月所有主日 ===
-  const now = new Date()
-  const year = now.getFullYear()
-  const month0 = now.getMonth()
-  const sundaysThisMonth = useMemo(() => {
-    const first = new Date(year, month0, 1)
-    const delta = (7 - first.getDay()) % 7
-    const firstSunday = new Date(year, month0, 1 + delta)
-    const list: Date[] = []
-    for (let d = new Date(firstSunday); d.getMonth() === month0; d.setDate(d.getDate() + 7)) {
-      list.push(new Date(d))
-    }
-    return list
-  }, [year, month0])
-
-  const byDate = new Map(
-    (monthlyPlan?.entries ?? [])
-      .filter(e => e?.date)
-      .map(e => [e.date, e])
-  )
-  const uiEntries: Entry[] = sundaysThisMonth.map(d => {
-    const key = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' })
-    return byDate.get(key) ?? { date: key, title: '主題待公布' }
-  })
-
-  const weekdayNames = ['週日','週一','週二','週三','週四','週五','週六']
-  const fMD = useMemo(
-    () => new Intl.DateTimeFormat('zh-TW', { month: 'numeric', day: 'numeric', timeZone: 'Asia/Taipei' }),
-    []
-  )
-
-  const leftDateBlock = (date: Date) => {
-    const day = new Intl.DateTimeFormat('en-US', { day: '2-digit', timeZone: 'Asia/Taipei' })
-      .format(date)
-      .replace(/[^\d]/g, '')
-    const monthNum = new Intl.DateTimeFormat('en-US', { month: 'numeric', timeZone: 'Asia/Taipei' }).format(date)
-    const yearNum = new Intl.DateTimeFormat('en-US', { year: 'numeric', timeZone: 'Asia/Taipei' }).format(date)
-
-    return (
-      <div
-        className="
-          w-20 h-[72px] shrink-0 text-center px-1 py-2 rounded-sm
-          border border-[#D4C5B5] bg-[#F7F5F2]
-          flex flex-col items-center justify-center
-        "
-      >
-        <div className="text-3xl font-serif font-bold leading-none tracking-tight text-[#1E1B4B]">{day}</div>
-        <div className="mt-1 text-[11px] leading-none text-[#64748B] font-medium">{monthNum}月, {yearNum}</div>
-      </div>
-    )
-  }
-
   const title = '南科福氣教會'
   const desc = '南科福氣教會｜位於台南南科園區，為忙碌的科技人與家庭預備溫暖的信仰與陪伴。'
   const url = 'https://nanke-blessing.vercel.app'
   const image = 'https://nanke-blessing.vercel.app/images/og-image-1.jpg'
   
-  // [維護者筆記] 修正 Google Calendar 參數錯誤
-  // 錯誤修正：wkst 參數必須是 1 (週日)，之前誤植為 0 導致 400 Error 及拒絕連線
-  // mode=AGENDA: 維持日程清單模式
   const googleCalendarUrl = "https://calendar.google.com/calendar/embed?src=info.nkbbc%40gmail.com&src=zh.taiwan%23holiday%40group.v.calendar.google.com&ctz=Asia%2FTaipei&wkst=1&mode=AGENDA&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0"
 
   return (
@@ -156,7 +103,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           {/* 事工預覽 (米灰底) */}
           <section className="bg-[#F7F5F2] border-b border-[#D4C5B5]">
             <div className="container mx-auto px-4 py-8 md:py-16">
-              
               <header className="mb-6 md:mb-10 text-left">
                 <div className="flex items-center gap-3 mb-2 md:mb-3">
                    <div className="h-[1px] w-8 bg-[#B45309]"></div>
@@ -177,6 +123,8 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
           <section className="bg-white border-b border-[#D4C5B5]">
             <div className="container mx-auto px-4 py-8 md:py-16">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
+                
+                {/* 左側：純圖片區塊 */}
                 <div className="flex flex-col">
                   <header className="mb-6 md:mb-8">
                     <div className="flex items-center gap-3 mb-2 md:mb-3">
@@ -186,58 +134,28 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                     <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">教會行事曆</h2>
                   </header>
 
-                  <div className="rounded-sm border border-[#D4C5B5] bg-[#F7F5F2] p-4 md:p-6 flex-1">
-                    <div className="divide-y divide-[#D4C5B5]/50">
-                      {uiEntries.map((e, i) => {
-                        const d = e.date ? new Date(e.date) : null
-                        return (
-                          <article key={`${e.date ?? i}`} className="flex gap-4 md:gap-5 py-4 md:py-5 first:pt-0 last:pb-0 hover:bg-white/50 transition px-2 -mx-2 rounded-sm">
-                            {d ? leftDateBlock(d) : <div className="w-20 h-[72px]" />}
-                            <div className="min-w-0 flex-1 flex flex-col justify-center">
-                              <h4 className="text-lg font-bold text-[#1E1B4B] line-clamp-2 mb-1">
-                                {e.title}
-                                {e.note ? <span className="text-[#64748B] font-normal text-base ml-2">（{e.note}）</span> : null}
-                              </h4>
-                              
-                              <div className="flex flex-wrap items-center gap-3 text-sm text-[#B45309] font-medium tracking-wide mt-1">
-                                {d && (
-                                  <div className="flex items-center gap-2">
-                                    <span>{weekdayNames[d.getDay()]}</span>
-                                    <span className="w-1 h-1 bg-[#B45309] rounded-full"></span>
-                                    <span>{fMD.format(d)}</span>
-                                  </div>
-                                )}
-                                
-                                {/* 3. 新增下載按鈕：如果有 pptUrl 才顯示 */}
-                                {e.pptUrl && (
-                                  <a 
-                                    href={e.pptUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-[#B45309]/10 text-[#B45309] text-xs font-bold hover:bg-[#B45309] hover:text-white transition-colors border border-[#B45309]/20"
-                                    title="下載本週簡報"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                                    下載簡報
-                                  </a>
-                                )}
-                              </div>
-
-                            </div>
-                          </article>
-                        )
-                      })}
-                    </div>
+                  {/* 🖼️ 關鍵修改：使用 flex-1 撐滿高度，並讓圖片 absolute object-cover 完美填滿框框 */}
+                  <div className="relative rounded-sm border border-[#D4C5B5] shadow-sm overflow-hidden flex-1 min-h-[400px]">
+                    {monthlyPlan && monthlyPlan.imageUrl ? (
+                      <img 
+                        src={monthlyPlan.imageUrl} 
+                        alt="教會節期與事工"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-[#F7F5F2] flex flex-col items-center justify-center text-[#64748B]">
+                        <svg className="w-12 h-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        等待上傳圖片...
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* [維護者筆記] 微調對齊：
-                    將 lg:pt-24 (96px) 增加至 lg:pt-[99px]，
-                    以精確匹配左側 Header 的高度（副標+主標+margin），
-                    解決右側日曆「稍微突出」的問題。
-                */}
-                <div className="flex flex-col h-full pt-0 lg:pt-[99px] relative">
-                  <div className="relative rounded-sm border border-[#D4C5B5] bg-white shadow-sm overflow-hidden flex-1">
+                {/* 右側：行事曆區塊 */}
+                <div className="flex flex-col h-full pt-0 lg:pt-[99px] relative min-h-[500px]">
+                  <div className="relative rounded-sm border border-[#D4C5B5] bg-white shadow-sm overflow-hidden flex-1 h-full">
                     <iframe
                       src={googleCalendarUrl}
                       style={{ border: 0 }}
@@ -249,7 +167,6 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                       className="absolute inset-0 h-full w-full"
                     />
                   </div>
-                  {/* 新增：Google 日曆外部連結 (防呆用) - 桌機版顯示於區塊外下方 */}
                   <div className="mt-3 text-right lg:absolute lg:-bottom-8 lg:right-0 lg:w-full lg:mt-0">
                     <a 
                       href={googleCalendarUrl} 
@@ -262,6 +179,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                     </a>
                   </div>
                 </div>
+
               </div>
             </div>
           </section>
@@ -276,7 +194,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                 </div>
                 <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">生命見證</h2>
                 <p className="mt-2 md:mt-4 text-sm md:text-base text-[#475569] max-w-2xl leading-relaxed">
-                  聽聽弟兄姊妹們分享他們的生命故事，見證神的真實。
+                  聽聽弟兄姊妹分享他們的生命故事，見證神的真實。
                 </p>
               </header>
 
@@ -331,29 +249,17 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
 }
 
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
-  const ymKey = new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    timeZone: 'Asia/Taipei'
-  }).format(new Date())
-
-  // 2. 更新 Query: 使用 asset->url 來取得真實檔案連結
   const monthlyPlanQuery = `
-    *[_type == "monthlyPlan" && (month == $ymKey || ym == $ymKey || monthSlug == $ymKey)][0]{
-      "themeTitle": coalesce(themeTitle, title, bookTitle, ""),
-      "entries": coalesce(entries, [])
-        | order(date asc)[] {
-          "date": date,
-          title,
-          note,
-          "pptUrl": pptFile.asset->url
-        }
+    *[_type == "monthlyPlan" && isActive == true] | order(_createdAt desc)[0] {
+      title,
+      "imageUrl": poster.asset->url,
+      description
     }
   `
 
   try {
     const [monthlyPlan, testimonies] = await Promise.all([
-      sanityClient.fetch<MonthlyPlan>(monthlyPlanQuery, { ymKey }),
+      sanityClient.fetch<MonthlyPlan>(monthlyPlanQuery),
       sanityClient.fetch<Testimony[]>(testimoniesQuery),
     ])
 

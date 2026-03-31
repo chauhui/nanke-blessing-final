@@ -124,7 +124,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             <div className="container mx-auto px-4 py-8 md:py-16">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
                 
-                {/* 左側：純圖片區塊 */}
+                {/* 左側：經文圖片區塊 */}
                 <div className="flex flex-col">
                   <header className="mb-6 md:mb-8">
                     <div className="flex items-center gap-3 mb-2 md:mb-3">
@@ -134,16 +134,19 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                     <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">教會行事曆</h2>
                   </header>
 
-                  {/* 🖼️ 關鍵修改：使用 flex-1 撐滿高度，並讓圖片 absolute object-cover 完美填滿框框 */}
-                  <div className="relative rounded-sm border border-[#D4C5B5] shadow-sm overflow-hidden flex-1 min-h-[400px]">
+                  {/* 📱💻 關鍵修復區塊：雙重指令，分離手機與電腦版的呈現邏輯 */}
+                  <div className="relative rounded-sm border border-[#D4C5B5] shadow-sm overflow-hidden flex-1 min-h-[200px] lg:min-h-0 bg-[#F7F5F2] flex flex-col justify-center">
                     {monthlyPlan && monthlyPlan.imageUrl ? (
                       <img 
                         src={monthlyPlan.imageUrl} 
-                        alt="教會節期與事工"
-                        className="absolute inset-0 w-full h-full object-cover"
+                        alt="教會節期與重點經文"
+                        // 雙重指令在此：
+                        // 手機版：w-full h-auto (保持原比例不裁切，文字絕對清楚)
+                        // 電腦版 (lg:)：absolute inset-0 h-full object-cover (填滿框框，對齊右側行事曆)
+                        className="block w-full h-auto lg:absolute lg:inset-0 lg:h-full lg:object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-[#F7F5F2] flex flex-col items-center justify-center text-[#64748B]">
+                      <div className="w-full h-full min-h-[200px] flex flex-col items-center justify-center text-[#64748B]">
                         <svg className="w-12 h-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>

@@ -38,12 +38,60 @@ function extractYouTubeId(url: string): string | null {
 
 export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
   const [showCookieBanner, setShowCookieBanner] = useState(false)
+  
+  // ⏳ 倒數計時器的狀態
+  const [mounted, setMounted] = useState(false)
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+  const [isServiceTime, setIsServiceTime] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const consent = localStorage.getItem('cookie_consent')
       setShowCookieBanner(consent !== 'true')
     }
+  }, [])
+
+  // ⏳ 全自動計算「下一個主日」的邏輯
+  useEffect(() => {
+    setMounted(true)
+    
+    const calculateNextSunday = () => {
+      const now = new Date()
+      const nextSunday = new Date()
+      
+      let daysUntilSunday = 7 - now.getDay()
+      
+      if (now.getDay() === 0 && now.getHours() >= 12) {
+        daysUntilSunday = 7
+      } else if (now.getDay() === 0) {
+        daysUntilSunday = 0
+      }
+      
+      nextSunday.setDate(now.getDate() + daysUntilSunday)
+      nextSunday.setHours(10, 0, 0, 0) 
+      return nextSunday.getTime()
+    }
+
+    const timer = setInterval(() => {
+      const targetDate = calculateNextSunday()
+      const now = new Date().getTime()
+      const distance = targetDate - now
+
+      if (distance < 0 && distance > -7200000) { 
+        setIsServiceTime(true)
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+      } else {
+        setIsServiceTime(false)
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000),
+        })
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
   }, [])
 
   const handleAcceptCookies = () => {
@@ -100,7 +148,7 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             <HeroCarousel />
           </div>
 
-          {/* 事工預覽 (米灰底) */}
+          {/* 事工預覽 */}
           <section className="bg-[#F7F5F2] border-b border-[#D4C5B5]">
             <div className="container mx-auto px-4 py-8 md:py-16">
               <header className="mb-6 md:mb-10 text-left">
@@ -119,12 +167,12 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
             </div>
           </section>
 
-          {/* 行事曆 (白底) */}
+          {/* 行事曆與動態倒數 (白底) */}
           <section className="bg-white border-b border-[#D4C5B5]">
             <div className="container mx-auto px-4 py-8 md:py-16">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
                 
-                {/* 左側：經文圖片區塊 */}
+                {/* ⏳ 左側：全自動主日倒數計時器 */}
                 <div className="flex flex-col">
                   <header className="mb-6 md:mb-8">
                     <div className="flex items-center gap-3 mb-2 md:mb-3">
@@ -134,25 +182,83 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
                     <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#1E1B4B]">教會行事曆</h2>
                   </header>
 
-                  {/* 📱💻 關鍵修復區塊：雙重指令，分離手機與電腦版的呈現邏輯 */}
-                  <div className="relative rounded-sm border border-[#D4C5B5] shadow-sm overflow-hidden flex-1 min-h-[200px] lg:min-h-0 bg-[#F7F5F2] flex flex-col justify-center">
-                    {monthlyPlan && monthlyPlan.imageUrl ? (
-                      <img 
-                        src={monthlyPlan.imageUrl} 
-                        alt="教會節期與重點經文"
-                        // 雙重指令在此：
-                        // 手機版：w-full h-auto (保持原比例不裁切，文字絕對清楚)
-                        // 電腦版 (lg:)：absolute inset-0 h-full object-cover (填滿框框，對齊右側行事曆)
-                        className="block w-full h-auto lg:absolute lg:inset-0 lg:h-full lg:object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full min-h-[200px] flex flex-col items-center justify-center text-[#64748B]">
-                        <svg className="w-12 h-12 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        等待上傳圖片...
-                      </div>
-                    )}
+                  {/* 倒數計時卡片 (質感升級版：純白底卡片 + 燕麥色立體數字方塊) */}
+                  <div className="relative rounded-sm border border-[#D4C5B5] bg-white shadow-sm flex-1 min-h-[400px] lg:min-h-0 flex flex-col justify-center items-center p-6 lg:p-12 text-center overflow-hidden">
+                    
+                    {/* 微妙的背景裝飾圓，增加畫面豐富度但不破壞極簡 */}
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#F7F5F2] rounded-full opacity-50 pointer-events-none"></div>
+                    <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-[#F7F5F2] rounded-full opacity-50 pointer-events-none"></div>
+
+                    <div className="relative z-10 w-full max-w-sm mx-auto">
+                      {mounted ? (
+                        isServiceTime ? (
+                          // 聚會正在進行中的畫面
+                          <div className="animate-fade-in flex flex-col items-center bg-[#F7F5F2] p-8 rounded-lg border border-[#E5E5E5]">
+                            <div className="w-3 h-3 bg-[#B45309] rounded-full animate-ping mb-4"></div>
+                            <span className="text-xs font-bold tracking-[0.3em] text-[#B45309] uppercase mb-2">Live Now</span>
+                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1E1B4B] mb-3 tracking-wide">
+                              主日崇拜進行中
+                            </h3>
+                            <p className="text-[#475569] mb-6 text-sm font-light">願神賜福您今天的信息與敬拜</p>
+                            <a href="#" className="inline-block bg-[#1E1B4B] text-white hover:bg-[#312E81] px-6 py-2.5 rounded-sm text-sm font-bold tracking-widest transition-colors shadow-sm">
+                              進入線上聚會
+                            </a>
+                          </div>
+                        ) : (
+                          // 倒數計時畫面
+                          <div className="flex flex-col items-center w-full">
+                            <span className="text-xs font-bold tracking-[0.3em] text-[#64748B] uppercase mb-6 md:mb-8">
+                              Countdown
+                            </span>
+                            
+                            {/* 改用 Grid 方塊排版，結構更穩定、更好看 */}
+                            <div className="grid grid-cols-4 gap-2 md:gap-4 w-full mb-8 md:mb-10">
+                              {/* 天 */}
+                              <div className="flex flex-col items-center justify-center py-4 bg-[#F7F5F2] rounded-md border border-[#EAEAEA] shadow-sm">
+                                <span className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-[#1E1B4B]">{String(timeLeft.days).padStart(2, '0')}</span>
+                                <span className="text-[9px] md:text-[10px] text-[#64748B] font-bold tracking-widest mt-2">DAYS</span>
+                              </div>
+                              
+                              {/* 時 */}
+                              <div className="flex flex-col items-center justify-center py-4 bg-[#F7F5F2] rounded-md border border-[#EAEAEA] shadow-sm">
+                                <span className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-[#1E1B4B]">{String(timeLeft.hours).padStart(2, '0')}</span>
+                                <span className="text-[9px] md:text-[10px] text-[#64748B] font-bold tracking-widest mt-2">HRS</span>
+                              </div>
+
+                              {/* 分 */}
+                              <div className="flex flex-col items-center justify-center py-4 bg-[#F7F5F2] rounded-md border border-[#EAEAEA] shadow-sm">
+                                <span className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-[#1E1B4B]">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                                <span className="text-[9px] md:text-[10px] text-[#64748B] font-bold tracking-widest mt-2">MINS</span>
+                              </div>
+
+                              {/* 秒 */}
+                              <div className="flex flex-col items-center justify-center py-4 bg-[#F7F5F2] rounded-md border border-[#EAEAEA] shadow-sm">
+                                <span className="text-3xl md:text-4xl lg:text-5xl font-serif font-light text-[#B45309]">{String(timeLeft.seconds).padStart(2, '0')}</span>
+                                <span className="text-[9px] md:text-[10px] text-[#64748B] font-bold tracking-widest mt-2">SECS</span>
+                              </div>
+                            </div>
+
+                            <div className="inline-flex items-center gap-3 px-6 py-3 bg-[#F7F5F2] rounded-full border border-[#EAEAEA]">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#B45309]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-wide">每週日 10:00 AM</span>
+                            </div>
+                            <p className="text-[#475569] text-sm font-light tracking-wide mt-4">
+                              預備心，與我們一同敬拜
+                            </p>
+                          </div>
+                        )
+                      ) : (
+                        // Loading 骨架
+                        <div className="animate-pulse flex space-x-4 justify-center items-center h-full">
+                          <div className="w-16 h-24 bg-[#F7F5F2] rounded-md border border-[#EAEAEA]"></div>
+                          <div className="w-16 h-24 bg-[#F7F5F2] rounded-md border border-[#EAEAEA]"></div>
+                          <div className="w-16 h-24 bg-[#F7F5F2] rounded-md border border-[#EAEAEA]"></div>
+                          <div className="w-16 h-24 bg-[#F7F5F2] rounded-md border border-[#EAEAEA]"></div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

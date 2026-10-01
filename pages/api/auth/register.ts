@@ -4,11 +4,6 @@ import { createClient } from 'next-sanity'
 import { hash } from 'bcryptjs'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-// ===== Debug: 看 Vercel/本地端是否抓到環境變數 =====
-console.log('🔑 SANITY_WRITE_TOKEN:', !!process.env.SANITY_WRITE_TOKEN)
-console.log('📦 SANITY_PROJECT_ID:', process.env.SANITY_PROJECT_ID)
-console.log('🗄️ SANITY_DATASET:',     process.env.SANITY_DATASET)
-
 const client = createClient({
   projectId: process.env.SANITY_PROJECT_ID || process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset:   process.env.SANITY_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
@@ -36,8 +31,14 @@ export default async function handler(
     return res.status(400).json({ error: '請填寫所有必填欄位（姓名、電子郵件、電話、密碼）' })
   }
 
+  const normalizedEmail = email.trim().toLowerCase()
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: '密碼長度至少需要 8 個字元' })
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) {
+  if (!emailRegex.test(normalizedEmail)) {
     return res.status(400).json({ error: '請輸入有效的電子郵件地址' })
   }
 
@@ -45,7 +46,7 @@ export default async function handler(
     // 檢查是否已存在同 email 用戶
     const existing = await client.fetch(
       `*[_type == "userRegistration" && email == $email][0]`,
-      { email }
+      { email: normalizedEmail }
     )
     if (existing) {
       return res.status(409).json({ error: '該電子郵件已被註冊，請直接登入或使用其他電子郵件' })
@@ -62,10 +63,12 @@ export default async function handler(
     const user = await client.create({
       _type: 'userRegistration',
       name,
-      email,
+      email: normalizedEmail,
       phone,
       password: hashed,
       isApproved: false,
+      role: 'member',
+      authVersion: 1,
       createdAt: new Date().toISOString(),
     })
 

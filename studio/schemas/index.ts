@@ -12,6 +12,8 @@ import heroSlide from './heroSlide'
 import testimony from './testimony'
 import pageViewLog from './pageViewLog'
 import memberResource from './memberResource'
+import memberAccessSettings from './memberAccessSettings'
+import passwordResetRequest from './passwordResetRequest'
 
 // ✅ 新增：引入主日信息的 schema
 import sundayService from './sundayService'
@@ -30,6 +32,8 @@ export const schemaTypes = [
   testimony,
   pageViewLog,
   memberResource,
+  memberAccessSettings,
+  passwordResetRequest,
   
   // ✅ 新增：加入到列表
   sundayService,

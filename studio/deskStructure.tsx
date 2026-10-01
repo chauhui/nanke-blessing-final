@@ -93,6 +93,26 @@ export const structure = (S: any) => {
         .defaultOrdering([{ field: 'date', direction: 'desc' }])
     )
 
+  const memberAccessSettingsListItem = S.listItem()
+    .title('會友專區權限設定')
+    .id('member-access-settings')
+    .child(
+      S.document()
+        .schemaType('memberAccessSettings')
+        .documentId('memberAccessSettings')
+        .title('會友專區權限設定')
+    )
+
+  const passwordResetRequestListItem = S.listItem()
+    .title('密碼重設申請')
+    .id('password-reset-requests')
+    .child(
+      S.documentTypeList('passwordResetRequest')
+        .id('password-reset-request-list')
+        .title('密碼重設申請')
+        .defaultOrdering([{ field: 'requestedAt', direction: 'desc' }])
+    )
+
   const memberResourceListItem = S.listItem()
     .title('資源中心')
     .id('member-resource-list')
@@ -211,6 +231,8 @@ export const structure = (S: any) => {
       heroSlideListItem,
       S.divider(),
       userRegistrationListItem,
+      memberAccessSettingsListItem,
+      passwordResetRequestListItem,
       S.divider(),
       registrationListItem,
       S.divider(),

@@ -2,8 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@sanity/client';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth-options'; // 確認這個路徑對應到你的 authOptions
+import { getMemberApiAccess } from '@/lib/member-access';
 
 /**
  * Sanity 客戶端初始化
@@ -22,10 +21,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // 先檢查 Session，以確保 user 已登入
-  const session = await getServerSession(req, res, authOptions);
-  if (!session || !session.user?.id) {
-    return res.status(401).json({ message: 'Unauthorized' });
+  const authorization = await getMemberApiAccess(req, res, 'groupReport');
+  if (authorization.status !== 200) {
+    return res.status(authorization.status).json({ message: authorization.status === 401 ? 'Unauthorized' : '權限不足' });
   }
+  const { session } = authorization;
 
   try {
     // 從前端取欄位：date、groupId、reports

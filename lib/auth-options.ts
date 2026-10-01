@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { createClient } from "next-sanity";
 import type { User } from "next-auth";
+import { normalizeMemberRole } from "@/lib/member-roles";
 
 /** ================== Sanity ================== */
 // 兼容兩種環境變數名稱：SANITY_API_TOKEN 與 SANITY_WRITE_TOKEN
@@ -27,18 +28,19 @@ async function authorize(credentials: Record<string, string> | undefined): Promi
     email: string;
     name: string;
     isApproved: boolean;
-    isAdmin?: boolean;
+    role?: string;
+    authVersion?: number;
+    mustChangePassword?: boolean;
     password: string; // 雜湊
   } | null>(
-    `*[_type=="userRegistration" && email==$email][0]`,
-    { email: credentials.email }
+    `*[_type=="userRegistration" && lower(email)==$email][0]`,
+    { email: credentials.email.trim().toLowerCase() }
   );
 
   if (!user) return null;                       // 查無帳號 → 交給 NextAuth 顯示「帳密錯誤」
-  if (user.isApproved !== true) throw new Error("AccountNotApproved"); // 自訂錯誤代碼
-
   const ok = await compare(credentials.password, user.password);
   if (!ok) return null;                         // 密碼錯誤
+  if (user.isApproved !== true) throw new Error("AccountNotApproved"); // 自訂錯誤代碼
 
   // 確保回傳含 id / email / name
   return {
@@ -47,7 +49,9 @@ async function authorize(credentials: Record<string, string> | undefined): Promi
     name: user.name,
     // 自訂欄位（若前端/回呼要用）
     isApproved: user.isApproved,
-    isAdmin: user.isAdmin ?? false,
+    role: normalizeMemberRole(user.role),
+    authVersion: user.authVersion ?? 1,
+    mustChangePassword: user.mustChangePassword === true,
   } as unknown as User;
 }
 
@@ -95,7 +99,10 @@ export const authOptions: NextAuthOptions = {
         token.id = (user as any).id;
         token.email = (user as any).email;
         token.name = (user as any).name;
-        token.isAdmin = (user as any).isAdmin ?? false;
+        token.isApproved = (user as any).isApproved === true;
+        token.role = normalizeMemberRole((user as any).role);
+        token.authVersion = (user as any).authVersion ?? 1;
+        token.mustChangePassword = (user as any).mustChangePassword === true;
       }
       return token;
     },
@@ -107,7 +114,10 @@ export const authOptions: NextAuthOptions = {
         id: token.id as string,
         email: token.email as string,
         name: token.name as string,
-        isAdmin: (token as any).isAdmin ?? false,
+        isApproved: token.isApproved === true,
+        role: normalizeMemberRole(token.role),
+        authVersion: token.authVersion ?? 1,
+        mustChangePassword: token.mustChangePassword === true,
       } as any;
       return session;
     },

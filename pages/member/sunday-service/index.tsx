@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react'
 import type { GetServerSideProps } from 'next'
-import { getSession } from 'next-auth/react'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
 import { client as sanityClient } from '@/lib/sanity.client'
+import { authorizeMemberPage } from '@/lib/member-access'
 
 // --- 定義資料型態 ---
 interface Sermon {
@@ -244,11 +244,11 @@ export default function SundayServicePage({ sermons }: SundayServiceProps) {
 // 伺服器端驗證與資料抓取
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   // 1. 檢查登入權限
-  const session = await getSession(ctx)
-  if (!session) {
+  const authorization = await authorizeMemberPage(ctx, 'sundayService')
+  if (!authorization.allowed) {
     return {
       redirect: {
-        destination: `/auth/login?callbackUrl=${encodeURIComponent(ctx.resolvedUrl)}`,
+        destination: authorization.redirect,
         permanent: false,
       },
     }

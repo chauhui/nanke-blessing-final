@@ -5,36 +5,39 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
-import { useSession } from "next-auth/react";
 
 type Props = {
   csrfToken: string;
 };
 
+function getSafeCallbackUrl(value: string | null) {
+  return value?.startsWith('/') && !value.startsWith('//') ? value : '/member';
+}
+
 export default function LoginPage({ csrfToken }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
 
-  // 取得 callbackUrl，預設 /member/meal
-  const callbackUrl = searchParams.get('callbackUrl') || '/member/meal';
-
-  // session 有效就自動跳轉
-  useEffect(() => {
-    if (status === "authenticated" && callbackUrl && callbackUrl !== '/auth/login') {
-      window.location.href = decodeURIComponent(callbackUrl);
-    }
-  }, [status, callbackUrl]);
+  const callbackUrl = getSafeCallbackUrl(searchParams.get('callbackUrl'));
 
   // 處理 URL 中的錯誤參數
   useEffect(() => {
     const errorParam = searchParams.get('error');
+    if (searchParams.get('passwordChanged') === '1') {
+      setNotice('密碼已更新，請使用新密碼登入');
+    }
     if (errorParam === 'AccountNotApproved') {
       setError('您的帳號尚未通過審核，請聯繫管理員');
       // 清除錯誤參數
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.delete('error');
+      router.replace(`${router.pathname}?${newParams.toString()}`);
+    } else if (errorParam === 'SessionExpired') {
+      setError('您的登入狀態或會員權限已更新，請重新登入');
       const newParams = new URLSearchParams(searchParams.toString());
       newParams.delete('error');
       router.replace(`${router.pathname}?${newParams.toString()}`);
@@ -51,7 +54,7 @@ export default function LoginPage({ csrfToken }: Props) {
         redirect: false,
         email,
         password,
-        callbackUrl: decodeURIComponent(callbackUrl),
+        callbackUrl,
       });
 
       // debug log（可刪）
@@ -82,7 +85,7 @@ export default function LoginPage({ csrfToken }: Props) {
 
       // 登入成功，自行跳轉
       if (result.ok && result.url) {
-        window.location.href = decodeURIComponent(result.url);
+        window.location.href = result.url;
       } else {
         setError('登入過程中發生錯誤，請稍後再試。');
       }
@@ -99,6 +102,12 @@ export default function LoginPage({ csrfToken }: Props) {
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
+          </div>
+        )}
+
+        {notice && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded">
+            {notice}
           </div>
         )}
 
@@ -125,8 +134,14 @@ export default function LoginPage({ csrfToken }: Props) {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full border px-3 py-2 rounded"
             />
-          </label>
-          
+           </label>
+
+          <div className="text-right">
+            <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+              忘記密碼？
+            </Link>
+          </div>
+
           <button
             type="submit"
             className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"

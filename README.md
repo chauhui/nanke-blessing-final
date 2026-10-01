@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Password Reset
+
+Password resets use an administrator-assisted flow:
+
+1. A member submits a request from `/auth/forgot-password`.
+2. An administrator opens `密碼重設申請` in Sanity Studio and generates a one-time temporary password.
+3. The temporary password is shown once and delivered to the verified member by phone, LINE, or in person.
+4. After signing in, the member must set a private password before accessing member pages.

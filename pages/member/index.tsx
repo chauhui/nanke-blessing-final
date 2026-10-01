@@ -1,16 +1,17 @@
-// pages/member/index.tsx
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import type { GetServerSideProps } from 'next'
+import { getMemberLandingPath } from '@/lib/member-access'
 
 export default function MemberIndex() {
-  const router = useRouter();
-  
-  useEffect(() => {
-    // [修正] 原本導向 /member/meal (已不存在)，現在改為導向小組長回報系統
-    router.replace('/member/group-report');
-  }, [router]);
+  return null
+}
 
-  return null; // 頁面本身不顯示任何內容，只負責轉址
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const destination = await getMemberLandingPath(ctx)
+
+  return {
+    redirect: {
+      destination: destination || `/auth/login?callbackUrl=${encodeURIComponent('/member')}`,
+      permanent: false,
+    },
+  }
 }

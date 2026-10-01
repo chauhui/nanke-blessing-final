@@ -41,6 +41,45 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'role',
+      title: '會員等級',
+      type: 'string',
+      description: '審核會員時請設定等級，等級由低至高依序為一般會員、合心同工、小組長、長老。',
+      options: {
+        list: [
+          { title: '一般會員', value: 'member' },
+          { title: '合心同工', value: 'coworker' },
+          { title: '小組長', value: 'groupLeader' },
+          { title: '長老', value: 'elder' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'member',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'authVersion',
+      title: '權限版本',
+      type: 'number',
+      initialValue: 1,
+      hidden: true,
+      readOnly: true,
+    }),
+    defineField({
+      name: 'mustChangePassword',
+      title: '必須修改密碼',
+      type: 'boolean',
+      readOnly: true,
+      initialValue: false,
+    }),
+    defineField({
+      name: 'temporaryPasswordIssuedAt',
+      title: '臨時密碼產生時間',
+      type: 'datetime',
+      readOnly: true,
+      hidden: ({document}) => !document?.mustChangePassword,
+    }),
+    defineField({
       name: 'createdAt',
       title: '註冊時間',
       type: 'datetime',
@@ -53,15 +92,17 @@ export default defineType({
       title: 'name',
       email: 'email',
       approved: 'isApproved',
+      role: 'role',
       reviewedBy: 'reviewedBy'
     },
     prepare(selection) {
-      const { title, email, approved, reviewedBy } = selection;
+      const { title, email, approved, role, reviewedBy } = selection;
       const status = approved ? '✓ 已審核' : '✗ 待審核';
+      const roleLabels: Record<string, string> = { member: '一般會員', coworker: '合心同工', groupLeader: '小組長', elder: '長老' };
       const reviewer = reviewedBy ? `(由 ${reviewedBy} 審核)` : '';
       return {
         title: title || '未命名用戶',
-        subtitle: `${email} ${status} ${reviewer}`.trim(),
+        subtitle: `${email} ${status} · ${roleLabels[role] || '一般會員'} ${reviewer}`.trim(),
       };
     },
   },

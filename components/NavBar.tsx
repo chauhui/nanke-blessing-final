@@ -4,7 +4,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession, signOut } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
+
+type MemberNavLink = {
+  name: string
+  href: string
+  current?: boolean
+  icon: React.ReactNode
+  onClick?: (event: React.MouseEvent) => Promise<void>
+  className?: string
+}
 
 // --- 圖示元件 ---
 function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M6 9l6 6 6-6" /></svg> }
@@ -23,7 +32,6 @@ export default function NavBar() {
   const [memberOpen, setMemberOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
-  const { data: session } = useSession()
   const pathname = usePathname()
 
   const aboutTimer = useRef<number | null>(null)
@@ -43,7 +51,7 @@ export default function NavBar() {
   const videoLinks = [{ name: '教會簡介', href: '/video/church-intro' }, { name: '幸福小組花絮', href: '/video/happy-group' }]
   
   // ✅ 更新這裡：加入主日信息
-  const memberLinks = [
+  const memberLinks: MemberNavLink[] = [
     { name: '資源中心', href: '/member/resources', current: pathname === '/member/resources', icon: <ResourceIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '主日信息', href: '/member/sunday-service', current: pathname === '/member/sunday-service', icon: <VideoIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '小組長回報系統', href: '/member/group-report', current: pathname === '/member/group-report', icon: <GroupReportIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },

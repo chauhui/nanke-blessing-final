@@ -1,10 +1,11 @@
 // pages/member/group-report/index.tsx
 import React, { useState, useEffect } from 'react'
 import type { GetServerSideProps } from 'next'
-import { getSession, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
+import { authorizeMemberPage } from '@/lib/member-access'
 
 // 以命名匯入的方式取出 Sanity client
 import { client as sanityClient } from '@/lib/sanity.client'
@@ -511,12 +512,11 @@ function GroupReport() {
 export default GroupReport
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx)
-
-  if (!session) {
+  const authorization = await authorizeMemberPage(ctx, 'groupReport')
+  if (!authorization.allowed) {
     return {
       redirect: {
-        destination: `/auth/login?callbackUrl=${encodeURIComponent(ctx.resolvedUrl)}`,
+        destination: authorization.redirect,
         permanent: false,
       },
     }

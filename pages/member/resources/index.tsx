@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import type { GetServerSideProps } from 'next'
-import { getSession } from 'next-auth/react'
 import NavBar from '@/components/NavBar'
 import Footer from '@/components/Footer'
 import { client as sanityClient } from '@/lib/sanity.client'
 import { memberResourcesQuery, type MemberResource } from '@/lib/queries'
+import { authorizeMemberPage } from '@/lib/member-access'
 
 interface ResourcesPageProps {
   resources: MemberResource[]
@@ -199,12 +199,11 @@ export default function ResourcesPage({ resources }: ResourcesPageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps<ResourcesPageProps> = async (ctx) => {
-  const session = await getSession(ctx)
-
-  if (!session) {
+  const authorization = await authorizeMemberPage(ctx, 'resources')
+  if (!authorization.allowed) {
     return {
       redirect: {
-        destination: `/auth/login?callbackUrl=${encodeURIComponent(ctx.resolvedUrl)}`,
+        destination: authorization.redirect,
         permanent: false,
       },
     }

@@ -48,3 +48,36 @@ export type Testimony = {
   youtubeUrl: string
   thumbUrl?: string
 }
+
+export const memberResourcesQuery = groq`
+*[_type == "memberResource" && isPublished == true]
+| order(isFeatured desc, order asc, publishedAt desc) {
+  _id,
+  title,
+  description,
+  category,
+  resourceType,
+  url,
+  publishedAt,
+  isFeatured,
+  "fileUrl": file.asset->url,
+  "fileName": file.asset->originalFilename,
+  "fileSize": file.asset->size,
+  "mimeType": file.asset->mimeType
+}
+`
+
+export type MemberResource = {
+  _id: string
+  title: string
+  description?: string
+  category: string
+  resourceType: 'file' | 'link'
+  url?: string
+  publishedAt: string
+  isFeatured?: boolean
+  fileUrl?: string
+  fileName?: string
+  fileSize?: number
+  mimeType?: string
+}

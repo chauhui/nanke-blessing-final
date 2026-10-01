@@ -93,6 +93,19 @@ export const structure = (S: any) => {
         .defaultOrdering([{ field: 'date', direction: 'desc' }])
     )
 
+  const memberResourceListItem = S.listItem()
+    .title('資源中心')
+    .id('member-resource-list')
+    .child(
+      S.documentTypeList('memberResource')
+        .id('member-resource-type-list')
+        .title('資源中心')
+        .defaultOrdering([
+          { field: 'order', direction: 'asc' },
+          { field: 'publishedAt', direction: 'desc' },
+        ])
+    )
+
   // ★ 生命見證
   const testimonyListItem = S.listItem()
     .title('生命見證')
@@ -206,6 +219,7 @@ export const structure = (S: any) => {
       monthlyPlanListItem,
       // ✅ 這裡把主日信息加進去
       sundayServiceListItem,
+      memberResourceListItem,
       // ★ 生命見證
       testimonyListItem,
       S.divider(),

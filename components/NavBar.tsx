@@ -13,6 +13,8 @@ function XIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 
 function LogoutIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></svg> }
 // 新增：主日信息 icon (Video/Play)
 function VideoIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></svg> }
+function ResourceIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M3 7a2 2 0 012-2h5l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg> }
+function GroupReportIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M9 12h6m-6 4h6M9 8h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg> }
 
 export default function NavBar() {
   const [aboutOpen, setAboutOpen] = useState(false)
@@ -42,8 +44,9 @@ export default function NavBar() {
   
   // ✅ 更新這裡：加入主日信息
   const memberLinks = [
+    { name: '資源中心', href: '/member/resources', current: pathname === '/member/resources', icon: <ResourceIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '主日信息', href: '/member/sunday-service', current: pathname === '/member/sunday-service', icon: <VideoIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
-    { name: '小組長回報系統', href: '/member/group-report', current: pathname === '/member/group-report' },
+    { name: '小組長回報系統', href: '/member/group-report', current: pathname === '/member/group-report', icon: <GroupReportIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '登出', href: '#', onClick: async (e: React.MouseEvent) => { e.preventDefault(); await signOut({ callbackUrl: '/' }) }, className: 'text-red-600 hover:bg-red-50', icon: <LogoutIcon className="w-4 h-4 mr-2 inline" /> }
   ]
   
@@ -57,7 +60,7 @@ export default function NavBar() {
     { name: '會友專區', href: '/member', isMember: true },
   ]
 
-  const linkBaseClass = "relative flex items-center gap-1 text-[15px] font-medium tracking-wide text-[#1E1B4B] transition-colors duration-300 hover:text-[#B45309] py-2 px-1 !no-underline group"
+  const linkBaseClass = "relative flex items-center gap-1 text-[16px] font-medium tracking-wide text-[#1E1B4B] transition-colors duration-300 hover:text-[#B45309] py-2 px-1 !no-underline group"
   const underlineAnimation = <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-[#B45309] transition-all duration-300 ease-out group-hover:w-full"></span>
   const dropdownClass = "absolute left-0 top-full pt-4 w-60 transition-all duration-300 z-50"
   const dropdownInnerClass = "bg-white border border-[#D4C5B5] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] py-3 rounded-sm"

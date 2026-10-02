@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 
 type MemberNavLink = {
   name: string
@@ -24,6 +24,7 @@ function LogoutIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox=
 function VideoIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></svg> }
 function ResourceIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M3 7a2 2 0 012-2h5l2 2h7a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg> }
 function GroupReportIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M9 12h6m-6 4h6M9 8h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg> }
+function UserIcon(props: React.SVGProps<SVGSVGElement>) { return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M20 21a8 8 0 00-16 0M12 13a5 5 0 100-10 5 5 0 000 10z" /></svg> }
 
 export default function NavBar() {
   const [aboutOpen, setAboutOpen] = useState(false)
@@ -31,6 +32,7 @@ export default function NavBar() {
   const [videoOpen, setVideoOpen] = useState(false)
   const [memberOpen, setMemberOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session, status } = useSession()
   
   const pathname = usePathname()
 
@@ -51,11 +53,13 @@ export default function NavBar() {
   const videoLinks = [{ name: '教會簡介', href: '/video/church-intro' }, { name: '幸福小組花絮', href: '/video/happy-group' }]
   
   // ✅ 更新這裡：加入主日信息
-  const memberLinks: MemberNavLink[] = [
+  const memberLinks: MemberNavLink[] = status === 'authenticated' ? [
     { name: '資源中心', href: '/member/resources', current: pathname === '/member/resources', icon: <ResourceIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '主日信息', href: '/member/sunday-service', current: pathname === '/member/sunday-service', icon: <VideoIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '小組長回報系統', href: '/member/group-report', current: pathname === '/member/group-report', icon: <GroupReportIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
     { name: '登出', href: '#', onClick: async (e: React.MouseEvent) => { e.preventDefault(); await signOut({ callbackUrl: '/' }) }, className: 'text-red-600 hover:bg-red-50', icon: <LogoutIcon className="w-4 h-4 mr-2 inline" /> }
+  ] : [
+    { name: '會員登入', href: '/auth/login?callbackUrl=/member', icon: <UserIcon className="w-4 h-4 mr-2 inline text-[#B45309]" /> },
   ]
   
   const links = [
@@ -92,7 +96,7 @@ export default function NavBar() {
                 if (l.isAbout) return (<li key="about" className="relative h-full flex items-center" onMouseEnter={() => openMenu(setAboutOpen, aboutTimer)} onMouseLeave={() => scheduleClose(setAboutOpen, aboutTimer)}><button className={linkBaseClass} onClick={() => setAboutOpen(o => !o)}>關於我們 <ChevronDownIcon className={`ml-1 transition-transform duration-300 text-[#94A3B8] group-hover:text-[#B45309] ${aboutOpen ? 'rotate-180' : ''}`} />{underlineAnimation}</button><div className={`${dropdownClass} ${aboutOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}><ul className={dropdownInnerClass}>{aboutLinks.map(a => (<li key={a.name}><Link href={a.href} onClick={() => setAboutOpen(false)} className="block px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors">{a.name}</Link></li>))}</ul></div></li>)
                 if (l.isCourses) return (<li key="courses" className="relative h-full flex items-center" onMouseEnter={() => openMenu(setCoursesOpen, coursesTimer)} onMouseLeave={() => scheduleClose(setCoursesOpen, coursesTimer)}><button className={linkBaseClass} onClick={() => setCoursesOpen(o => !o)}>課程資訊 <ChevronDownIcon className={`ml-1 transition-transform duration-300 text-[#94A3B8] group-hover:text-[#B45309] ${coursesOpen ? 'rotate-180' : ''}`} />{underlineAnimation}</button><div className={`${dropdownClass} ${coursesOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}><ul className={dropdownInnerClass}>{coursesLinks.map(c => (<li key={c.name}><Link href={c.href} onClick={() => setCoursesOpen(false)} className="block px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors">{c.name}</Link></li>))}</ul></div></li>)
                 if (l.isVideo) return (<li key="video" className="relative h-full flex items-center" onMouseEnter={() => openMenu(setVideoOpen, videoTimer)} onMouseLeave={() => scheduleClose(setVideoOpen, videoTimer)}><button className={linkBaseClass} onClick={() => setVideoOpen(o => !o)}>影音平台 <ChevronDownIcon className={`ml-1 transition-transform duration-300 text-[#94A3B8] group-hover:text-[#B45309] ${videoOpen ? 'rotate-180' : ''}`} />{underlineAnimation}</button><div className={`${dropdownClass} ${videoOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}><ul className={dropdownInnerClass}>{videoLinks.map(v => (<li key={v.name}><Link href={v.href} onClick={() => setVideoOpen(false)} className="block px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors">{v.name}</Link></li>))}</ul></div></li>)
-                if (l.isMember) return (<li key="member" className="relative h-full flex items-center" onMouseEnter={() => openMenu(setMemberOpen, memberTimer)} onMouseLeave={() => scheduleClose(setMemberOpen, memberTimer)}><button className={linkBaseClass} onClick={() => setMemberOpen(o => !o)}>會友專區 <ChevronDownIcon className={`ml-1 transition-transform duration-300 text-[#94A3B8] group-hover:text-[#B45309] ${memberOpen ? 'rotate-180' : ''}`} />{underlineAnimation}</button><div className={`${dropdownClass} ${memberOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}><ul className={dropdownInnerClass}>{memberLinks.map(m => (<li key={m.name}>{m.onClick ? (<a href={m.href} onClick={e => { e.preventDefault(); m.onClick?.(e); setMemberOpen(false); }} className={`flex items-center px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors ${m.className || ''}`}>{m.icon}{m.name}</a>) : (<Link href={m.href} onClick={() => setMemberOpen(false)} className={`flex items-center px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors ${m.current ? 'text-[#1E1B4B] font-bold bg-[#F7F5F2]' : ''}`}>{m.icon}{m.name}</Link>)}</li>))}</ul></div></li>)
+                if (l.isMember) return (<li key="member" className="relative h-full flex items-center" onMouseEnter={() => openMenu(setMemberOpen, memberTimer)} onMouseLeave={() => scheduleClose(setMemberOpen, memberTimer)}><button className={linkBaseClass} onClick={() => setMemberOpen(o => !o)}>會友專區 <ChevronDownIcon className={`ml-1 transition-transform duration-300 text-[#94A3B8] group-hover:text-[#B45309] ${memberOpen ? 'rotate-180' : ''}`} />{underlineAnimation}</button><div className={`${dropdownClass} ${memberOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}><div className={dropdownInnerClass}>{status === 'authenticated' && <div className="px-6 py-3 border-b border-[#E8E0D7] text-sm text-[#64748B]"><span className="block text-xs tracking-wider text-[#94A3B8] mb-1">已登入會員</span><span className="font-bold text-[#1E1B4B]">{session.user?.name || session.user?.email}</span></div>}<ul>{memberLinks.map(m => (<li key={m.name}>{m.onClick ? (<a href={m.href} onClick={e => { e.preventDefault(); m.onClick?.(e); setMemberOpen(false); }} className={`flex items-center px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors ${m.className || ''}`}>{m.icon}{m.name}</a>) : (<Link href={m.href} onClick={() => setMemberOpen(false)} className={`flex items-center px-6 py-2.5 text-sm text-[#475569] hover:bg-[#F7F5F2] hover:text-[#B45309] transition-colors ${m.current ? 'text-[#1E1B4B] font-bold bg-[#F7F5F2]' : ''}`}>{m.icon}{m.name}</Link>)}</li>))}</ul></div></div></li>)
                 return <li key={l.name} className="h-full flex items-center"><Link href={l.href} className={linkBaseClass} style={{ textDecoration: 'none' }}>{l.name}{underlineAnimation}</Link></li>
               })}
             </ul>
@@ -171,6 +175,7 @@ export default function NavBar() {
                 <ChevronDownIcon className={`transition-transform duration-300 text-[#94A3B8] ${memberOpen ? 'rotate-180 text-[#B45309]' : ''}`} />
               </div>
               <div className={`${memberOpen ? 'block' : 'hidden'} pb-3 pl-4 space-y-1 border-l-2 border-[#D4C5B5] ml-1`}>
+                {status === 'authenticated' && <div className="py-2 px-3 text-sm text-[#64748B] border-b border-[#F1F5F9] mb-1">已登入：<span className="font-bold text-[#1E1B4B]">{session.user?.name || session.user?.email}</span></div>}
                 {memberLinks.map(link => (
                    <div key={link.name}>
                      {link.onClick ? (

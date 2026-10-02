@@ -12,9 +12,9 @@ import {
   Box,
   Flex,
   Dialog,
-  useToast,
 } from "@sanity/ui";
-import { TrashIcon, DownloadIcon } from '@sanity/icons';
+import { TrashIcon } from '@sanity/icons/Trash';
+import { DownloadIcon } from '@sanity/icons/Download';
 
 // CSV 下載工具函式
 function downloadCSV(rows: string[][], filename: string) {
@@ -68,7 +68,6 @@ interface ReportStats {
 
 export default function GroupReportStatsTool() {
   const client = useClient({ apiVersion: "2024-01-01" });
-  const toast = useToast();
 
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -205,10 +204,10 @@ export default function GroupReportStatsTool() {
     try {
       await client.delete(reportId);
       setReports((prev) => prev.filter((r) => r._id !== reportId));
-      toast.push({ status: "success", title: "已刪除回報", description: "小組回報已成功刪除" });
+      window.alert("小組回報已成功刪除");
     } catch (error: any) {
       console.error("刪除回報時出錯:", error);
-      toast.push({ status: "error", title: "刪除失敗", description: error.message || "無法刪除回報" });
+      window.alert(error.message || "無法刪除回報");
     } finally {
       setLoading(false);
       setDeleteDialogOpen(false);

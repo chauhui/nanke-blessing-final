@@ -10,14 +10,7 @@ import { sanityClient } from '@/lib/sanity'
 import { testimoniesQuery, type Testimony } from '@/lib/queries'
 import Link from 'next/link'
 
-type MonthlyPlan = { 
-  title: string; 
-  imageUrl: string | null; 
-  description: string | null;
-} | null
-
 type HomeProps = {
-  monthlyPlan: MonthlyPlan
   testimonies?: Testimony[]
 }
 
@@ -36,7 +29,7 @@ function extractYouTubeId(url: string): string | null {
   }
 }
 
-export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
+export default function Home({ testimonies = [] }: HomeProps) {
   const [showCookieBanner, setShowCookieBanner] = useState(false)
   
   // ⏳ 倒數計時器的狀態
@@ -358,28 +351,16 @@ export default function Home({ monthlyPlan, testimonies = [] }: HomeProps) {
 }
 
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
-  const monthlyPlanQuery = `
-    *[_type == "monthlyPlan" && isActive == true] | order(_createdAt desc)[0] {
-      title,
-      "imageUrl": poster.asset->url,
-      description
-    }
-  `
-
   try {
-    const [monthlyPlan, testimonies] = await Promise.all([
-      sanityClient.fetch<MonthlyPlan>(monthlyPlanQuery),
-      sanityClient.fetch<Testimony[]>(testimoniesQuery),
-    ])
+    const testimonies = await sanityClient.fetch<Testimony[]>(testimoniesQuery)
 
     return {
       props: {
-        monthlyPlan: monthlyPlan ?? null,
         testimonies: testimonies ?? [],
       },
     }
   } catch (e) {
     console.error('[SSR fetch error]:', e)
-    return { props: { monthlyPlan: null, testimonies: [] } }
+    return { props: { testimonies: [] } }
   }
 }

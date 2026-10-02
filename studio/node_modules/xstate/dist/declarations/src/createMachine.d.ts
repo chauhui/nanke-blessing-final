@@ -43,8 +43,8 @@ import { ResolvedStateMachineTypes, TODO, AnyActorRef, EventObject, AnyEventObje
  *   to provide machine implementations instead.
  */
 export declare function createMachine<TContext extends MachineContext, TEvent extends AnyEventObject, // TODO: consider using a stricter `EventObject` here
-TActor extends ProvidedActor, TAction extends ParameterizedObject, TGuard extends ParameterizedObject, TDelay extends string, TTag extends string, TInput, TOutput extends NonReducibleUnknown, TEmitted extends EventObject, TMeta extends MetaObject, _ = any>(config: {
-    types?: MachineTypes<TContext, TEvent, TActor, TAction, TGuard, TDelay, TTag, TInput, TOutput, TEmitted, TMeta>;
+TActor extends ProvidedActor, TAction extends ParameterizedObject, TGuard extends ParameterizedObject, TDelay extends string, TTag extends string, TInput, TOutput extends NonReducibleUnknown, TEmitted extends EventObject, TStateMeta extends MetaObject = any, TTransitionMeta extends MetaObject = TStateMeta, _ = any>(config: {
+    types?: MachineTypes<TContext, TEvent, TActor, TAction, TGuard, TDelay, TTag, TInput, TOutput, TEmitted, TStateMeta, TTransitionMeta>;
     schemas?: unknown;
-} & MachineConfig<TContext, TEvent, TActor, TAction, TGuard, TDelay, TTag, TInput, TOutput, TEmitted, TMeta>, implementations?: InternalMachineImplementations<ResolvedStateMachineTypes<TContext, TEvent, TActor, TAction, TGuard, TDelay, TTag, TEmitted>>): StateMachine<TContext, TEvent, Cast<ToChildren<TActor>, Record<string, AnyActorRef | undefined>>, TActor, TAction, TGuard, TDelay, StateValue, TTag & string, TInput, TOutput, TEmitted, TMeta, // TMeta
-TODO>;
+} & MachineConfig<TContext, TEvent, TActor, TAction, TGuard, TDelay, TTag, TInput, TOutput, TEmitted, TStateMeta, TTransitionMeta>, implementations?: InternalMachineImplementations<ResolvedStateMachineTypes<TContext, TEvent, TActor, TAction, TGuard, TDelay, TTag, TEmitted>>): StateMachine<TContext, TEvent, Cast<ToChildren<TActor>, Record<string, AnyActorRef | undefined>>, TActor, TAction, TGuard, TDelay, StateValue, TTag & string, TInput, TOutput, TEmitted, TStateMeta, TODO, // TStateSchema
+TTransitionMeta>;

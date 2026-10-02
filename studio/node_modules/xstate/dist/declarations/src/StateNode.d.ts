@@ -1,11 +1,11 @@
 import type { StateMachine } from "./StateMachine.js";
-import type { DelayedTransitionDefinition, EventObject, InitialTransitionDefinition, InvokeDefinition, MachineContext, Mapper, StateNodeConfig, StateNodeDefinition, StateNodesConfig, TransitionDefinition, TransitionDefinitionMap, TODO, UnknownAction, ParameterizedObject, AnyStateMachine, ProvidedActor, NonReducibleUnknown, EventDescriptor } from "./types.js";
-interface StateNodeOptions<TContext extends MachineContext, TEvent extends EventObject> {
+import type { DelayedTransitionDefinition, EventObject, InitialTransitionDefinition, InvokeDefinition, MachineContext, Mapper, StateNodeConfig, StateNodeDefinition, StateNodesConfig, TransitionDefinition, TransitionDefinitionMap, TODO, UnknownAction, ParameterizedObject, AnyStateMachine, ProvidedActor, NonReducibleUnknown, EventDescriptor, MetaObject } from "./types.js";
+interface StateNodeOptions<TContext extends MachineContext, TEvent extends EventObject, TStateMeta extends MetaObject, TTransitionMeta extends MetaObject> {
     _key: string;
-    _parent?: StateNode<TContext, TEvent>;
+    _parent?: StateNode<TContext, TEvent, TStateMeta, TTransitionMeta>;
     _machine: AnyStateMachine;
 }
-export declare class StateNode<TContext extends MachineContext = MachineContext, TEvent extends EventObject = EventObject> {
+export declare class StateNode<TContext extends MachineContext = MachineContext, TEvent extends EventObject = EventObject, TStateMeta extends MetaObject = MetaObject, TTransitionMeta extends MetaObject = TStateMeta> {
     /** The raw config used to create the machine. */
     config: StateNodeConfig<TContext, TEvent, TODO, // actors
     TODO, // actions
@@ -14,7 +14,7 @@ export declare class StateNode<TContext extends MachineContext = MachineContext,
     TODO, // tags
     TODO, // output
     TODO, // emitted
-    TODO>;
+    TStateMeta, TTransitionMeta>;
     /**
      * The relative key of the state node, which represents its location in the
      * overall state value.
@@ -35,7 +35,7 @@ export declare class StateNode<TContext extends MachineContext = MachineContext,
     /** The string path from the root machine node to this node. */
     path: string[];
     /** The child state nodes. */
-    states: StateNodesConfig<TContext, TEvent>;
+    states: StateNodesConfig<TContext, TEvent, TStateMeta, TTransitionMeta>;
     /**
      * The type of history on this state node. Can be:
      *
@@ -48,7 +48,7 @@ export declare class StateNode<TContext extends MachineContext = MachineContext,
     /** The action(s) to be executed upon exiting the state node. */
     exit: UnknownAction[];
     /** The parent state node. */
-    parent?: StateNode<TContext, TEvent>;
+    parent?: StateNode<TContext, TEvent, TStateMeta, TTransitionMeta>;
     /** The root machine node. */
     machine: StateMachine<TContext, TEvent, any, // children
     any, // actor
@@ -60,13 +60,13 @@ export declare class StateNode<TContext extends MachineContext = MachineContext,
     any, // input
     any, // output
     any, // emitted
-    any, // meta
-    any>;
+    TStateMeta, any, // state schema
+    TTransitionMeta>;
     /**
      * The meta data associated with this state node, which will be returned in
      * State instances.
      */
-    meta?: any;
+    meta?: TStateMeta;
     /**
      * The output data sent with the "xstate.done.state._id_" event if this is a
      * final state node.
@@ -79,8 +79,8 @@ export declare class StateNode<TContext extends MachineContext = MachineContext,
     order: number;
     description?: string;
     tags: string[];
-    transitions: Map<string, TransitionDefinition<TContext, TEvent>[]>;
-    always?: Array<TransitionDefinition<TContext, TEvent>>;
+    transitions: Map<string, TransitionDefinition<TContext, TEvent, TTransitionMeta>[]>;
+    always?: Array<TransitionDefinition<TContext, TEvent, TTransitionMeta>>;
     constructor(
     /** The raw config used to create the machine. */
     config: StateNodeConfig<TContext, TEvent, TODO, // actors
@@ -90,16 +90,16 @@ export declare class StateNode<TContext extends MachineContext = MachineContext,
     TODO, // tags
     TODO, // output
     TODO, // emitted
-    TODO>, options: StateNodeOptions<TContext, TEvent>);
+    TStateMeta, TTransitionMeta>, options: StateNodeOptions<TContext, TEvent, TStateMeta, TTransitionMeta>);
     /** The well-structured state node definition. */
-    get definition(): StateNodeDefinition<TContext, TEvent>;
+    get definition(): StateNodeDefinition<TContext, TEvent, TStateMeta, TTransitionMeta>;
     /** The logic invoked as actors by this state node. */
     get invoke(): Array<InvokeDefinition<TContext, TEvent, ProvidedActor, ParameterizedObject, ParameterizedObject, string, TODO, // TEmitted
-    TODO>>;
+    TTransitionMeta>>;
     /** The mapping of events to transitions. */
-    get on(): TransitionDefinitionMap<TContext, TEvent>;
-    get after(): Array<DelayedTransitionDefinition<TContext, TEvent>>;
-    get initial(): InitialTransitionDefinition<TContext, TEvent>;
+    get on(): TransitionDefinitionMap<TContext, TEvent, TTransitionMeta>;
+    get after(): Array<DelayedTransitionDefinition<TContext, TEvent, TTransitionMeta>>;
+    get initial(): InitialTransitionDefinition<TContext, TEvent, TTransitionMeta>;
     /** All the event types accepted by this state node and its descendants. */
     get events(): Array<EventDescriptor<TEvent>>;
     /**

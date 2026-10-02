@@ -1,5 +1,5 @@
 import { ActorRefLike, AnyEventObject, AnyTransitionDefinition, Snapshot } from "./types.js";
-export type InspectionEvent = InspectedSnapshotEvent | InspectedEventEvent | InspectedActorEvent | InspectedMicrostepEvent | InspectedActionEvent;
+export type InspectionEvent = InspectedSnapshotEvent | InspectedEventEvent | InspectedActorEvent | InspectedTransitionEvent | InspectedMicrostepEvent | InspectedActionEvent;
 interface BaseInspectionEventProperties {
     rootId: string;
     /**
@@ -13,6 +13,11 @@ interface BaseInspectionEventProperties {
 }
 export interface InspectedSnapshotEvent extends BaseInspectionEventProperties {
     type: '@xstate.snapshot';
+    event: AnyEventObject;
+    snapshot: Snapshot<unknown>;
+}
+export interface InspectedTransitionEvent extends BaseInspectionEventProperties {
+    type: '@xstate.transition';
     event: AnyEventObject;
     snapshot: Snapshot<unknown>;
 }

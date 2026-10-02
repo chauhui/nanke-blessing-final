@@ -1,6 +1,9 @@
 # @sanity/uuid
 
-Generate a valid Sanity document ID
+> [!WARNING]
+> This package is no longer needed/encouraged - use `crypto.randomUUID()` or the `uuid` npm module directly.
+
+Generate a valid Sanity document ID (uuid v4 format)
 
 ## Installation
 

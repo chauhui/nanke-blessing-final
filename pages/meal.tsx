@@ -1,7 +1,6 @@
 // pages/meal.tsx
 'use client';
 
-import { useState } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { MapPin, Utensils, Clock } from 'lucide-react'
@@ -14,15 +13,6 @@ export async function getServerSideProps(ctx: any) {
 }
 
 export default function MealRegistration() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    window.open('https://forms.gle/cLvanRm7Em4FeFL89', '_blank')
-    setTimeout(() => setIsSubmitting(false), 1000)
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F5F2] text-[#1E1B4B] font-sans selection:bg-[#FFEDD5] selection:text-[#EA580C]">
       <Head>
@@ -94,12 +84,12 @@ export default function MealRegistration() {
 
                 {/* 按鈕 */}
                 <div className="pt-2 md:pt-4">
-                  <button onClick={handleSubmit} disabled={isSubmitting} className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 md:py-4 px-6 rounded-sm shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 group">
+                  <a href="https://forms.gle/cLvanRm7Em4FeFL89" target="_blank" rel="noopener noreferrer" className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 md:py-4 px-6 rounded-sm shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 group no-underline">
                     <Utensils className="w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
                     <span className="tracking-widest uppercase text-xs md:text-sm font-bold">
-                      {isSubmitting ? 'Opening...' : 'Reserve A Seat / 立即登記'}
+                      Reserve A Seat / 立即登記
                     </span>
-                  </button>
+                  </a>
                   <p className="text-[10px] md:text-xs text-center text-[#94A3B8] mt-2 md:mt-3">* 將開啟 Google 表單進行登記</p>
                 </div>
               </div>

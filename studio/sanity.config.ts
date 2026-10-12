@@ -11,19 +11,15 @@ import {structure} from './deskStructure'
 // 行動裝置左側清單可捲動（不使用 JSX）
 function MobileScrollPatch(props: LayoutProps) {
   const css = `
-    @media (pointer: coarse) {
-      #sanity [data-ui="ScrollContainer"] {
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
+    @media (pointer: coarse), (max-width: 767px) {
+      #sanity,
+      #sanity * {
+        touch-action: pan-y pinch-zoom !important;
       }
       #sanity [data-ui="ScrollContainer"],
-      #sanity [data-ui="ScrollContainer"] * {
-        touch-action: pan-y !important;
-      }
-      #sanity [data-ui="Pane"],
       #sanity [data-ui="PaneContent"] {
-        min-height: 0 !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: auto !important;
       }
     }
   `
